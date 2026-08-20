@@ -64,17 +64,22 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
 
   try {
     let result: AIResponse;
-    if (provider === 'gemini' || provider === 'google') {
+    const effectiveProvider = apiKey.startsWith('sk-or-v1-') ? 'openrouter' : provider;
+
+    if (effectiveProvider === 'openrouter') {
+      result = await callOpenRouter(apiKey, options);
+    } else if (effectiveProvider === 'gemini' || effectiveProvider === 'google') {
       result = await callGeminiWithFallbacks(apiKey, options);
-    } else if (provider === 'openai') {
+    } else if (effectiveProvider === 'openai') {
       result = await callOpenAI(apiKey, options);
-    } else if (provider === 'anthropic') {
+    } else if (effectiveProvider === 'anthropic') {
       result = await callAnthropic(apiKey, options);
     } else {
       result = await callGeminiWithFallbacks(apiKey, options);
     }
 
     result.latencyMs = Date.now() - startTime;
+
 
     // Cache successful response
     if (result.content && !result.error) {
@@ -256,4 +261,68 @@ async function callAnthropic(apiKey: string, options: AICompletionOptions): Prom
   const text = data.content?.[0]?.text || '';
   return { content: text, provider: 'anthropic', modelUsed: 'claude-3-5-sonnet-20241022' };
 }
+
+/**
+ * OpenRouter API Integration (Auto-detects sk-or-v1- keys)
+ */
+async function callOpenRouter(apiKey: string, options: AICompletionOptions): Promise<AIResponse> {
+  const url = 'https://openrouter.ai/api/v1/chat/completions';
+  const messages: any[] = [];
+
+  if (options.systemPrompt) {
+    messages.push({ role: 'system', content: options.systemPrompt });
+  }
+  messages.push({ role: 'user', content: options.prompt });
+
+  const candidateModels = [
+    'openai/gpt-4o-mini',
+    'google/gemini-2.5-flash',
+    'meta-llama/llama-3.3-70b-instruct',
+  ];
+
+  let lastError: any = null;
+
+  for (const model of candidateModels) {
+    try {
+      const body: any = {
+        model,
+        messages,
+        temperature: options.temperature ?? 0.2,
+        max_tokens: options.maxTokens ?? 2048,
+      };
+
+      if (options.jsonMode) {
+        body.response_format = { type: 'json_object' };
+      }
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://wasl-journey.vercel.app',
+          'X-Title': 'WASL Cultural Journey',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`OpenRouter (${model}) error (${res.status}): ${errorText}`);
+      }
+
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content || '';
+      return { content: text, provider: `openrouter (${model})`, modelUsed: model };
+    } catch (err: any) {
+      lastError = err;
+      if (err.message.includes('401') || err.message.includes('User key not valid') || err.message.includes('Key disabled')) {
+        throw err;
+      }
+    }
+  }
+
+  throw lastError || new Error('All OpenRouter models failed.');
+}
+
 

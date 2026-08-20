@@ -1,139 +1,196 @@
 
 # WASL — وصل
-### AI-Powered Cultural Travel & Relocation Companion
-**One world. Many cultures. One connection.**  
-**عالم واحد. ثقافات متعددة. اتصال واحد.**
 
----
+**An AI-powered cultural travel and relocation companion that helps people understand where they are going, communicate, navigate daily life, and stay safe.**
 
-## 1. What is WASL (وصل)?
-**WASL (وصل)** is an intelligent global travel and relocation companion designed to help travelers, international students, and expats understand not just *where* they are going, but *how to live, communicate, behave, stay safe, and navigate* their destination with deep cultural nuance.
+> **One world. Many cultures. One connection.**
 
-Instead of a generic chatbot or static tourism brochure, WASL delivers an interactive, visual journey transition with dynamic destination theming, 3D WebGL Earth navigation, verified government resources, and provider-agnostic AI intelligence.
+## 🌍 About WASL
 
----
+Traditional travel apps help people find places, hotels, transportation, and attractions. WASL focuses on what happens around those decisions: understanding a destination and adapting to daily life there.
 
-## 2. Key Features
+WASL brings together artificial intelligence, cultural intelligence, local-language guidance, real-world place data, digital-safety awareness, and personalized travel or relocation guidance in one journey.
 
-- 🌌 **Cinematic 3D Glowing Earth Globe**: Interactive WebGL globe showing origin-to-destination flight trajectories, city lights, and atmospheric aura.
-- 🎨 **Dynamic Destination Atmosphere**: The website dynamically changes its color palette, gradients, and particle physics (e.g., Sakura blossoms for Japan, desert gold for Saudi Arabia, Anatolian terracotta for Turkey) based on the destination.
-- 🧭 **Structured & Natural Language Journey Setup**: Guided form or natural language prompt (e.g. *"I'm a Saudi CS student moving to Tokyo for 1 year"*) with AI entity extraction and adaptive follow-up questions.
-- 🧳 **6-Stage Interactive Timeline**:
-  1. `01 Before You Go`
-  2. `02 Documents`
-  3. `03 Departure`
-  4. `04 First Days`
-  5. `05 Settling In`
-  6. `06 Daily Life`
-  Each stage includes checklist tasks, verified official resources (e.g., Absher, Visit Japan Web, MOFA, Immigration), and quick tips.
-- 🏛️ **Culture Sense**: Respectful, non-stereotypical guidance on social etiquette, communication styles, dining customs, dress codes, and visual **DO** & **AVOID** comparisons.
-- 💬 **Local Language & Audio**: Situational phrases categorized by context (Greetings, Courtesy, Dining, Transport, Emergency) with romanization, formality indicators, and **🔊 Web Speech API Voice Pronunciation**.
-- 🌐 **Cultural Context Translator**: Differentiates between *literal translation* and *natural colloquial phrasing* used by locals.
-- ⚖️ **Religion & Social Context**: Objective guidance distinguishing religion, culture, and individual practice, with temple/mosque/church etiquette and dietary labels (Halal/Pork/Alcohol).
-- 🛡️ **Digital Safety & Anti-Scam Analyzer**: Analyzes suspicious foreign SMS, WhatsApp messages, emails, or fake payment links using AI to detect scams, rate risk (Low, Medium, High), explain red flags, and provide safe action steps.
-- 🤖 **Context-Aware AI Assistant**: Non-intrusive floating companion with journey memory and structured advice.
-- 🌐 **Bilingual (Arabic RTL / English LTR)** & **Accessibility** controls (Font size scaling A-/A/A+, Light/Dark mode).
+## ✨ Key Features
 
----
+- **AI-powered journey setup** through a guided form or natural-language description.
+- **Personalized journey planning** with destination, city, accommodation area, purpose, duration, and traveler needs.
+- **Interactive journey transition** with a 3D globe and destination-to-destination visualization.
+- **Dynamic destination themes** that adapt the visual experience to the selected destination.
+- **Journey dashboard** with a six-stage timeline from preparation through daily life.
+- **Culture Sense** for etiquette, communication, dining, dress, and practical do/avoid guidance.
+- **Local Language** phrases with translation context, romanization, formality, and browser speech pronunciation.
+- **Cultural Context Translator** for literal and natural phrasing.
+- **Religion & Context** guidance that separates religion, culture, and individual practice, including dietary and worship context.
+- **Discover** search for restaurants, hotels, attractions, shopping, healthcare, transport, and worship centers.
+- **Digital Safety** analysis for suspicious messages and links, with risk levels, warning signs, and safer next steps.
+- **AI Assistant** with journey-aware conversational guidance.
+- **Arabic and English support**, including RTL/LTR layout, light/dark mode, and font-size controls.
 
-## 3. Architecture & Tech Stack
+## 🧠 AI + Cybersecurity
 
-- **Framework**: Next.js 16 (App Router) + TypeScript
-- **Styling**: Tailwind CSS + CSS Variables (dynamic destination theme engine)
-- **3D Graphics**: Three.js (WebGL Earth with glowing shaders & flight curves)
-- **Icons**: Lucide React
-- **Animations & Effects**: Canvas Confetti + Web Speech Synthesis API
-- **AI Abstraction**: Provider-agnostic server-side adapter supporting **Google Gemini**, **OpenAI**, and **Anthropic**
+WASL combines AI with cybersecurity awareness through its **Digital Safety** feature.
 
----
+Users can submit suspicious SMS messages, emails, WhatsApp messages, social media messages, or website text. The AI looks for potential signals such as phishing, social engineering, impersonation, urgency manipulation, suspicious links, and credential or payment requests.
 
-## 4. Getting Started Locally
+The feature returns a risk level, explains why the message may be suspicious, and recommends safer actions. It provides informational guidance and does not guarantee scam detection.
 
-### Prerequisites
-- Node.js 18.17+ (or Node 20+)
-- npm or yarn
+> **AI + Cybersecurity + User Awareness**
 
-### Installation
-```bash
-# Clone the repository
-git clone <repository-url>
-cd wasl_lastv
+User-submitted messages are passed to the safety analysis as data. They are not treated as instructions to execute.
 
-# Install dependencies
-npm install
+## 🗺️ How WASL Works
 
-# Set up environment variables
-cp .env.example .env.local
+1. **Start Your Journey** from the landing experience.
+2. **Describe the journey naturally** or use guided setup.
+3. **Review extracted details**, including origin, destination, city, purpose, duration, and needs.
+4. **Confirm the journey** and continue through the globe transition.
+5. **Enter a destination-specific experience** with a dynamic visual theme.
+6. **Use the personalized dashboard** and its six-stage journey timeline.
+7. **Explore Culture, Language, Discover, Religion & Context, and Digital Safety.**
+8. **Open the AI Assistant** whenever additional journey-aware guidance is needed.
 
-# Run the development server
-npm run dev
+## 🛠️ Technology Stack
+
+- **Next.js 16** with the App Router
+- **React 19** and **TypeScript**
+- **Tailwind CSS 4** with custom CSS variables and destination themes
+- **Three.js** for the interactive globe experience
+- **Lucide React** for interface icons
+- **Canvas Confetti** and browser Web Speech Synthesis for interaction effects and pronunciation
+- **Next.js server-side API routes** for AI, journey content, translation, safety analysis, and place discovery
+- **AI provider adapter** supporting Google Gemini, OpenAI, Anthropic, and OpenRouter-compatible keys
+- **Google Places API (New)** for live place discovery
+- **Wikipedia thumbnails and curated Unsplash image pools** for place imagery and graceful visual content
+
+## 🏗️ Architecture
+
+```text
+React / Next.js frontend
+          |
+          v
+Next.js server-side API routes
+       /        \
+      v          v
+AI provider   Google Places API
+      \        /
+       v      v
+ Personalized journey response
 ```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
 
----
+AI and Google Places requests are initiated through server-side routes. API keys configured in the environment are therefore kept out of the client bundle. The settings screen also supports an optional user-supplied AI provider and key for the current browser session.
 
-## 5. Environment Variables Configuration
+## 🔐 Security
 
-Create a `.env.local` file with the following variables:
+- Store API keys in environment variables or the app's settings flow; never commit real secrets to GitHub.
+- Keep `.env.local` out of version control.
+- Route AI and Google Places requests through server-side API routes where applicable.
+- Treat suspicious-message submissions as untrusted user data, not executable instructions.
+- Do not rely on AI output as legal, medical, religious, government, or cybersecurity authority.
+- Verify high-stakes travel, visa, safety, and emergency information with official sources.
+
+## 🌐 Environment Variables
+
+The server reads these variables when they are configured:
 
 ```env
-# AI Provider (gemini | openai | anthropic)
 LLM_PROVIDER=gemini
-LLM_API_KEY=your_gemini_api_key_here
-
-# Google Places API (Optional - verified dataset fallback included)
-GOOGLE_PLACES_API_KEY=your_google_places_api_key_here
-
-# Search API (Optional)
-SEARCH_API_KEY=
-
-# Public Base URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+LLM_API_KEY=your_ai_provider_key
+GEMINI_MODEL=gemini-1.5-flash
+GOOGLE_PLACES_API_KEY=your_google_places_api_key
 ```
 
-> [!NOTE]
-> You can also test and configure custom API keys directly in the app session via the **Settings (⚙️)** modal.
+`LLM_PROVIDER` may be set to `gemini`, `openai`, or `anthropic`. OpenRouter-compatible keys are also detected by the server adapter. `GEMINI_MODEL` is optional; the adapter has Gemini model fallbacks when it is not set. The Google Places key is required for live place discovery.
 
----
+Never include real API keys in this file or in source control.
 
-## 6. Supported AI Providers
+## 🚀 Getting Started
 
-1. **Google Gemini (Default)**
-   - Provider: `gemini`
-   - Model: `gemini-1.5-flash`
-   - API Key: Get from [Google AI Studio](https://aistudio.google.com/)
-2. **OpenAI**
-   - Provider: `openai`
-   - Model: `gpt-4o-mini`
-   - API Key: Get from [OpenAI Platform](https://platform.openai.com/)
-3. **Anthropic**
-   - Provider: `anthropic`
-   - Model: `claude-3-5-sonnet-20241022`
-   - API Key: Get from [Anthropic Console](https://console.anthropic.com/)
+### Prerequisites
 
----
+- Node.js 18.17 or newer
+- npm
 
-## 7. Public Deployment (Vercel)
+### Installation
 
-1. Push your code to a GitHub repository.
-2. Log into [Vercel](https://vercel.com) and click **"Add New Project"**.
-3. Import your GitHub repository.
-4. In the **Environment Variables** section, add:
-   - `LLM_PROVIDER` = `gemini`
-   - `LLM_API_KEY` = your API key
-   - `GOOGLE_PLACES_API_KEY` = your Places key (optional)
-5. Click **Deploy**. Your live URL will be ready at `https://wasl-xxxxx.vercel.app`.
+```bash
+git clone <repository-url>
+cd <project-folder>
+npm install
+```
 
----
+Create `.env.local` in the project root and add the environment variables described above. At minimum, configure `LLM_API_KEY` for AI features. Configure `GOOGLE_PLACES_API_KEY` to enable live Discover results.
 
-## 8. Responsible AI & Security Considerations
+Start the development server:
 
-- **No Hardcoded Keys**: API keys are never bundled in frontend code or visible in client HTML.
-- **Data Privacy**: Messages pasted into the Digital Safety analyzer are processed strictly as data, never executed as instructions.
-- **Objective Guidance**: The application avoids stereotypes, treats culture and religion with neutral respect, and provides direct links to verified government portals for legal or visa requirements.
+```bash
+npm run dev
+```
 
----
+Open [http://localhost:3000](http://localhost:3000) in a browser.
 
-© 2026 WASL — وصل. All rights reserved.
-@https://sdaia.gov.sa/ar/Sectors/BuildingCapacity/academy/Pages/default.aspx
-@SADAIAAcademy
+Useful project scripts:
+
+```bash
+npm run lint
+npm run build
+npm run start
+```
+
+## ☁️ Deployment
+
+WASL can be deployed as a Next.js application on Vercel:
+
+1. Push the repository to GitHub.
+2. Import the repository into Vercel.
+3. Add the required environment variables in the project settings.
+4. Deploy the application.
+5. Open the public URL generated by Vercel.
+
+Do not commit `.env.local` or real credentials during deployment.
+
+## 📱 Responsive & Accessibility
+
+The interface supports desktop, tablet, and mobile layouts, Arabic RTL and English LTR, responsive navigation, light/dark mode, and adjustable font sizes. Local-language pronunciation uses the browser's Web Speech Synthesis API when available.
+
+## 🎯 Project Vision
+
+WASL is designed to answer a question beyond:
+
+> “Where should I go?”
+
+It answers:
+
+> **“Now that you're going there, what do you need to know to understand the place, communicate with its people, navigate daily life, and stay safe?”**
+
+## 🏆 Project Highlights
+
+- AI-powered personalization
+- Cultural intelligence and context
+- Real location data through Google Places
+- Cybersecurity awareness for travelers
+- Dynamic destination experiences
+- Arabic and English accessibility
+- A human-centered travel and relocation workflow
+
+## ⚠️ Responsible AI
+
+WASL aims to:
+
+- Avoid cultural stereotypes and communicate uncertainty clearly.
+- Avoid assuming a user's religion or personal practice.
+- Distinguish religion from culture and individual behavior.
+- Avoid fabricating places, official resources, or requirements.
+- Encourage official sources for high-stakes information.
+- Present AI output as guidance, not legal, medical, religious, or government authority.
+
+## 👥 Team
+
+- **Taleen Alqhatani**
+- **Ghaidaa Alshareef**
+
+Developed as part of an SDAIA learning/project experience with the [Saudi Data & AI Authority (SDAIA)](https://github.com/SDAIAAcademy).
+
+## 📄 License
+
+**License: Not specified.**

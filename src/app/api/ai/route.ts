@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callAI } from '@/lib/ai/provider';
 import { AI_SYSTEM_PROMPTS } from '@/lib/ai/prompts';
-import { COUNTRIES, findCountry } from '@/lib/data/countries';
+import { COUNTRIES, findCountry, createDynamicCountry } from '@/lib/data/countries';
 import { safeParseJSON } from '@/lib/ai/jsonHelper';
 
 function buildFallbackExtraction(text: string) {
@@ -160,49 +160,18 @@ function buildFallbackExtraction(text: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, apiKey, provider, conversationHistory } = await req.json();
+    const { text, apiKey, provider, allowFallback } = await req.json();
 
     if (!text || typeof text !== 'string') {
       return NextResponse.json({ error: 'Text input is required' }, { status: 400 });
     }
 
-    const prompt = `User statement: "${text}"
-Analyze what information is already specified and determine which of the 3 required items are still missing:
-1. Trip duration ("How long will you be traveling?")
-2. Destination status ("Do you already have a destination/city in mind?")
-3. Accommodation status ("Do you already have accommodation?")
+    const prompt = `User raw input:
+"""
+${text}
+"""
 
-Return strictly valid JSON matching:
-{
-  "knownInfo": {
-    "origin": "Country name or null",
-    "destination": "Country name or null",
-    "destinationCity": "City name or null",
-    "hasDestination": boolean,
-    "duration": "e.g. 7 days or null",
-    "durationCategory": "days" | "weeks" | "months" | "yearPlus" | null,
-    "hasDuration": boolean,
-    "accommodationStatus": "booked" | "not_booked" | "unknown",
-    "hasAccommodation": boolean,
-    "dates": "dates or season or null",
-    "interests": ["culture", "food", "museums", "nature", "shopping", "history", "relaxation"],
-    "travelStyle": "budget" | "luxury" | "solo" | "family" | "couple" | "adventure" | null,
-    "preferences": "specific user preferences or dietary notes",
-    "purpose": "study" | "work" | "travel" | "relocation" | "visit" | "business" | "other",
-    "persona": "Short description of traveler persona"
-  },
-  "missingQuestions": [
-    {
-      "id": "duration" | "destination_status" | "accommodation",
-      "questionEn": "Conversational question in English",
-      "questionAr": "سؤال محادثة ذكي بالعربية",
-      "type": "choice",
-      "choices": [
-        { "value": "days", "labelEn": "A few days", "labelAr": "عدة أيام" }
-      ]
-    }
-  ]
-}`;
+Extract all travel parameters, determine what is explicitly known vs what is missing, and generate adaptive contextual questions for unmentioned details. Return strictly valid JSON matching the schema.`;
 
     const aiRes = await callAI({
       systemPrompt: AI_SYSTEM_PROMPTS.intentExtraction,
@@ -214,74 +183,83 @@ Return strictly valid JSON matching:
     });
 
     if (aiRes.error) {
-      return NextResponse.json(buildFallbackExtraction(text));
+      if (allowFallback) {
+        // Only if client explicitly requests offline fallback
+        return NextResponse.json(buildFallbackExtraction(text));
+      }
+      return NextResponse.json({
+        success: false,
+        error: aiRes.error,
+        errorCode: aiRes.errorCode || 'AI_PROVIDER_ERROR',
+        provider: aiRes.provider,
+      }, { status: 400 });
     }
 
     const parsed = safeParseJSON<any>(aiRes.content);
     if (!parsed) {
-      // Fallback seamlessly if model output is not valid JSON
-      return NextResponse.json(buildFallbackExtraction(text));
+      if (allowFallback) {
+        return NextResponse.json(buildFallbackExtraction(text));
+      }
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to parse AI structured response. Please try again.',
+        errorCode: 'AI_PROVIDER_ERROR',
+      }, { status: 500 });
     }
 
     const known = parsed.knownInfo || parsed.extracted || parsed;
-    const destMatch = known.destination ? findCountry(known.destination) : null;
-    const originMatch = known.origin ? findCountry(known.origin) : null;
 
+    // Resolve Origin
+    let originMatch = known.origin ? findCountry(known.origin) : null;
+    if (!originMatch && (text.includes('سعودي') || text.includes('السعودية') || text.toLowerCase().includes('saudi'))) {
+      originMatch = findCountry('saudi-arabia') || null;
+    }
+
+    // Resolve Destination (Dynamic for ANY country worldwide)
+    let destMatch = null;
+    if (known.destination) {
+      destMatch = findCountry(known.destination) || (known.destinationAr ? findCountry(known.destinationAr) : null);
+      if (!destMatch) {
+        destMatch = createDynamicCountry(known.destination, known.destinationAr, known.destinationCity);
+      }
+    } else {
+      destMatch = findCountry(text);
+    }
+
+    // Normalize duration category
+    let durationCategory = known.durationCategory || null;
+    if (!durationCategory && known.duration) {
+      const durStr = String(known.duration).toLowerCase();
+      if (durStr.includes('year') || durStr.includes('سنة') || durStr.includes('عام')) durationCategory = 'yearPlus';
+      else if (durStr.includes('month') || durStr.includes('شهر')) durationCategory = 'months';
+      else if (durStr.includes('week') || durStr.includes('أسبوع') || durStr.includes('اسبوع')) durationCategory = 'weeks';
+      else if (durStr.includes('day') || durStr.includes('يوم')) durationCategory = 'days';
+    }
+
+    // Dynamic Missing Questions from the LLM
     const missingQuestions = Array.isArray(parsed.missingQuestions) ? parsed.missingQuestions : [];
 
-    if (!known.hasDuration && !known.duration && !missingQuestions.some((q: any) => q.id === 'duration')) {
-      missingQuestions.unshift({
-        id: 'duration',
-        questionEn: 'How long will you be traveling?',
-        questionAr: 'كم المدة المقررة لرحلتك؟',
-        type: 'choice',
-        choices: [
-          { value: 'days', labelEn: 'A few days (3-7 days)', labelAr: 'عدة أيام (3-7 أيام)' },
-          { value: 'weeks', labelEn: '1-3 Weeks', labelAr: '1-3 أسابيع' },
-          { value: 'months', labelEn: 'A few months', labelAr: 'عدة أشهر' },
-          { value: 'yearPlus', labelEn: '1+ Year', labelAr: 'سنة فأكثر' },
-        ],
-      });
-    }
-
-    if (!known.hasDestination && !known.destination && !missingQuestions.some((q: any) => q.id === 'destination_status')) {
-      missingQuestions.unshift({
-        id: 'destination_status',
-        questionEn: 'Do you already have a destination / city in mind?',
-        questionAr: 'هل لديك وجهة أو مدينة محددة في بالك؟',
-        type: 'choice',
-        choices: [
-          { value: 'yes', labelEn: 'Yes, I have a destination in mind', labelAr: 'نعم، لدي وجهة محددة' },
-          { value: 'no_plan', labelEn: 'No, create a plan for me', labelAr: 'لا، صمم لي خطة متكاملة' },
-        ],
-      });
-    }
-
-    if (!known.hasAccommodation && known.accommodationStatus === 'unknown' && !missingQuestions.some((q: any) => q.id === 'accommodation')) {
-      missingQuestions.push({
-        id: 'accommodation',
-        questionEn: 'Do you already have accommodation arranged?',
-        questionAr: 'هل قمت بحجز مكان الإقامة بالفعل؟',
-        type: 'choice',
-        choices: [
-          { value: 'booked', labelEn: 'Yes, already booked', labelAr: 'نعم، قمت بالحجز مسبقاً' },
-          { value: 'not_booked', labelEn: 'No, looking for recommendations', labelAr: 'لا، أبحث عن توصيات' },
-        ],
-      });
-    }
+    const hasDestination = Boolean(destMatch || known.hasDestination);
+    const hasDuration = Boolean(durationCategory || known.duration || known.hasDuration);
+    const hasAccommodation = Boolean(known.accommodationStatus === 'booked' || known.hasAccommodation);
 
     return NextResponse.json({
       success: true,
+      provider: aiRes.provider,
+      modelUsed: aiRes.modelUsed,
+      latencyMs: aiRes.latencyMs,
       extracted: {
         origin: originMatch,
         destination: destMatch,
-        destinationCity: known.destinationCity || destMatch?.capital || null,
-        duration: known.durationCategory || known.duration || null,
-        hasDuration: Boolean(known.hasDuration || known.duration),
-        hasDestination: Boolean(known.hasDestination || destMatch),
-        hasAccommodation: Boolean(known.hasAccommodation || known.accommodationStatus === 'booked'),
+        destinationCity: known.destinationCity || known.destinationCityAr || destMatch?.capital || null,
+        duration: durationCategory || known.duration || null,
+        hasDuration,
+        hasDestination,
+        hasAccommodation,
         accommodationStatus: known.accommodationStatus || 'unknown',
-        interests: Array.isArray(known.interests) ? known.interests : [],
+        accommodationArea: known.accommodationArea || '',
+        budget: known.budget || null,
+        interests: Array.isArray(known.interests) ? known.interests : ['culture', 'food'],
         travelStyle: known.travelStyle || null,
         dates: known.dates || null,
         purpose: known.purpose || 'travel',
@@ -292,6 +270,11 @@ Return strictly valid JSON matching:
       missingQuestions,
     });
   } catch (error: any) {
-    return NextResponse.json(buildFallbackExtraction(''));
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'AI Intent extraction failed',
+      errorCode: 'AI_PROVIDER_ERROR',
+    }, { status: 500 });
   }
 }
+

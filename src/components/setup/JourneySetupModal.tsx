@@ -35,7 +35,7 @@ interface MissingQuestion {
 
 export default function JourneySetupModal() {
   const { t, isRtl } = useLanguage();
-  const { journey, commitJourney, setScreen } = useJourney();
+  const { journey, commitJourney, setScreen, setSettingsOpen } = useJourney();
 
   // Mode: choice-based (primary) vs manual text (secondary)
   const [inputMode, setInputMode] = useState<'choices' | 'manual'>('choices');
@@ -993,10 +993,30 @@ export default function JourneySetupModal() {
             </div>
 
             {apiError && (
-              <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
-                {apiError}
+              <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs sm:text-sm space-y-3">
+                <div className="flex items-start gap-2">
+                  <span className="font-bold">⚠️</span>
+                  <p className="leading-relaxed">{apiError}</p>
+                </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleManualAnalyzeAndLaunch}
+                    className="px-4 py-2 rounded-xl bg-rose-500/30 hover:bg-rose-500/50 text-white font-semibold text-xs transition"
+                  >
+                    {isRtl ? 'إعادة المحاولة' : 'Retry AI Analysis'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSettingsOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition flex items-center gap-1.5"
+                  >
+                    <span>{isRtl ? 'ضبط مفتاح الـ API في الإعدادات ⚙️' : 'Configure API Key ⚙️'}</span>
+                  </button>
+                </div>
               </div>
             )}
+
 
             {/* Bottom Actions */}
             <div className="pt-4 flex items-center justify-between border-t border-white/10">

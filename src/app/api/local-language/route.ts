@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { callAI } from '@/lib/ai/provider';
 import { AI_SYSTEM_PROMPTS } from '@/lib/ai/prompts';
 import { getDefaultPhrases } from '@/lib/data/defaultJourneys';
+import { safeParseJSON } from '@/lib/ai/jsonHelper';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,29 +25,27 @@ export async function POST(req: NextRequest) {
 
     if (aiRes.error) {
       const fallback = getDefaultPhrases(destCountry, city);
-      return NextResponse.json({ success: true, languageData: fallback, warning: aiRes.error });
+      return NextResponse.json({ success: true, languageData: fallback, warning: aiRes.error, errorCode: aiRes.errorCode });
     }
 
-    try {
-      const parsed = JSON.parse(aiRes.content);
-      if (parsed.phrases && Array.isArray(parsed.phrases)) {
-        return NextResponse.json({
-          success: true,
-          languageData: {
-            phrases: parsed.phrases,
-            localFavorites: parsed.localFavorites || [],
-            languageName: parsed.languageName || `Local Language (${destCountry})`,
-            languageCode: parsed.languageCode || 'en-US',
-          },
-        });
-      }
-      const fallback = getDefaultPhrases(destCountry, city);
-      return NextResponse.json({ success: true, languageData: fallback });
-    } catch {
-      const fallback = getDefaultPhrases(destCountry, city);
-      return NextResponse.json({ success: true, languageData: fallback });
+    const parsed = safeParseJSON<any>(aiRes.content);
+    if (parsed && parsed.phrases && Array.isArray(parsed.phrases)) {
+      return NextResponse.json({
+        success: true,
+        provider: aiRes.provider,
+        languageData: {
+          phrases: parsed.phrases,
+          localFavorites: parsed.localFavorites || [],
+          languageName: parsed.languageName || `Local Language (${destCountry})`,
+          languageCode: parsed.languageCode || 'en-US',
+        },
+      });
     }
+
+    const fallback = getDefaultPhrases(destCountry, city);
+    return NextResponse.json({ success: true, languageData: fallback });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Local language generation failed' }, { status: 500 });
   }
 }
+

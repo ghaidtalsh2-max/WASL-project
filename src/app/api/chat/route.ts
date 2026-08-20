@@ -62,34 +62,22 @@ export async function POST(req: NextRequest) {
     });
 
     if (aiRes.error) {
-      const destName = journeyContext?.destination?.nameAr || journeyContext?.destination?.name || 'وجهتك';
-      const cityName = journeyContext?.destinationCity || journeyContext?.destination?.capital || destName;
-      const msgLower = (message || '').toLowerCase();
-
-      let reply = '';
-      if (msgLower.includes('سلام') || msgLower.includes('مرحبا') || msgLower.includes('أهلا') || msgLower.includes('hello') || msgLower.includes('hi')) {
-        reply = `أهلاً بك! أنا مساعد وصل لمرافقتك في رحلتك إلى ${destName} (${cityName}). كيف يمكنني مساعدتك اليوم بخصوص الإجراءات، الثقافة، أو المعيشة هناك؟`;
-      } else if (msgLower.includes('منزل') || msgLower.includes('زيارة') || msgLower.includes('اداب') || msgLower.includes('آداب') || msgLower.includes('etiquette')) {
-        reply = `عند زيارة منزل أو مناسبة في ${destName}، من أهم الآداب:\n1. خلع الحذاء عند المدخل وارتداء النعال المخصصة للضيوف.\n2. إحضار هدية رمزية بسيطة (Omiyage / هدية ضيافة مغلفة بعناية).\n3. استخدام كلتا اليدين عند تقديم أو استلام أي شيء كدليل على الاحترام.\n4. تجنب الحديث بصوت مرتفع أو مقاطعة المضيف.`;
-      } else if (msgLower.includes('تاكسي') || msgLower.includes('taxi') || msgLower.includes('طوارئ') || msgLower.includes('مواصلات')) {
-        reply = `لطلب تاكسي أو مواصلات في ${destName}:\n- في اليابان والوجهات المنظمة: تجنب فتح باب التاكسي الخلفي بيدك، حيث يفتح ويغلق أوتوماتيكياً بواسطة السائق.\n- يمكنك استخدام تطبيقات مثل GO أو Uber، أو التوجه لمواقف التاكسي الرسمية أمام محطات القطار.\n- جملة مفيدة: "Sumimasen, [اسم المكان] made onegai shimasu" (لو سمحت، إلى [المكان] من فضلك).`;
-      } else if (msgLower.includes('بنك') || msgLower.includes('حساب') || msgLower.includes('bank') || msgLower.includes('فلوس')) {
-        reply = `لفتح حساب بنكي كوافد جديد أو طالب في ${destName}:\n1. ستحتاج إلى بطاقة الإقامة الرسمية (Residence Card) وجواز السفر.\n2. عنوان سكن مسجل ورقم هاتف محلي مسجل باسمك.\n3. بنوك مثل Japan Post Bank (Yucho) أو البنوك الرقمية تعد الأسهل للطلاب والوافدين الجدد في البداية.`;
-      } else {
-        reply = `بخصوص استفسارك حول ${destName}: نحرص في منصة وصل على تزويدك بأدق الإرشادات الرسمية والثقافية. يمكنك استعراض تبويبات (المسار الزمني، الحس الثقافي، والسلامة) بالأعلى، أو إدخال مفتاح Gemini API في الإعدادات (⚙️) لتفعيل الاستجابات التوليدية الحية الفورية.`;
-      }
-
       return NextResponse.json({
-        success: true,
-        reply,
-      });
+        success: false,
+        error: aiRes.error,
+        errorCode: aiRes.errorCode || 'AI_PROVIDER_ERROR',
+        provider: aiRes.provider,
+      }, { status: 400 });
     }
 
     return NextResponse.json({
       success: true,
+      provider: aiRes.provider,
+      modelUsed: aiRes.modelUsed,
+      latencyMs: aiRes.latencyMs,
       reply: aiRes.content,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Chat assistant error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Chat assistant error', errorCode: 'AI_PROVIDER_ERROR' }, { status: 500 });
   }
 }

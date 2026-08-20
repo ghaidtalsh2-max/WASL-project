@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { callAI } from '@/lib/ai/provider';
 import { AI_SYSTEM_PROMPTS } from '@/lib/ai/prompts';
 import { getDefaultReligion } from '@/lib/data/defaultJourneys';
+import { safeParseJSON } from '@/lib/ai/jsonHelper';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,21 +24,18 @@ export async function POST(req: NextRequest) {
 
     if (aiRes.error) {
       const fallback = getDefaultReligion(destCountry, city);
-      return NextResponse.json({ success: true, religion: fallback, warning: aiRes.error });
+      return NextResponse.json({ success: true, religion: fallback, warning: aiRes.error, errorCode: aiRes.errorCode });
     }
 
-    try {
-      const parsed = JSON.parse(aiRes.content);
-      if (parsed.religiousLandscape && parsed.muslimTravelerGuide) {
-        return NextResponse.json({ success: true, religion: parsed });
-      }
-      const fallback = getDefaultReligion(destCountry, city);
-      return NextResponse.json({ success: true, religion: fallback });
-    } catch {
-      const fallback = getDefaultReligion(destCountry, city);
-      return NextResponse.json({ success: true, religion: fallback });
+    const parsed = safeParseJSON<any>(aiRes.content);
+    if (parsed && parsed.religiousLandscape && parsed.muslimTravelerGuide) {
+      return NextResponse.json({ success: true, religion: parsed, provider: aiRes.provider });
     }
+
+    const fallback = getDefaultReligion(destCountry, city);
+    return NextResponse.json({ success: true, religion: fallback });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Religion context generation failed' }, { status: 500 });
   }
 }
+

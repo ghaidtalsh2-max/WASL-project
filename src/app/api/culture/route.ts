@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { callAI } from '@/lib/ai/provider';
 import { AI_SYSTEM_PROMPTS } from '@/lib/ai/prompts';
 import { getDefaultCulture } from '@/lib/data/defaultJourneys';
+import { safeParseJSON } from '@/lib/ai/jsonHelper';
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,22 +25,18 @@ export async function POST(req: NextRequest) {
 
     if (aiRes.error) {
       const fallback = getDefaultCulture(destCountry, city);
-      return NextResponse.json({ success: true, culture: fallback, warning: aiRes.error });
+      return NextResponse.json({ success: true, culture: fallback, warning: aiRes.error, errorCode: aiRes.errorCode });
     }
 
-    try {
-      const parsed = JSON.parse(aiRes.content);
-      // Validate schema has knowTheCulture and howToBehave
-      if (parsed.knowTheCulture && parsed.howToBehave) {
-        return NextResponse.json({ success: true, culture: parsed });
-      }
-      const fallback = getDefaultCulture(destCountry, city);
-      return NextResponse.json({ success: true, culture: fallback });
-    } catch {
-      const fallback = getDefaultCulture(destCountry, city);
-      return NextResponse.json({ success: true, culture: fallback });
+    const parsed = safeParseJSON<any>(aiRes.content);
+    if (parsed && parsed.knowTheCulture && parsed.howToBehave) {
+      return NextResponse.json({ success: true, culture: parsed, provider: aiRes.provider });
     }
+
+    const fallback = getDefaultCulture(destCountry, city);
+    return NextResponse.json({ success: true, culture: fallback });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Culture generation failed' }, { status: 500 });
   }
 }
+

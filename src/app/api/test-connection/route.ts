@@ -3,40 +3,40 @@ import { callAI } from '@/lib/ai/provider';
 
 export async function POST(req: NextRequest) {
   try {
-    const { provider, apiKey } = await req.json();
-    const effectiveKey = apiKey || process.env.LLM_API_KEY;
+    const { apiKey, provider } = await req.json().catch(() => ({}));
 
-    if (!effectiveKey) {
-      return NextResponse.json(
-        { success: false, error: 'No API key provided or configured in environment.' },
-        { status: 400 }
-      );
-    }
-
-    const response = await callAI({
-      provider: provider || process.env.LLM_PROVIDER || 'gemini',
-      apiKey: effectiveKey,
-      prompt: 'Respond with the word "CONNECTED" only.',
-      maxTokens: 10,
+    const testPrompt = 'Respond with JSON {"status": "ok", "echo": "WASL AI operational", "timestamp": ' + Date.now() + '}';
+    
+    const res = await callAI({
+      systemPrompt: 'You are an AI connectivity tester. Respond strictly with the requested JSON.',
+      prompt: testPrompt,
+      jsonMode: true,
+      apiKey,
+      provider,
+      temperature: 0.1,
     });
 
-    if (response.error) {
-      return NextResponse.json(
-        { success: false, error: response.error, provider: response.provider },
-        { status: 502 }
-      );
+    if (res.error) {
+      return NextResponse.json({
+        success: false,
+        error: res.error,
+        errorCode: res.errorCode,
+        provider: res.provider,
+        latencyMs: res.latencyMs,
+      }, { status: 400 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Connection successful',
-      provider: response.provider,
-      sampleResponse: response.content.trim(),
+      provider: res.provider,
+      modelUsed: res.modelUsed,
+      latencyMs: res.latencyMs,
+      rawReply: res.content,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Internal connection error' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Diagnostic connection test failed',
+    }, { status: 500 });
   }
 }

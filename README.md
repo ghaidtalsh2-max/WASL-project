@@ -189,7 +189,7 @@ WASL aims to:
 - **Taleen Alqhatani**
 - **Ghaidaa Alshareef**
 
-Developed as part of an SDAIA learning/project experience with the [Saudi Data & AI Authority (SDAIA)](https://github.com/SDAIAAcademy).
+Developed as part of an SDAIA learning/project experience with the [Saudi Data & AI Authority (SDAIA)](https://github.com/SDAIAAcademy) ([**@SDAIAAcademy**](https://github.com/SDAIAAcademy)).
 
 ## 📄 License
 

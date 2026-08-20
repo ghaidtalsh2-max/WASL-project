@@ -1,4 +1,4 @@
-@SADAIAAcademy
+
 # WASL — وصل
 ### AI-Powered Cultural Travel & Relocation Companion
 **One world. Many cultures. One connection.**  
@@ -135,3 +135,5 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ---
 
 © 2026 WASL — وصل. All rights reserved.
+@https://sdaia.gov.sa/ar/Sectors/BuildingCapacity/academy/Pages/default.aspx
+@SADAIAAcademy

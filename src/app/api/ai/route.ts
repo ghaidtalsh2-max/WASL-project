@@ -6,26 +6,97 @@ import { safeParseJSON } from '@/lib/ai/jsonHelper';
 
 function buildFallbackExtraction(text: string) {
   const textLower = text.toLowerCase();
-  const hasDays = textLower.includes('day') || textLower.includes('يوم') || textLower.includes('أيام');
-  const hasWeeks = textLower.includes('week') || textLower.includes('أسبوع') || textLower.includes('اسبوع');
-  const hasMonths = textLower.includes('month') || textLower.includes('شهر') || textLower.includes('أشهر');
-  const hasYear = textLower.includes('year') || textLower.includes('سنة') || textLower.includes('عام');
-  const hasDuration = hasDays || hasWeeks || hasMonths || hasYear;
-  const durationCategory = hasDays ? 'days' : hasWeeks ? 'weeks' : hasMonths ? 'months' : hasYear ? 'yearPlus' : null;
+  
+  // 1. Detect Destination Country & City
+  const matchedDest = findCountry(text) || null;
+  let matchedCity: string | null = matchedDest ? matchedDest.capital : null;
 
-  const hasHotel = textLower.includes('hotel') || textLower.includes('فندق') || textLower.includes('airbnb') || textLower.includes('سكن') || textLower.includes('booked') || textLower.includes('حجزت');
-  const hasAccommodation = hasHotel;
+  if (matchedDest) {
+    for (const city of matchedDest.famousCities) {
+      if (
+        textLower.includes(city.name.toLowerCase()) ||
+        text.includes(city.nameAr) ||
+        text.includes(city.nameAr.replace(/[أإآ]/g, 'ا'))
+      ) {
+        matchedCity = city.nameAr || city.name;
+        break;
+      }
+    }
+  }
 
-  const matchedDest = COUNTRIES.find(
-    (c) =>
-      textLower.includes(c.name.toLowerCase()) ||
-      textLower.includes(c.nameAr) ||
-      c.famousCities.some((fc) => textLower.includes(fc.name.toLowerCase()) || textLower.includes(fc.nameAr))
-  );
+  // 2. Detect Origin
+  let matchedOrigin = null;
+  if (text.includes('سعودي') || text.includes('السعودية') || text.includes('الرياض') || text.includes('جدة') || textLower.includes('saudi')) {
+    matchedOrigin = findCountry('saudi-arabia') || null;
+  } else if (text.includes('مصر') || text.includes('مصري') || text.includes('القاهرة') || textLower.includes('egypt')) {
+    matchedOrigin = findCountry('egypt') || null;
+  } else if (text.includes('امارات') || text.includes('إمارات') || text.includes('دبي') || textLower.includes('uae')) {
+    matchedOrigin = findCountry('uae') || null;
+  }
+
+  // If origin equals destination, reset origin to default Saudi Arabia if destination is foreign
+  if (matchedOrigin && matchedDest && matchedOrigin.id === matchedDest.id) {
+    matchedOrigin = findCountry('saudi-arabia') || null;
+  }
+
+  // 3. Detect Purpose & Persona
+  let purpose: 'study' | 'work' | 'travel' | 'relocation' | 'visit' = 'travel';
+  let persona = 'Traveler';
+
+  if (text.includes('دراس') || text.includes('ابتعاث') || text.includes('مبتعث') || text.includes('جامع') || text.includes('طالب') || textLower.includes('study') || textLower.includes('student')) {
+    purpose = 'study';
+    persona = 'Student / مبتعث طالب';
+  } else if (text.includes('عمل') || text.includes('شغل') || text.includes('وظيفة') || text.includes('مهن') || text.includes('انتداب') || textLower.includes('work') || textLower.includes('job')) {
+    purpose = 'work';
+    persona = 'Professional / منتدب عمل';
+  } else if (text.includes('هجرة') || text.includes('استقرار') || text.includes('نقل') || text.includes('معيشة') || text.includes('اقامة') || textLower.includes('relocat')) {
+    purpose = 'relocation';
+    persona = 'Expat / مقيم ومستقر';
+  } else if (text.includes('زيارة') || text.includes('مؤتمر') || text.includes('معرض') || textLower.includes('visit')) {
+    purpose = 'visit';
+    persona = 'Visitor / زائر';
+  } else {
+    purpose = 'travel';
+    persona = 'Traveler / سائح ومستكشف';
+  }
+
+  // 4. Detect Duration
+  const hasYear = text.includes('سنة') || text.includes('سنتين') || text.includes('سنوات') || text.includes('عام') || text.includes('أعوام') || textLower.includes('year');
+  const hasMonths = text.includes('شهر') || text.includes('شهرين') || text.includes('أشهر') || text.includes('شهور') || textLower.includes('month');
+  const hasWeeks = text.includes('أسبوع') || text.includes('اسبوع') || text.includes('أسبوعين') || text.includes('اسبوعين') || text.includes('أسابيع') || text.includes('اسابيع') || textLower.includes('week');
+  const hasDays = text.includes('يوم') || text.includes('يومين') || text.includes('أيام') || text.includes('ايام') || textLower.includes('day');
+  
+  const hasDuration = hasYear || hasMonths || hasWeeks || hasDays;
+  const durationCategory = hasYear ? 'yearPlus' : hasMonths ? 'months' : hasWeeks ? 'weeks' : hasDays ? 'days' : (purpose === 'study' ? 'yearPlus' : null);
+
+  // 5. Detect Accommodation Status
+  const hasBookedHotel = text.includes('حجزت') || text.includes('عندي سكن') || text.includes('سكن محجوز') || text.includes('جاهز السكن') || textLower.includes('booked');
+  const isLookingHotel = text.includes('ما حجزت') || text.includes('بدون سكن') || text.includes('ادور') || text.includes('أدور') || text.includes('ابحث') || text.includes('أبحث');
+  const accommodationStatus = hasBookedHotel ? 'booked' : isLookingHotel ? 'not_booked' : 'unknown';
+  const hasAccommodation = hasBookedHotel;
+
+  // 6. Detect Interests
+  const interests: string[] = [];
+  if (text.includes('ثقاف') || text.includes('متحف') || text.includes('تاريخ') || textLower.includes('culture') || textLower.includes('history')) {
+    interests.push('culture', 'history');
+  }
+  if (text.includes('اكل') || text.includes('أكل') || text.includes('طعام') || text.includes('مطاعم') || textLower.includes('food')) {
+    interests.push('food');
+  }
+  if (text.includes('طبيع') || text.includes('حديق') || text.includes('جبال') || textLower.includes('nature')) {
+    interests.push('nature');
+  }
+  if (text.includes('تسوق') || text.includes('سوق') || text.includes('مول') || textLower.includes('shop')) {
+    interests.push('shopping');
+  }
+  if (interests.length === 0) {
+    interests.push('culture', 'food');
+  }
+
   const hasDestination = !!matchedDest;
 
   const missing: any[] = [];
-  if (!hasDuration) {
+  if (!hasDuration && !durationCategory) {
     missing.push({
       id: 'duration',
       questionEn: 'How long will you be traveling?',
@@ -51,7 +122,7 @@ function buildFallbackExtraction(text: string) {
       ],
     });
   }
-  if (!hasAccommodation) {
+  if (!hasAccommodation && accommodationStatus === 'unknown') {
     missing.push({
       id: 'accommodation',
       questionEn: 'Do you already have accommodation arranged?',
@@ -67,19 +138,19 @@ function buildFallbackExtraction(text: string) {
   return {
     success: true,
     extracted: {
-      origin: null,
-      destination: matchedDest || null,
-      destinationCity: matchedDest?.capital || null,
-      duration: durationCategory || null,
-      accommodationStatus: hasHotel ? 'booked' : 'unknown',
+      origin: matchedOrigin,
+      destination: matchedDest,
+      destinationCity: matchedCity,
+      duration: durationCategory,
+      accommodationStatus,
       hasDestination,
-      hasDuration,
+      hasDuration: Boolean(hasDuration || durationCategory),
       hasAccommodation,
-      interests: [],
-      travelStyle: null,
+      interests,
+      travelStyle: purpose === 'study' ? 'solo' : 'cultural',
       dates: null,
-      purpose: 'travel',
-      persona: 'Traveler',
+      purpose,
+      persona,
       preferences: '',
       additionalNeeds: text,
     },

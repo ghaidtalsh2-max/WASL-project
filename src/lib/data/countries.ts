@@ -675,15 +675,76 @@ export const COUNTRIES: CountryInfo[] = [
   },
 ];
 
+// Extensive Aliases mapping for instant smart Arabic & English detection
+const COUNTRY_ALIASES: Record<string, string[]> = {
+  'united-kingdom': ['بريطانيا', 'بريطانيه', 'انجلترا', 'إنجلترا', 'المملكة المتحدة', 'لندن', 'مانشستر', 'uk', 'britain', 'england', 'london', 'manchester', 'edinburgh', 'birmingham'],
+  'united-states': ['امريكا', 'أمريكا', 'أميركا', 'اميركا', 'الولايات المتحدة', 'امريكيا', 'نيويورك', 'واشنطن', 'كاليفورنيا', 'لوس انجلوس', 'usa', 'us', 'america', 'united states', 'new york', 'california'],
+  'japan': ['اليابان', 'ياباني', 'طوكيو', 'كيوتو', 'اوساكا', 'أوساكا', 'japan', 'tokyo', 'kyoto', 'osaka', 'sapporo', 'fukuoka'],
+  'turkey': ['تركيا', 'تركي', 'اسطنبول', 'إسطنبول', 'أنقرة', 'انقرة', 'انطاليا', 'أنطاليا', 'طرابزون', 'turkey', 'türkiye', 'istanbul', 'ankara', 'antalya', 'trabzon'],
+  'france': ['فرنسا', 'فرنسي', 'باريس', 'ليون', 'مارسيليا', 'نيس', 'france', 'paris', 'lyon', 'marseille', 'nice'],
+  'germany': ['المانيا', 'ألمانيا', 'الماني', 'برلين', 'ميونخ', 'فرانكفورت', 'هامبورغ', 'germany', 'deutschland', 'berlin', 'munich', 'frankfurt'],
+  'saudi-arabia': ['السعودية', 'السعوديه', 'سعودي', 'سعوديه', 'المملكة العربية السعودية', 'الرياض', 'جدة', 'مكة', 'المدينة', 'العلا', 'ksa', 'saudi', 'saudi arabia', 'riyadh', 'jeddah', 'makkah'],
+  'south-korea': ['كوريا', 'كوريا الجنوبية', 'كوري', 'سيول', 'سيئول', 'بوسان', 'korea', 'south korea', 'seoul', 'busan', 'incheon'],
+  'uae': ['الامارات', 'الإمارات', 'اماراتي', 'إماراتي', 'دبي', 'ابوظبي', 'أبوظبي', 'الشارقة', 'uae', 'emirates', 'dubai', 'abu dhabi', 'sharjah'],
+  'egypt': ['مصر', 'مصري', 'مصريه', 'القاهرة', 'الإسكندرية', 'الاسكندرية', 'شرم الشيخ', 'egypt', 'cairo', 'alexandria', 'giza'],
+  'morocco': ['المغرب', 'مغربي', 'مراكش', 'الرباط', 'الدار البيضاء', 'كازابلانكا', 'طنجة', 'فاس', 'morocco', 'marrakech', 'rabat', 'casablanca', 'tangier'],
+  'italy': ['ايطاليا', 'إيطاليا', 'ايطالي', 'روما', 'ميلانو', 'فلورنسا', 'البندقية', 'فينيسيا', 'italy', 'rome', 'milan', 'florence', 'venice'],
+  'spain': ['اسبانيا', 'إسبانيا', 'اسباني', 'مدريد', 'برشلونة', 'بلنسية', 'اشبيلية', 'إشبيلية', 'spain', 'madrid', 'barcelona', 'valencia', 'seville'],
+  'malaysia': ['ماليزيا', 'ماليزي', 'كوالالمبور', 'بينانج', 'سيلانجور', 'malaysia', 'kuala lumpur', 'penang'],
+};
+
+function normalizeArabic(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/[\u064B-\u065F]/g, '') // remove tashkeel
+    .trim();
+}
+
 export function findCountry(query?: string): CountryInfo | undefined {
   if (!query) return undefined;
-  const q = query.toLowerCase().trim();
-  return COUNTRIES.find(
-    (c) =>
-      c.id === q ||
-      c.name.toLowerCase().includes(q) ||
-      c.nameAr.includes(q) ||
-      c.capital.toLowerCase().includes(q) ||
-      c.famousCities.some((city) => city.name.toLowerCase().includes(q) || city.nameAr.includes(q))
-  );
+  const rawQ = query.toLowerCase().trim();
+  const normQ = normalizeArabic(query);
+
+  // 1. Direct ID match
+  const directId = COUNTRIES.find((c) => c.id === rawQ);
+  if (directId) return directId;
+
+  // 2. Check aliases map
+  for (const [countryId, aliases] of Object.entries(COUNTRY_ALIASES)) {
+    for (const alias of aliases) {
+      const normAlias = normalizeArabic(alias);
+      if (rawQ.includes(alias.toLowerCase()) || normQ.includes(normAlias) || normAlias.includes(normQ)) {
+        const found = COUNTRIES.find((c) => c.id === countryId);
+        if (found) return found;
+      }
+    }
+  }
+
+  // 3. Check country names and famous cities
+  return COUNTRIES.find((c) => {
+    const normNameAr = normalizeArabic(c.nameAr);
+    const normCapital = normalizeArabic(c.capitalAr);
+    const nameEn = c.name.toLowerCase();
+    const capEn = c.capital.toLowerCase();
+
+    return (
+      nameEn.includes(rawQ) ||
+      rawQ.includes(nameEn) ||
+      normNameAr.includes(normQ) ||
+      normQ.includes(normNameAr) ||
+      capEn.includes(rawQ) ||
+      rawQ.includes(capEn) ||
+      normCapital.includes(normQ) ||
+      normQ.includes(normCapital) ||
+      c.famousCities.some((city) => {
+        const normCity = normalizeArabic(city.nameAr);
+        const cityEn = city.name.toLowerCase();
+        return cityEn.includes(rawQ) || rawQ.includes(cityEn) || normCity.includes(normQ) || normQ.includes(normCity);
+      })
+    );
+  });
 }
+

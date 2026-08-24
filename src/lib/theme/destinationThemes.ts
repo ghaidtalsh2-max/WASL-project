@@ -272,6 +272,74 @@ export const defaultThemes: Record<string, DestinationTheme> = {
     atmosphereName: 'Tropical Turquoise & Rainforest',
     atmosphereNameAr: 'فيروز استوائي وغابات المطر',
   },
+  china: {
+    id: 'china',
+    name: 'China',
+    nameAr: 'الصين',
+    primary: '#E11D48', // Imperial Crimson / Rose
+    secondary: '#F59E0B', // Silk Gold / Amber
+    accent: '#10B981', // Jade Green
+    glow: 'rgba(225, 29, 72, 0.4)',
+    bgGradient: 'radial-gradient(ellipse at 50% 10%, #2E1218 0%, #121024 55%, #080712 100%)',
+    cardBg: 'rgba(26, 20, 36, 0.82)',
+    borderGlow: 'rgba(225, 29, 72, 0.35)',
+    particleType: 'majestic',
+    particleColor: '#FDE047',
+    description: 'Imperial crimson, golden silk & jade harmony',
+    atmosphereName: 'Imperial Crimson & Silk Gold',
+    atmosphereNameAr: 'القرمزي الإمبراطوري والحرير الذهبي',
+  },
+  kuwait: {
+    id: 'kuwait',
+    name: 'Kuwait',
+    nameAr: 'الكويت',
+    primary: '#06B6D4', // Gulf Azure
+    secondary: '#10B981', // Oasis Emerald
+    accent: '#F59E0B', // Desert Sand Gold
+    glow: 'rgba(6, 182, 212, 0.38)',
+    bgGradient: 'radial-gradient(ellipse at 50% 10%, #12222E 0%, #0D1626 55%, #060914 100%)',
+    cardBg: 'rgba(20, 24, 40, 0.78)',
+    borderGlow: 'rgba(6, 182, 212, 0.32)',
+    particleType: 'sand',
+    particleColor: '#38BDF8',
+    description: 'Kuwait towers azure, emerald oasis & Arabian Gulf breeze',
+    atmosphereName: 'Arabian Gulf Azure & Towers',
+    atmosphereNameAr: 'أزرق الخليج وأبراج الكويت',
+  },
+  mauritius: {
+    id: 'mauritius',
+    name: 'Mauritius',
+    nameAr: 'موريشيوس',
+    primary: '#14B8A6', // Tropical Ocean Turquoise / Teal
+    secondary: '#F43F5E', // Coral Rose
+    accent: '#FBBF24', // Sun Amber Gold
+    glow: 'rgba(20, 184, 166, 0.42)',
+    bgGradient: 'radial-gradient(ellipse at 50% 10%, #0D282E 0%, #0B1728 55%, #050B14 100%)',
+    cardBg: 'rgba(16, 28, 44, 0.8)',
+    borderGlow: 'rgba(20, 184, 166, 0.38)',
+    particleType: 'bubbles',
+    particleColor: '#2DD4BF',
+    description: 'Tropical turquoise lagoon, coral reefs & volcanic sunset glow',
+    atmosphereName: 'Turquoise Lagoons & Coral Sunset',
+    atmosphereNameAr: 'الفيروز الاستوائي والشعاب المرجانية',
+  },
+  greece: {
+    id: 'greece',
+    name: 'Greece',
+    nameAr: 'اليونان',
+    primary: '#38BDF8', // Aegean Sky Blue
+    secondary: '#818CF8', // Mediterranean Indigo
+    accent: '#FDE047', // Sunlit Marble White / Gold
+    glow: 'rgba(56, 189, 248, 0.4)',
+    bgGradient: 'radial-gradient(ellipse at 50% 10%, #0F2038 0%, #0B1428 55%, #050A16 100%)',
+    cardBg: 'rgba(16, 24, 46, 0.8)',
+    borderGlow: 'rgba(56, 189, 248, 0.35)',
+    particleType: 'stars',
+    particleColor: '#7DD3FC',
+    description: 'Aegean sea azure, sunlit Cycladic white & Mediterranean warmth',
+    atmosphereName: 'Aegean Azure & Cycladic Sun',
+    atmosphereNameAr: 'أزرق بحر إيجه وشمس كيكلادس',
+  },
 };
 
 /**
@@ -299,7 +367,13 @@ export function getDestinationTheme(destinationNameOrSlug?: string): Destination
 
   // Name match against standard list
   const nameLower = destinationNameOrSlug.toLowerCase();
-  if (nameLower.includes('japan') || nameLower.includes('tokyo') || nameLower.includes('kyoto') || nameLower.includes('osaka')) {
+  if (nameLower.includes('china') || nameLower.includes('beijing') || nameLower.includes('shanghai') || nameLower.includes('guangzhou') || nameLower.includes('shenzhen') || nameLower.includes('صين')) {
+    return defaultThemes.china;
+  }
+  if (nameLower.includes('kuwait') || nameLower.includes('كويت')) {
+    return defaultThemes.kuwait;
+  }
+  if (nameLower.includes('japan') || nameLower.includes('tokyo') || nameLower.includes('kyoto') || nameLower.includes('osaka') || nameLower.includes('يابان')) {
     return defaultThemes.japan;
   }
   if (nameLower.includes('saudi') || nameLower.includes('riyadh') || nameLower.includes('jeddah') || nameLower.includes('mecca') || nameLower.includes('سعودي')) {
@@ -317,13 +391,13 @@ export function getDestinationTheme(destinationNameOrSlug?: string): Destination
   if (nameLower.includes('korea') || nameLower.includes('seoul') || nameLower.includes('busan') || nameLower.includes('كوريا')) {
     return defaultThemes['south-korea'];
   }
-  if (nameLower.includes('america') || nameLower.includes('usa') || nameLower.includes('york') || nameLower.includes('أمريكا')) {
+  if (nameLower.includes('america') || nameLower.includes('usa') || nameLower.includes('york') || nameLower.includes('أمريكا') || nameLower.includes('امريكا')) {
     return defaultThemes['united-states'];
   }
-  if (nameLower.includes('germany') || nameLower.includes('berlin') || nameLower.includes('munich') || nameLower.includes('ألمانيا')) {
+  if (nameLower.includes('germany') || nameLower.includes('berlin') || nameLower.includes('munich') || nameLower.includes('ألمانيا') || nameLower.includes('المانيا')) {
     return defaultThemes.germany;
   }
-  if (nameLower.includes('emirates') || nameLower.includes('dubai') || nameLower.includes('abu dhabi') || nameLower.includes('uae') || nameLower.includes('إمارات')) {
+  if (nameLower.includes('emirates') || nameLower.includes('dubai') || nameLower.includes('abu dhabi') || nameLower.includes('uae') || nameLower.includes('إمارات') || nameLower.includes('امارات')) {
     return defaultThemes.uae;
   }
   if (nameLower.includes('egypt') || nameLower.includes('cairo') || nameLower.includes('alexandria') || nameLower.includes('مصر')) {
@@ -332,10 +406,10 @@ export function getDestinationTheme(destinationNameOrSlug?: string): Destination
   if (nameLower.includes('morocco') || nameLower.includes('marrakech') || nameLower.includes('casablanca') || nameLower.includes('rabat') || nameLower.includes('المغرب')) {
     return defaultThemes.morocco;
   }
-  if (nameLower.includes('ital') || nameLower.includes('rome') || nameLower.includes('milan') || nameLower.includes('إيطاليا')) {
+  if (nameLower.includes('ital') || nameLower.includes('rome') || nameLower.includes('milan') || nameLower.includes('إيطاليا') || nameLower.includes('ايطاليا')) {
     return defaultThemes.italy;
   }
-  if (nameLower.includes('spain') || nameLower.includes('madrid') || nameLower.includes('barcelona') || nameLower.includes('إسبانيا')) {
+  if (nameLower.includes('spain') || nameLower.includes('madrid') || nameLower.includes('barcelona') || nameLower.includes('إسبانيا') || nameLower.includes('اسبانيا')) {
     return defaultThemes.spain;
   }
   if (nameLower.includes('malaysia') || nameLower.includes('kuala') || nameLower.includes('ماليزيا')) {

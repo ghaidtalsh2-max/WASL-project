@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useJourney, JourneyPurpose, JourneyDuration, JourneyDetails } from '@/lib/state/JourneyContext';
 import { COUNTRIES, CountryInfo, findCountry } from '@/lib/data/countries';
+import NetworkTransitMesh from './NetworkTransitMesh';
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,10 +20,11 @@ import {
   HelpCircle,
   Building,
   Clock,
+  Plane,
 } from 'lucide-react';
 
 interface MissingQuestion {
-  id: 'duration' | 'destination_status' | 'accommodation';
+  id: 'travel_party' | 'duration' | 'destination_status' | 'accommodation' | 'budget';
   questionEn: string;
   questionAr: string;
   type: 'choice';
@@ -36,6 +38,78 @@ interface MissingQuestion {
 export default function JourneySetupModal() {
   const { t, isRtl } = useLanguage();
   const { journey, commitJourney, setScreen, setSettingsOpen } = useJourney();
+
+  // Canvas starfield particle background for live ambient modal
+  const modalCanvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  React.useEffect(() => {
+    const canvas = modalCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+
+    const onResize = () => {
+      if (!canvas) return;
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', onResize);
+
+    const stars = Array.from({ length: 48 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      radius: Math.random() * 2 + 0.8,
+      speedX: (Math.random() - 0.5) * 0.35,
+      speedY: (Math.random() - 0.5) * 0.35,
+      opacity: Math.random() * 0.6 + 0.25,
+      pulse: Math.random() * Math.PI * 2,
+    }));
+
+    let tVal = 0;
+    const draw = () => {
+      tVal += 0.02;
+      ctx.clearRect(0, 0, w, h);
+
+      stars.forEach((s) => {
+        s.x += s.speedX;
+        s.y += s.speedY;
+        if (s.x < 0) s.x = w;
+        if (s.x > w) s.x = 0;
+        if (s.y < 0) s.y = h;
+        if (s.y > h) s.y = 0;
+
+        const currentOpacity = s.opacity + Math.sin(tVal + s.pulse) * 0.25;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.1, Math.min(0.9, currentOpacity));
+        ctx.fillStyle = '#EC4899';
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Soft indigo halo
+        ctx.globalAlpha = Math.max(0.05, Math.min(0.4, currentOpacity * 0.5));
+        ctx.fillStyle = '#818CF8';
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
 
   // Mode: choice-based (primary) vs manual text (secondary)
   const [inputMode, setInputMode] = useState<'choices' | 'manual'>('choices');
@@ -53,13 +127,30 @@ export default function JourneySetupModal() {
   const [accommodationArea, setAccommodationArea] = useState<string>(journey.accommodationArea || '');
   const [accommodationStatus, setAccommodationStatus] = useState<'booked' | 'not_booked' | 'unknown'>('unknown');
 
+  // Travel Party & Budget
+  const [travelParty, setTravelParty] = useState<'solo' | 'couple' | 'family' | 'friends' | 'group'>(
+    journey.travelParty || 'solo'
+  );
+  const [budget, setBudget] = useState<'budget' | 'moderate' | 'luxury'>(journey.budget || 'moderate');
+
   // Options: Purpose, Duration, Travel Dates / Season, Travel Style, Interests
-  const [purpose, setPurpose] = useState<JourneyPurpose>(journey.purpose || 'travel');
+  const [purpose, setPurpose] = useState<JourneyPurpose>(journey.purpose || 'tourism');
   const [duration, setDuration] = useState<JourneyDuration>(journey.duration || 'weeks');
   const [datesOrSeason, setDatesOrSeason] = useState<string>('');
   const [travelStyle, setTravelStyle] = useState<string>('cultural');
   const [selectedInterests, setSelectedInterests] = useState<string[]>(['culture', 'food']);
   const [additionalNotes, setAdditionalNotes] = useState<string>('');
+
+  // Purpose specific details
+  const [studyField, setStudyField] = useState<string>('');
+  const [workRole, setWorkRole] = useState<string>('');
+  const [relocationType, setRelocationType] = useState<string>('individual');
+  const [medicalSpecialty, setMedicalSpecialty] = useState<string>('');
+  const [patientAge, setPatientAge] = useState<string>('');
+  const [medicalPurpose, setMedicalPurpose] = useState<string>('consultation');
+  const [companionCount, setCompanionCount] = useState<number>(1);
+  const [customDurationDays, setCustomDurationDays] = useState<number>(14);
+  const [durationPreset, setDurationPreset] = useState<string>('2_weeks');
 
   // Dropdown states
   const [searchOrigin, setSearchOrigin] = useState<string>('');
@@ -108,6 +199,8 @@ export default function JourneySetupModal() {
           interests: selectedInterests,
           duration,
           dates: datesOrSeason,
+          travelParty,
+          budget,
           travelStyle,
           purpose,
           origin: origin?.name || 'Any',
@@ -144,12 +237,14 @@ export default function JourneySetupModal() {
       destinationCity: plan.destinationCity || matchedDest.capital,
       accommodationArea: '',
       accommodationStatus,
+      travelParty,
+      budget,
       dates: datesOrSeason,
       travelStyle,
       interests: selectedInterests,
-      purpose: purpose || 'travel',
+      purpose: purpose || 'tourism',
       duration: duration || 'weeks',
-      persona: purpose === 'study' ? 'Student' : travelStyle === 'family' ? 'Family' : 'Traveler',
+      persona: purpose === 'study' ? 'Student' : travelParty === 'family' ? 'Family' : 'Traveler',
       additionalNeeds: `${plan.title} - ${plan.tagline}`,
     });
   };
@@ -165,19 +260,46 @@ export default function JourneySetupModal() {
     const finalDest = destination || COUNTRIES[1];
     const finalCity = destinationCity.trim() || finalDest.capital || 'Capital';
 
+    let durationText = `${customDurationDays} days`;
+    if (duration === 'days') {
+      durationText = `${customDurationDays || 5} days`;
+    } else if (duration === 'weeks') {
+      const w = durationPreset === '1_week' ? 1 : durationPreset === '2_weeks' ? 2 : durationPreset === '3_weeks' ? 3 : durationPreset === '4_weeks' ? 4 : Math.max(1, Math.round((customDurationDays || 14) / 7));
+      durationText = `${w} weeks`;
+    } else if (duration === 'months') {
+      const m = durationPreset === '1_month' ? 1 : durationPreset === '2_months' ? 2 : durationPreset === '3_months' ? 3 : durationPreset === '6_months' ? 6 : 1;
+      durationText = `${m} months`;
+    } else if (duration === 'yearPlus') {
+      durationText = '1 year';
+    }
+
     commitJourney({
       origin: finalOrigin,
       destination: finalDest,
       destinationCity: finalCity,
       accommodationArea: accommodationArea.trim(),
       accommodationStatus,
+      travelParty,
+      budget,
       dates: datesOrSeason,
       travelStyle,
       interests: selectedInterests,
       purpose,
       duration,
-      persona: purpose === 'study' ? 'Student' : purpose === 'work' ? 'Professional' : 'Traveler',
+      durationText,
+      medicalDetails: (purpose === 'medical' || (purpose as any) === 'recovery') ? {
+        specialty: medicalSpecialty || 'General Medicine & Recovery',
+        patientAge: patientAge || undefined,
+        purpose: medicalPurpose || 'Consultation & Treatment',
+        companionCount: companionCount || 1,
+      } : undefined,
+      persona: purpose === 'study' ? 'Student' : purpose === 'work' ? 'Professional' : (purpose === 'medical' || (purpose as any) === 'recovery') ? 'Patient / Health Traveler' : 'Traveler',
       additionalNeeds: [
+        medicalSpecialty ? `Medical Specialty: ${medicalSpecialty}` : '',
+        patientAge ? `Patient Age: ${patientAge}` : '',
+        studyField ? `Study Field: ${studyField}` : '',
+        workRole ? `Work Role: ${workRole}` : '',
+        relocationType ? `Relocation: ${relocationType}` : '',
         datesOrSeason ? `Dates/Season: ${datesOrSeason}` : '',
         travelStyle ? `Style: ${travelStyle}` : '',
         selectedInterests.length > 0 ? `Interests: ${selectedInterests.join(', ')}` : '',
@@ -209,7 +331,10 @@ export default function JourneySetupModal() {
         if (ext.origin) setOrigin(ext.origin);
         if (ext.destination) setDestination(ext.destination);
         if (ext.destinationCity) setDestinationCity(ext.destinationCity);
+        if (ext.travelParty) setTravelParty(ext.travelParty);
+        if (ext.budget) setBudget(ext.budget);
         if (ext.duration) setDuration(ext.duration);
+        if (ext.durationDays) setCustomDurationDays(ext.durationDays);
         if (ext.accommodationStatus && ext.accommodationStatus !== 'unknown') {
           setAccommodationStatus(ext.accommodationStatus);
         }
@@ -217,6 +342,11 @@ export default function JourneySetupModal() {
         if (ext.dates) setDatesOrSeason(ext.dates);
         if (ext.travelStyle) setTravelStyle(ext.travelStyle);
         if (ext.purpose) setPurpose(ext.purpose);
+        if (ext.medicalDetails) {
+          if (ext.medicalDetails.specialty) setMedicalSpecialty(ext.medicalDetails.specialty);
+          if (ext.medicalDetails.patientAge) setPatientAge(String(ext.medicalDetails.patientAge));
+          if (ext.medicalDetails.purpose) setMedicalPurpose(ext.medicalDetails.purpose);
+        }
 
         setRecognizedSummary(ext);
 
@@ -225,7 +355,7 @@ export default function JourneySetupModal() {
           setMissingQuestions(data.missingQuestions);
           setSetupStep('follow_up');
         } else {
-          // All 3 items are recognized! Confirm immediately
+          // All items recognized! Confirm immediately
           const finalOrigin = ext.origin || origin || COUNTRIES[0];
           const finalDest = ext.destination || destination || COUNTRIES[1];
           const finalCity = ext.destinationCity || finalDest.capital || 'Capital';
@@ -236,11 +366,15 @@ export default function JourneySetupModal() {
             destinationCity: finalCity,
             accommodationArea: ext.accommodationArea || '',
             accommodationStatus: ext.accommodationStatus || 'unknown',
+            travelParty: ext.travelParty || travelParty || 'solo',
+            budget: ext.budget || budget || 'moderate',
             dates: ext.dates || '',
             travelStyle: ext.travelStyle || '',
             interests: ext.interests || [],
-            purpose: ext.purpose || 'travel',
+            purpose: ext.purpose || 'tourism',
             duration: ext.duration || 'weeks',
+            durationText: ext.duration || (ext.durationDays ? `${ext.durationDays} days` : '2 weeks'),
+            medicalDetails: ext.medicalDetails || undefined,
             persona: ext.persona || 'Traveler',
             additionalNeeds: manualText,
           });
@@ -255,20 +389,115 @@ export default function JourneySetupModal() {
     }
   };
 
+  // Helper to guarantee rich choices for any question
+  const getChoicesForQuestion = (q: MissingQuestion) => {
+    if (Array.isArray(q.choices) && q.choices.length >= 2) {
+      return q.choices;
+    }
+    const qText = `${q.id || ''} ${q.questionAr || ''} ${q.questionEn || ''}`.toLowerCase();
+
+    if (qText.includes('purpose') || qText.includes('غرض') || qText.includes('سبب') || qText.includes('هدف') || qText.includes('نوع الرحلة')) {
+      return [
+        { value: 'tourism', labelEn: 'Tourism & Exploration', labelAr: 'سياحة وزيارة واستكشاف' },
+        { value: 'medical', labelEn: 'Medical & Recovery Care', labelAr: 'علاج واستشفاء صحي وفحوصات' },
+        { value: 'study', labelEn: 'Study & University', labelAr: 'دراسة وابتعاث جامعي' },
+        { value: 'work', labelEn: 'Work & Career', labelAr: 'عمل وانتداب مهني' },
+        { value: 'relocation', labelEn: 'Relocation & Living', labelAr: 'استقرار وهجرة ومعيشة' },
+      ];
+    }
+    if (qText.includes('duration') || qText.includes('stay') || qText.includes('مدة') || qText.includes('وقت') || qText.includes('ايام') || qText.includes('أيام') || qText.includes('شهر') || qText.includes('اسبوع') || qText.includes('أسبوع') || qText.includes('للبقاء')) {
+      return [
+        { value: '3_5_days', labelEn: '3 – 5 Days (Short Break)', labelAr: '3 – 5 أيام (عطلة قصيرة)' },
+        { value: '1_week', labelEn: '1 Week (7 Days)', labelAr: 'أسبوع واحد (7 أيام)' },
+        { value: '2_weeks', labelEn: '2 Weeks (14 Days)', labelAr: 'أسبوعين (14 يوماً)' },
+        { value: '1_month', labelEn: '1 Month (30 Days)', labelAr: 'شهر واحد (30 يوماً)' },
+        { value: 'yearPlus', labelEn: '1+ Year', labelAr: 'سنة أو أكثر' },
+      ];
+    }
+    if (qText.includes('medical') || qText.includes('treatment') || qText.includes('علاج') || qText.includes('صحي') || qText.includes('فحوصات') || qText.includes('عملية') || qText.includes('تخصص')) {
+      return [
+        { value: 'cardiology', labelEn: 'Cardiology & Heart Care', labelAr: 'أمراض وجراحة القلب والأوعية' },
+        { value: 'orthopedics', labelEn: 'Orthopedics & Joint Care', labelAr: 'العظام والمفاصل والعلاج الطبيعي' },
+        { value: 'wellness', labelEn: 'Health Checkup & Wellness', labelAr: 'فحوصات شاملة ونقاهة واستجمام' },
+        { value: 'cosmetics', labelEn: 'Aesthetic & Dental Procedures', labelAr: 'تجميل وزراعة الشعر والأسنان' },
+        { value: 'general', labelEn: 'General / Other Specialties', labelAr: 'تخصصات طبية وعلاجية أخرى' },
+      ];
+    }
+    if (qText.includes('party') || qText.includes('مرافق') || qText.includes('معك') || qText.includes('companion') || qText.includes('يسافر')) {
+      return [
+        { value: 'solo', labelEn: 'Solo (Just me)', labelAr: 'بمفردي (سفر فردي)' },
+        { value: 'couple', labelEn: 'Couple / Partner', labelAr: 'مع شريك الحياة (زوجين)' },
+        { value: 'family', labelEn: 'Family (with children)', labelAr: 'مع العائلة والأطفال' },
+        { value: 'friends', labelEn: 'Friends', labelAr: 'مع الأصدقاء' },
+      ];
+    }
+    if (qText.includes('accommodation') || qText.includes('سكن') || qText.includes('فندق') || qText.includes('إقامة') || qText.includes('اقامة') || qText.includes('حجز')) {
+      return [
+        { value: 'booked', labelEn: 'Yes, already booked', labelAr: 'نعم، قمت بالحجز مسبقاً' },
+        { value: 'not_booked', labelEn: 'No, looking for lodging', labelAr: 'لا، لم أحجز (أبحث عن توصيات وروابط مباشرة)' },
+        { value: 'not_sure', labelEn: 'Not sure yet', labelAr: 'لست متأكداً حتى الآن' },
+      ];
+    }
+    if (qText.includes('budget') || qText.includes('ميزانية') || qText.includes('تكلفة') || qText.includes('مستوى')) {
+      return [
+        { value: 'moderate', labelEn: 'Balanced / Moderate', labelAr: 'متوسطة متوازنة' },
+        { value: 'budget', labelEn: 'Economy / Budget', labelAr: 'ميزانية اقتصادية موفرة' },
+        { value: 'luxury', labelEn: 'Luxury & Premium', labelAr: 'فاخرة ومميزة' },
+      ];
+    }
+    if (qText.includes('city') || qText.includes('مدينة') || qText.includes('منطقة') || qText.includes('وجهة') || qText.includes('خطة')) {
+      return [
+        { value: 'capital', labelEn: 'Main Capital & Cultural Hub', labelAr: 'العاصمة والمركز الثقافي الرئيسي' },
+        { value: 'nature', labelEn: 'Scenic Coast & Nature Districts', labelAr: 'السياحة الساحلية والمناطق الطبيعية' },
+        { value: 'multi_city', labelEn: 'Multi-City Highlights Tour', labelAr: 'مسار متكامل يغطي عدة مدن' },
+      ];
+    }
+    return [
+      { value: 'option_1', labelEn: 'Explore Recommended Options', labelAr: 'استكشاف الخيارات المقترحة' },
+      { value: 'option_2', labelEn: 'Customize My Own Plan', labelAr: 'تخصيص الخطة بنفسي' },
+    ];
+  };
+
   // Handle answering missing questions in follow_up step
   const handleFollowUpAnswer = (questionId: string, value: string) => {
     setPendingAnswers((prev) => ({ ...prev, [questionId]: value }));
 
-    if (questionId === 'duration') {
-      setDuration(value as JourneyDuration);
-    } else if (questionId === 'destination_status') {
+    const id = questionId.toLowerCase();
+    if (id.includes('purpose') || id.includes('غرض') || id.includes('سبب')) {
+      setPurpose(value as any);
+    } else if (id.includes('travel_party') || id.includes('party') || id.includes('مرافق')) {
+      setTravelParty(value as any);
+    } else if (id.includes('duration') || id.includes('stay') || id.includes('مدة') || id.includes('وقت')) {
+      if (value === '3_5_days') {
+        setDuration('days');
+        setCustomDurationDays(5);
+      } else if (value === '1_week') {
+        setDuration('weeks');
+        setCustomDurationDays(7);
+      } else if (value === '2_weeks') {
+        setDuration('weeks');
+        setCustomDurationDays(14);
+      } else if (value === '1_month') {
+        setDuration('months');
+        setCustomDurationDays(30);
+      } else if (value === 'yearPlus') {
+        setDuration('yearPlus');
+        setCustomDurationDays(365);
+      } else {
+        setDuration(value as JourneyDuration);
+      }
+    } else if (id.includes('destination_status')) {
       if (value === 'no_plan') {
         setDestinationChoice('plan_for_me');
       } else {
         setDestinationChoice('specific');
       }
-    } else if (questionId === 'accommodation') {
+    } else if (id.includes('accommodation') || id.includes('سكن') || id.includes('فندق')) {
       setAccommodationStatus(value === 'booked' ? 'booked' : 'not_booked');
+    } else if (id.includes('budget') || id.includes('ميزانية')) {
+      setBudget(value as any);
+    } else if (id.includes('medical') || id.includes('specialty')) {
+      setMedicalSpecialty(value);
     }
   };
 
@@ -283,18 +512,64 @@ export default function JourneySetupModal() {
     const finalDest = destination || COUNTRIES[1];
     const finalCity = destinationCity.trim() || finalDest.capital || 'Capital';
 
+    // Apply any pending follow up selections
+    let finalPurpose = purpose;
+    if (pendingAnswers['purpose']) finalPurpose = pendingAnswers['purpose'] as any;
+
+    let finalParty = travelParty;
+    if (pendingAnswers['travel_party']) finalParty = pendingAnswers['travel_party'] as any;
+
+    let finalBudget = budget;
+    if (pendingAnswers['budget']) finalBudget = pendingAnswers['budget'] as any;
+
+    let finalAccommodation = accommodationStatus;
+    if (pendingAnswers['accommodation']) {
+      finalAccommodation = pendingAnswers['accommodation'] === 'booked' ? 'booked' : 'not_booked';
+    }
+
+    let finalDuration = duration;
+    let finalDurationDays = customDurationDays || 14;
+    if (pendingAnswers['duration']) {
+      const durVal = pendingAnswers['duration'];
+      if (durVal === '3_5_days') {
+        finalDuration = 'days';
+        finalDurationDays = 5;
+      } else if (durVal === '1_week') {
+        finalDuration = 'weeks';
+        finalDurationDays = 7;
+      } else if (durVal === '2_weeks') {
+        finalDuration = 'weeks';
+        finalDurationDays = 14;
+      } else if (durVal === '1_month') {
+        finalDuration = 'months';
+        finalDurationDays = 30;
+      } else if (durVal === 'yearPlus') {
+        finalDuration = 'yearPlus';
+        finalDurationDays = 365;
+      }
+    }
+
     commitJourney({
       origin: finalOrigin,
       destination: finalDest,
       destinationCity: finalCity,
       accommodationArea: accommodationArea.trim(),
-      accommodationStatus,
+      accommodationStatus: finalAccommodation,
+      travelParty: finalParty,
+      budget: finalBudget,
       dates: datesOrSeason,
       travelStyle,
       interests: selectedInterests,
-      purpose,
-      duration,
-      persona: purpose === 'study' ? 'Student' : purpose === 'work' ? 'Professional' : 'Traveler',
+      purpose: finalPurpose,
+      duration: finalDuration,
+      durationText: `${finalDurationDays} days`,
+      medicalDetails: finalPurpose === 'medical' ? {
+        specialty: medicalSpecialty || pendingAnswers['medical_specialty'] || 'General Care',
+        patientAge: patientAge ? parseInt(patientAge) : undefined,
+        purpose: medicalPurpose || 'Consultation & Treatment',
+        companionCount: companionCount || 0,
+      } : undefined,
+      persona: finalPurpose === 'study' ? 'Student' : finalPurpose === 'work' ? 'Professional' : 'Traveler',
       additionalNeeds: manualText,
     });
   };
@@ -318,8 +593,18 @@ export default function JourneySetupModal() {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-xl overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-3xl bg-[#0F1424]/95 border border-white/15 p-6 sm:p-8 md:p-10 shadow-2xl shadow-pink-500/10 text-white my-auto max-h-[95vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#040816]/85 backdrop-blur-2xl overflow-y-auto">
+      {/* Live Starfield Canvas in Modal Backdrop */}
+      <canvas
+        ref={modalCanvasRef}
+        className="fixed inset-0 pointer-events-none z-0 opacity-75"
+      />
+
+      {/* Radiant Cosmic Ambient Orbs */}
+      <div className="fixed top-1/4 -left-20 w-96 h-96 rounded-full bg-pink-500/15 blur-[120px] pointer-events-none z-0" />
+      <div className="fixed bottom-1/4 -right-20 w-96 h-96 rounded-full bg-indigo-500/15 blur-[120px] pointer-events-none z-0" />
+
+      <div className="relative z-10 w-full max-w-3xl rounded-3xl bg-[#0F1424]/90 border border-white/15 p-6 sm:p-8 md:p-10 shadow-2xl shadow-pink-500/15 text-white my-auto max-h-[95vh] overflow-y-auto backdrop-blur-xl">
         {/* Close Button */}
         <button
           onClick={() => setScreen('landing')}
@@ -388,9 +673,14 @@ export default function JourneySetupModal() {
                       ⏱ {recognizedSummary.duration}
                     </span>
                   )}
-                  {recognizedSummary.hasAccommodation && (
+                  {recognizedSummary.accommodationStatus === 'booked' && (
                     <span className="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                      🏨 {isRtl ? 'تم حجز الإقامة' : 'Accommodation booked'}
+                      🏨 {isRtl ? 'تم حجز الإقامة مسبقاً' : 'Accommodation booked'}
+                    </span>
+                  )}
+                  {recognizedSummary.accommodationStatus === 'not_booked' && (
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      🏨 {isRtl ? 'لم يتم الحجز (مطلوب توصيات)' : 'Need accommodation recommendations'}
                     </span>
                   )}
                   {recognizedSummary.dates && (
@@ -416,14 +706,14 @@ export default function JourneySetupModal() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                      {q.choices.map((choice) => {
+                      {getChoicesForQuestion(q).map((choice) => {
                         const isSelected = currentAnswer === choice.value;
                         return (
                           <button
                             key={choice.value}
                             type="button"
                             onClick={() => handleFollowUpAnswer(q.id, choice.value)}
-                            className={`p-3 rounded-xl border text-start text-xs sm:text-sm font-medium transition ${
+                            className={`p-3.5 rounded-xl border text-start text-xs sm:text-sm font-medium transition ${
                               isSelected
                                 ? 'bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-500/25'
                                 : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
@@ -626,6 +916,14 @@ export default function JourneySetupModal() {
             {/* If Specific Destination Chosen: Render Origin & Destination Selectors */}
             {destinationChoice === 'specific' && (
               <div className="space-y-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+                {/* Live Multi-Hub Transit Network Mesh & Traffic Corridor */}
+                <NetworkTransitMesh
+                  origin={origin}
+                  destination={destination}
+                  destinationCity={destinationCity}
+                  isRtl={isRtl}
+                />
+
                 <div className="grid grid-cols-1 sm:grid-cols-11 gap-3 items-center">
                   {/* Origin Dropdown (Optional) */}
                   <div className="sm:col-span-5 relative">
@@ -784,82 +1082,433 @@ export default function JourneySetupModal() {
               </div>
             )}
 
-            {/* Travel Dates / Time of Year & Duration */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Dates / Season */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-pink-400" />
-                  <span>{isRtl ? 'توقيت السفر / الموسم' : 'Travel Dates / Season'}</span>
-                </label>
-                <input
-                  type="text"
-                  value={datesOrSeason}
-                  onChange={(e) => setDatesOrSeason(e.target.value)}
-                  placeholder={isRtl ? 'مثال: أكتوبر، الربيع، الصيف القادم' : 'e.g. Next month, Autumn, Spring'}
-                  className="w-full bg-white/5 border border-white/15 rounded-2xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition"
-                />
-              </div>
-
-              {/* Duration Chips */}
+            {/* Purpose & Travel Party Selector */}
+            <div className="space-y-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+              {/* Purpose Selector */}
               <div>
                 <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-                  {t.durationTitle}
+                  {isRtl ? 'الغرض من السفر / الإقامة:' : 'Purpose of Travel / Stay:'}
                 </label>
-                <div className="grid grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {[
-                    { id: 'days', label: t.days },
-                    { id: 'weeks', label: t.weeks },
-                    { id: 'months', label: t.months },
-                    { id: 'yearPlus', label: t.yearPlus },
+                    { id: 'tourism', labelEn: 'Tourism', labelAr: 'سياحة', icon: '✈️' },
+                    { id: 'study', labelEn: 'Study', labelAr: 'دراسة', icon: '🎓' },
+                    { id: 'work', labelEn: 'Work', labelAr: 'عمل', icon: '💼' },
+                    { id: 'relocation', labelEn: 'Relocation', labelAr: 'استقرار', icon: '🏡' },
+                    { id: 'medical', labelEn: 'Medical', labelAr: 'علاج واستشفاء', icon: '🏥' },
                   ].map((item) => (
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setDuration(item.id as JourneyDuration)}
-                      className={`py-2 px-1 rounded-xl text-xs font-semibold transition-all border ${
-                        duration === item.id
-                          ? 'bg-pink-500/20 border-pink-500 text-pink-300 shadow-md'
+                      onClick={() => setPurpose(item.id as JourneyPurpose)}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5 ${
+                        purpose === item.id
+                          ? 'bg-pink-500/25 border-pink-500 text-white shadow-md shadow-pink-500/20'
                           : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
                       }`}
                     >
-                      {item.label}
+                      <span>{item.icon}</span>
+                      <span>{isRtl ? item.labelAr : item.labelEn}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Travel Party Question */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                  {isRtl ? 'من يسافر معك؟ (المجموعة المرافقة):' : 'Who are you traveling with?'}
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  {[
+                    { id: 'solo', labelEn: 'Solo', labelAr: 'بمفردي', icon: '👤' },
+                    { id: 'couple', labelEn: 'Couple', labelAr: 'مع الشريك', icon: '👫' },
+                    { id: 'family', labelEn: 'Family', labelAr: 'عائلة وأطفال', icon: '👨‍👩‍👧‍👦' },
+                    { id: 'friends', labelEn: 'Friends', labelAr: 'مع الأصدقاء', icon: '👥' },
+                    { id: 'group', labelEn: 'Group', labelAr: 'مجموعة / أخرى', icon: '🚐' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setTravelParty(item.id as any)}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5 ${
+                        travelParty === item.id
+                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 border-pink-500 text-white shadow-md shadow-pink-500/25'
+                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <span>{item.icon}</span>
+                      <span>{isRtl ? item.labelAr : item.labelEn}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Purpose-Adaptive Questions: Medical / Study / Work / Relocation */}
+              {(purpose === 'medical' || (purpose as any) === 'recovery') && (
+                <div className="pt-3 border-t border-white/10 space-y-3 bg-pink-500/5 p-3 rounded-xl border border-pink-500/20">
+                  <span className="text-xs font-bold text-pink-300 flex items-center gap-1.5">
+                    <span>🏥</span>
+                    <span>{isRtl ? 'تفاصيل الرحلة العلاجية والاستشفاء:' : 'Medical & Healthcare Travel Details:'}</span>
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] text-gray-400 mb-1">
+                        {isRtl ? 'التخصص الطبي / الحالة:' : 'Medical Specialty / Condition:'}
+                      </label>
+                      <input
+                        type="text"
+                        value={medicalSpecialty}
+                        onChange={(e) => setMedicalSpecialty(e.target.value)}
+                        placeholder={isRtl ? 'مثال: جراحة قلب، فحوصات عامة، تأهيل طبيعي' : 'e.g. Cardiology, Oncology, Orthopedics, Wellness'}
+                        className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-400 mb-1">
+                        {isRtl ? 'عمر المريض (اختياري):' : 'Patient Age (Optional):'}
+                      </label>
+                      <input
+                        type="number"
+                        value={patientAge}
+                        onChange={(e) => setPatientAge(e.target.value)}
+                        placeholder={isRtl ? 'مثال: 45' : 'e.g. 45'}
+                        className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-400 mb-1">
+                        {isRtl ? 'الهدف من الرحلة:' : 'Purpose of Treatment:'}
+                      </label>
+                      <select
+                        value={medicalPurpose}
+                        onChange={(e) => setMedicalPurpose(e.target.value)}
+                        className="w-full bg-[#14192B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                      >
+                        <option value="consultation">{isRtl ? 'فحوصات واستشارة تخصصية (Second Opinion)' : 'Consultation & Diagnostics'}</option>
+                        <option value="surgery">{isRtl ? 'عملية جراحية وعلاج متقدم' : 'Specialized Surgery / Procedure'}</option>
+                        <option value="rehabilitation">{isRtl ? 'علاج طبيعي وتأهيل حركي' : 'Rehabilitation & Physical Therapy'}</option>
+                        <option value="wellness">{isRtl ? 'استشفاء ونقاهة واستجمام صحي' : 'Wellness Recovery & Convalescence'}</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-gray-400 mb-1">
+                        {isRtl ? 'عدد المرافقين:' : 'Companions Count:'}
+                      </label>
+                      <select
+                        value={companionCount}
+                        onChange={(e) => setCompanionCount(parseInt(e.target.value, 10))}
+                        className="w-full bg-[#14192B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                      >
+                        <option value="0">{isRtl ? 'بدون مرافقين' : 'None (Traveling alone)'}</option>
+                        <option value="1">{isRtl ? 'مرافق واحد' : '1 Companion'}</option>
+                        <option value="2">{isRtl ? 'مرافقان' : '2 Companions'}</option>
+                        <option value="3">{isRtl ? '3 مرافقين أو أكثر' : '3+ Companions (Family)'}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {purpose === 'study' && (
+                <div className="pt-2 border-t border-white/10 space-y-2">
+                  <span className="text-[11px] font-bold text-pink-300 block">
+                    {isRtl ? '🎓 تفاصيل الدراسة والابتعاث:' : '🎓 Academic & Study Context:'}
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={studyField}
+                      onChange={(e) => setStudyField(e.target.value)}
+                      placeholder={isRtl ? 'التخصص أو اسم الجامعة (مثال: علوم حاسب)' : 'Field of study / University name'}
+                      className="bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                    />
+                    <select
+                      className="bg-[#14192B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                      onChange={(e) => setAdditionalNotes((prev) => `${prev} | Funding: ${e.target.value}`)}
+                    >
+                      <option value="scholarship">{isRtl ? 'ابتعاث حكومي / منحة كاملة' : 'Government Scholarship'}</option>
+                      <option value="self_funded">{isRtl ? 'دراسة على الحساب الخاص' : 'Self-funded student'}</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {purpose === 'work' && (
+                <div className="pt-2 border-t border-white/10 space-y-2">
+                  <span className="text-[11px] font-bold text-pink-300 block">
+                    {isRtl ? '💼 تفاصيل العمل والمهنة:' : '💼 Work & Professional Context:'}
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={workRole}
+                      onChange={(e) => setWorkRole(e.target.value)}
+                      placeholder={isRtl ? 'المسمى الوظيفي أو القطاع (مثال: تقنية معلومات)' : 'Job role or industry sector'}
+                      className="bg-white/5 border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                    />
+                    <select
+                      className="bg-[#14192B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                      onChange={(e) => setAdditionalNotes((prev) => `${prev} | Visa: ${e.target.value}`)}
+                    >
+                      <option value="sponsored">{isRtl ? 'إقامة عمل مكفولة من الشركة' : 'Company Sponsored Visa'}</option>
+                      <option value="business_trip">{isRtl ? 'انتداب عمل قصير الأجل' : 'Short Business Mission'}</option>
+                      <option value="digital_nomad">{isRtl ? 'عمل عن بعد / رحالة رقمي' : 'Digital Nomad / Remote'}</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {purpose === 'relocation' && (
+                <div className="pt-2 border-t border-white/10 space-y-2">
+                  <span className="text-[11px] font-bold text-pink-300 block">
+                    {isRtl ? '🏡 نوع الانتقال والاستقرار:' : '🏡 Relocation Household:'}
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setRelocationType('individual')}
+                      className={`p-2 rounded-xl border text-xs ${
+                        relocationType === 'individual' ? 'bg-pink-500/20 border-pink-500 text-white' : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      {isRtl ? 'انتقال فردي' : 'Individual Relocation'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRelocationType('family')}
+                      className={`p-2 rounded-xl border text-xs ${
+                        relocationType === 'family' ? 'bg-pink-500/20 border-pink-500 text-white' : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      {isRtl ? 'انتقال عائلي شامل' : 'Family Relocation with Dependents'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Budget Level */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
+                  {isRtl ? 'الميزانية التقديرية:' : 'Estimated Budget Level:'}
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'budget', labelEn: 'Budget / Economy', labelAr: 'اقتصادية' },
+                    { id: 'moderate', labelEn: 'Moderate / Balanced', labelAr: 'متوسطة متوازنة' },
+                    { id: 'luxury', labelEn: 'Luxury / Premium', labelAr: 'فاخرة ومميزة' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setBudget(item.id as any)}
+                      className={`p-2 rounded-xl border text-xs font-medium transition ${
+                        budget === item.id
+                          ? 'bg-pink-500/20 border-pink-500 text-pink-300'
+                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      {isRtl ? item.labelAr : item.labelEn}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
+            {/* Granular Duration Options & Travel Dates */}
+            <div className="space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-pink-400" />
+                  <span>{isRtl ? 'مدة الرحلة الدقيقة:' : 'Exact Duration:'}</span>
+                </label>
+                <span className="text-xs text-pink-300 font-semibold bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">
+                  {duration === 'days'
+                    ? `${customDurationDays} ${isRtl ? 'أيام' : 'Days'}`
+                    : duration === 'weeks'
+                    ? `${Math.round(customDurationDays / 7) || 2} ${isRtl ? 'أسابيع' : 'Weeks'} (${customDurationDays} days)`
+                    : duration === 'months'
+                    ? `${Math.round(customDurationDays / 30) || 1} ${isRtl ? 'أشهر' : 'Months'}`
+                    : isRtl ? 'سنة أو أكثر' : '1+ Year'}
+                </span>
+              </div>
+
+              {/* Main Duration Tabs */}
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { id: 'days', labelEn: 'Days', labelAr: 'أيام' },
+                  { id: 'weeks', labelEn: 'Weeks', labelAr: 'أسابيع' },
+                  { id: 'months', labelEn: 'Months', labelAr: 'أشهر' },
+                  { id: 'yearPlus', labelEn: '1+ Year', labelAr: 'سنة+' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setDuration(item.id as JourneyDuration);
+                      if (item.id === 'days' && customDurationDays > 10) setCustomDurationDays(5);
+                      if (item.id === 'weeks' && customDurationDays < 7) setCustomDurationDays(14);
+                      if (item.id === 'months') setCustomDurationDays(30);
+                    }}
+                    className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
+                      duration === item.id
+                        ? 'bg-pink-500/25 border-pink-500 text-white shadow-md'
+                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                    }`}
+                  >
+                    {isRtl ? item.labelAr : item.labelEn}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sub-duration Presets */}
+              {duration === 'days' && (
+                <div className="flex flex-wrap gap-2 pt-2 items-center">
+                  {[3, 5, 7, 10].map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setCustomDurationDays(d)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
+                        customDurationDays === d
+                          ? 'bg-pink-500/30 border-pink-500 text-white'
+                          : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      {d} {isRtl ? 'أيام' : 'Days'}
+                    </button>
+                  ))}
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="text-xs text-gray-400">{isRtl ? 'أو حدد عدد الأيام:' : 'Custom days:'}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={30}
+                      value={customDurationDays}
+                      onChange={(e) => setCustomDurationDays(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                      className="w-16 bg-white/5 border border-white/20 rounded-lg px-2 py-1 text-xs text-center text-white"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {duration === 'weeks' && (
+                <div className="flex flex-wrap gap-2 pt-2 items-center">
+                  {[
+                    { key: '1_week', days: 7, labelEn: '1 Week (7d)', labelAr: 'أسبوع (7 أيام)' },
+                    { key: '2_weeks', days: 14, labelEn: '2 Weeks (14d)', labelAr: 'أسبوعين (14 يوماً)' },
+                    { key: '3_weeks', days: 21, labelEn: '3 Weeks (21d)', labelAr: '3 أسابيع (21 يوماً)' },
+                    { key: '4_weeks', days: 28, labelEn: '4 Weeks (28d)', labelAr: '4 أسابيع (28 يوماً)' },
+                  ].map((w) => (
+                    <button
+                      key={w.key}
+                      type="button"
+                      onClick={() => {
+                        setDurationPreset(w.key);
+                        setCustomDurationDays(w.days);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
+                        customDurationDays === w.days
+                          ? 'bg-pink-500/30 border-pink-500 text-white'
+                          : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      {isRtl ? w.labelAr : w.labelEn}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {duration === 'months' && (
+                <div className="flex flex-wrap gap-2 pt-2 items-center">
+                  {[
+                    { key: '1_month', days: 30, labelEn: '1 Month', labelAr: 'شهر واحد' },
+                    { key: '2_months', days: 60, labelEn: '2 Months', labelAr: 'شهران' },
+                    { key: '3_months', days: 90, labelEn: '3 Months', labelAr: '3 أشهر' },
+                    { key: '6_months', days: 180, labelEn: '6 Months', labelAr: '6 أشهر' },
+                  ].map((m) => (
+                    <button
+                      key={m.key}
+                      type="button"
+                      onClick={() => {
+                        setDurationPreset(m.key);
+                        setCustomDurationDays(m.days);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
+                        durationPreset === m.key
+                          ? 'bg-pink-500/30 border-pink-500 text-white'
+                          : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      {isRtl ? m.labelAr : m.labelEn}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Dates / Season Input */}
+              <div className="pt-2">
+                <label className="block text-[11px] text-gray-400 mb-1 flex items-center gap-1.5">
+                  <Calendar className="w-3 h-3 text-pink-400" />
+                  <span>{isRtl ? 'توقيت السفر أو الموسم (اختياري):' : 'Travel Season / Dates (Optional):'}</span>
+                </label>
+                <input
+                  type="text"
+                  value={datesOrSeason}
+                  onChange={(e) => setDatesOrSeason(e.target.value)}
+                  placeholder={isRtl ? 'مثال: أكتوبر القادم، موسم الخريف' : 'e.g. Next month, Autumn, Summer vacation'}
+                  className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                />
+              </div>
+            </div>
+
             {/* Accommodation Status */}
-            <div className="space-y-2">
+            <div className="space-y-2 p-4 rounded-2xl bg-white/5 border border-white/10">
               <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Building className="w-3.5 h-3.5 text-pink-400" />
                 <span>{isRtl ? 'حالة السكن والإقامة:' : 'Accommodation Status:'}</span>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setAccommodationStatus('booked')}
-                  className={`p-3 rounded-xl border text-start text-xs sm:text-sm font-medium transition ${
+                  className={`p-3 rounded-xl border text-start text-xs font-medium transition ${
                     accommodationStatus === 'booked'
                       ? 'bg-pink-500/20 border-pink-500 text-white'
                       : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                   }`}
                 >
-                  {isRtl ? '✓ حجزت مكان الإقامة' : '✓ Already booked'}
+                  <span className="font-bold block text-sm mb-0.5">{isRtl ? '✓ حجزت مكان الإقامة' : '✓ Already booked'}</span>
+                  <span className="text-[11px] text-gray-400 block">{isRtl ? 'لدي فندق أو شقة محددة' : 'I have a hotel/apartment confirmed'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setAccommodationStatus('not_booked')}
-                  className={`p-3 rounded-xl border text-start text-xs sm:text-sm font-medium transition ${
+                  className={`p-3 rounded-xl border text-start text-xs font-medium transition ${
                     accommodationStatus === 'not_booked'
                       ? 'bg-pink-500/20 border-pink-500 text-white'
                       : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                   }`}
                 >
-                  {isRtl ? '🔍 أبحث عن توصيات سكن' : '🔍 Looking for options'}
+                  <span className="font-bold block text-sm mb-0.5">{isRtl ? '🔍 أبحث عن توصيات سكن' : '🔍 Need recommendations'}</span>
+                  <span className="text-[11px] text-gray-400 block">{isRtl ? 'اقترح علي أفضل الخيارات بروابط حجز مباشرة' : 'Provide curated lodging with direct booking links'}</span>
                 </button>
               </div>
+
+              {accommodationStatus === 'booked' && (
+                <div className="pt-2">
+                  <label className="block text-[11px] text-gray-400 mb-1">
+                    {isRtl ? 'الحي / منطقة السكن المحجوز:' : 'Booked Hotel / Neighborhood Area:'}
+                  </label>
+                  <input
+                    type="text"
+                    value={accommodationArea}
+                    onChange={(e) => setAccommodationArea(e.target.value)}
+                    placeholder={isRtl ? 'مثال: شينجوكو، الفاتح، بورت لويس' : 'e.g. Shinjuku, Mitte, Grand Baie'}
+                    className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Interests & Travel Style */}

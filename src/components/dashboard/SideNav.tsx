@@ -7,11 +7,13 @@ import { useJourney, NavTab } from '@/lib/state/JourneyContext';
 import {
   Luggage,
   Compass,
+  Navigation,
   Landmark,
   Languages,
   LanguagesIcon,
   Scale,
   ShieldAlert,
+  PhoneCall,
   Bot,
   Sun,
   Moon,
@@ -33,22 +35,19 @@ export default function SideNav({ isOpen, onClose }: SideNavProps) {
   const { activeTab, setActiveTab, toggleAssistant, setSettingsOpen, journey } = useJourney();
 
   const navItems: { id: NavTab; label: string; icon: any }[] = [
-    { id: 'journey', label: t.navJourney || 'Journey', icon: Luggage },
-    { id: 'discover', label: t.navDiscover || 'Discover', icon: Compass },
-    { id: 'culture', label: t.navCulture || 'Culture', icon: Landmark },
-    { id: 'language', label: t.navLanguage || 'Local Language', icon: Languages },
-    { id: 'translate', label: t.navTranslate || 'Translate', icon: LanguagesIcon },
-    { id: 'religion', label: t.navReligion || 'Religion & Context', icon: Scale },
-    { id: 'safety', label: t.navSafety || 'Digital Safety', icon: ShieldAlert },
-    { id: 'assistant', label: t.navAssistant || 'AI Assistant', icon: Bot },
+    { id: 'journey', label: isRtl ? 'خريطة ومراحل الرحلة (Journey)' : 'Journey Timeline', icon: Luggage },
+    { id: 'discover', label: isRtl ? 'استكشاف الأماكن (Discover)' : 'Discover Places', icon: Compass },
+    { id: 'nearby', label: isRtl ? 'الأماكن القريبة (Nearby Radar)' : 'Nearby Radar', icon: Navigation },
+    { id: 'culture', label: isRtl ? 'الثقافة والإتيكيت (Culture)' : 'Culture & Etiquette', icon: Landmark },
+    { id: 'language', label: isRtl ? 'اللغة والتعبيرات (Local Language)' : 'Local Language', icon: Languages },
+    { id: 'translate', label: isRtl ? 'المترجم الفوري (Translate)' : 'Translator', icon: LanguagesIcon },
+    { id: 'religion', label: isRtl ? 'السياق الديني والحلال (Religion)' : 'Religion & Context', icon: Scale },
+    { id: 'safety', label: isRtl ? 'الأمان الرقمي (Digital Safety)' : 'Digital Safety', icon: ShieldAlert },
+    { id: 'emergency', label: isRtl ? 'أرقام الطوارئ (Emergency)' : 'Emergency Contacts', icon: PhoneCall },
   ];
 
   const handleNavClick = (id: NavTab) => {
-    if (id === 'assistant') {
-      toggleAssistant();
-    } else {
-      setActiveTab(id);
-    }
+    setActiveTab(id);
     onClose();
   };
 

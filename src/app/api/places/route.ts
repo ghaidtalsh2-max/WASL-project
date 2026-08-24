@@ -114,16 +114,30 @@ const DISTINCT_PHOTO_POOLS: Record<string, string[]> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { destination, city, category, query, accommodationArea, language } = await req.json();
-    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    const {
+      destination,
+      city,
+      category,
+      query,
+      accommodationArea,
+      language,
+      lat,
+      lng,
+      radius,
+      placesKey,
+      apiKey: customKey,
+    } = await req.json();
+
+    const rawKey = placesKey || customKey || process.env.GOOGLE_PLACES_API_KEY || '';
+    const apiKey = rawKey.replace(/[^\x00-\x7F]/g, '').trim();
 
     if (!apiKey) {
       return NextResponse.json(
         {
           success: false,
-          error: 'GOOGLE_PLACES_API_KEY is not configured in the environment (.env.local). Please set your valid Google Maps API Key.',
+          error: 'GOOGLE_PLACES_API_KEY is not configured in the environment or Settings. Please set your valid Google Places API Key.',
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
@@ -135,31 +149,37 @@ export async function POST(req: NextRequest) {
     const cat = (category || 'attraction').toLowerCase();
 
     if (query) {
-      textQuery = `${query} in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
+      textQuery = query;
     } else if (cat === 'halal_restaurants' || cat === 'halal') {
-      textQuery = `halal restaurants in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
+      textQuery = `halal food restaurant`;
     } else if (cat === 'restaurants' || cat === 'restaurant' || cat === 'dining') {
-      textQuery = `top restaurants in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
-    } else if (cat === 'hotels' || cat === 'hotel' || cat === 'lodging') {
-      textQuery = `hotels in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
-    } else if (cat === 'landmarks' || cat === 'landmark') {
-      textQuery = `famous landmarks in ${targetCity}`;
-    } else if (cat === 'attractions' || cat === 'attraction') {
-      textQuery = `top tourist attractions in ${targetCity}`;
+      textQuery = `restaurant dining food`;
     } else if (cat === 'cafes' || cat === 'cafe') {
-      textQuery = `best cafes in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
+      textQuery = `cafe coffee`;
+    } else if (cat === 'hotels' || cat === 'hotel' || cat === 'lodging') {
+      textQuery = `hotel accommodation lodging`;
+    } else if (cat === 'landmarks' || cat === 'landmark') {
+      textQuery = `famous landmark tourist attraction`;
+    } else if (cat === 'attractions' || cat === 'attraction') {
+      textQuery = `top attractions points of interest`;
     } else if (cat === 'shopping' || cat === 'shops') {
-      textQuery = `shopping centers and markets in ${targetCity}`;
+      textQuery = `shopping center market mall`;
     } else if (cat === 'hospitals' || cat === 'hospital') {
-      textQuery = `international emergency hospitals in ${targetCity}`;
+      textQuery = `emergency hospital medical center`;
     } else if (cat === 'pharmacies' || cat === 'pharmacy') {
-      textQuery = `pharmacies in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
+      textQuery = `pharmacy drugstore`;
     } else if (cat === 'transport' || cat === 'transportation') {
-      textQuery = `central train station airport transit in ${targetCity}`;
+      textQuery = `train station metro transit`;
     } else if (cat === 'worship' || cat === 'mosques' || cat === 'mosque') {
-      textQuery = `mosques and prayer centers in ${targetCity}`;
+      textQuery = `mosque prayer room islamic center`;
     } else {
-      textQuery = `${cat} in ${targetCity}`;
+      textQuery = cat;
+    }
+
+    // Append city/area only if not using exact GPS coordinates
+    const isCoordinateSearch = typeof lat === 'number' && typeof lng === 'number';
+    if (!isCoordinateSearch) {
+      textQuery = `${textQuery} in ${targetArea ? targetArea + ', ' : ''}${targetCity}`;
     }
 
     // Call Google Places API (New)
@@ -180,6 +200,24 @@ export async function POST(req: NextRequest) {
       'places.photos',
     ].join(',');
 
+    const requestBody: any = {
+      textQuery,
+      languageCode: language === 'ar' ? 'ar' : 'en',
+      pageSize: 15,
+    };
+
+    if (isCoordinateSearch) {
+      requestBody.locationBias = {
+        circle: {
+          center: {
+            latitude: lat,
+            longitude: lng,
+          },
+          radius: radius || 3000.0,
+        },
+      };
+    }
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -187,11 +225,7 @@ export async function POST(req: NextRequest) {
         'X-Goog-Api-Key': apiKey,
         'X-Goog-FieldMask': fieldMask,
       },
-      body: JSON.stringify({
-        textQuery,
-        languageCode: language === 'ar' ? 'ar' : 'en',
-        pageSize: 15,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -200,7 +234,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: `Google Places API returned status ${response.status}. Please check your API key quotas and configuration.`,
+          error: `Google Places API returned status ${response.status}. Please check your Google Places API Key.`,
         },
         { status: response.status }
       );

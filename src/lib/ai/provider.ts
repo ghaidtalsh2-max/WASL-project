@@ -34,8 +34,9 @@ const GEMINI_FALLBACK_MODELS = [
  */
 export async function callAI(options: AICompletionOptions): Promise<AIResponse> {
   const startTime = Date.now();
-  const provider = (options.provider || process.env.LLM_PROVIDER || 'gemini').toLowerCase();
-  const apiKey = (options.apiKey || process.env.LLM_API_KEY || '').trim();
+  const provider = (options.provider || process.env.LLM_PROVIDER || 'gemini').toLowerCase().trim();
+  const rawKey = options.apiKey || process.env.LLM_API_KEY || '';
+  const apiKey = rawKey.replace(/[^\x00-\x7F]/g, '').trim();
 
   if (!apiKey) {
     return {

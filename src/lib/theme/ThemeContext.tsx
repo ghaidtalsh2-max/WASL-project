@@ -37,10 +37,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMode(mode === 'dark' ? 'light' : 'dark');
   };
 
-  const setDestinationThemeByName = (name?: string) => {
+  const setDestinationThemeByName = React.useCallback((name?: string) => {
     const theme = getDestinationTheme(name);
-    setDestinationTheme(theme);
-  };
+    setDestinationTheme((prev) => (prev?.id === theme.id ? prev : theme));
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;

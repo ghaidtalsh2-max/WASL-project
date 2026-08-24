@@ -7,6 +7,8 @@ import TopHeader from './TopHeader';
 import SideNav from './SideNav';
 import JourneyTimelineView from './JourneyTimelineView';
 import DiscoverSection from '../sections/DiscoverSection';
+import NearbySection from '../sections/NearbySection';
+import EmergencySection from '../sections/EmergencySection';
 import CultureSection from '../sections/CultureSection';
 import LocalLanguageSection from '../sections/LocalLanguageSection';
 import TranslateSection from '../sections/TranslateSection';
@@ -15,17 +17,22 @@ import DigitalSafetySection from '../sections/DigitalSafetySection';
 import AIAssistantDrawer from '../assistant/AIAssistantDrawer';
 import SettingsModal from '../sections/SettingsModal';
 import ThemeParticles from '../common/ThemeParticles';
+import AboutWaslFooter from '../common/AboutWaslFooter';
 
 export default function DashboardLayout() {
   const { activeTab } = useJourney();
-  const { destinationTheme } = useTheme();
+  const { destinationTheme, isDark } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   return (
     <div
-      className="min-h-screen flex flex-col bg-[#070A14] text-white selection:bg-pink-500 selection:text-white relative overflow-x-hidden transition-colors duration-500"
+      className={`min-h-screen w-full flex flex-col transition-colors duration-700 relative overflow-x-hidden ${
+        isDark ? 'text-white' : 'text-[#1E1B2E] light-mode'
+      }`}
       style={{
-        background: destinationTheme.bgGradient || 'radial-gradient(ellipse at 50% 10%, #17112E 0%, #0B0E17 60%, #06080F 100%)',
+        background: isDark
+          ? (destinationTheme?.bgGradient || 'radial-gradient(ellipse at 50% 10%, #17112E 0%, #0B0E17 60%, #06080F 100%)')
+          : 'radial-gradient(ellipse at 50% 0%, #FAF6FC 0%, #F1ECF7 50%, #E9E2F1 100%)',
       }}
     >
       {/* Dynamic Ambient Background Theme Particles */}
@@ -42,6 +49,8 @@ export default function DashboardLayout() {
         <main className="w-full">
           {activeTab === 'journey' && <JourneyTimelineView />}
           {activeTab === 'discover' && <DiscoverSection />}
+          {activeTab === 'nearby' && <NearbySection />}
+          {activeTab === 'emergency' && <EmergencySection />}
           {activeTab === 'culture' && <CultureSection />}
           {activeTab === 'language' && <LocalLanguageSection />}
           {activeTab === 'translate' && <TranslateSection />}
@@ -49,6 +58,9 @@ export default function DashboardLayout() {
           {activeTab === 'safety' && <DigitalSafetySection />}
         </main>
       </div>
+
+      {/* About WASL & Team Footer (Requirements 26 & 27) */}
+      <AboutWaslFooter />
 
       {/* Floating AI Assistant Drawer */}
       <AIAssistantDrawer />
@@ -58,3 +70,4 @@ export default function DashboardLayout() {
     </div>
   );
 }
+

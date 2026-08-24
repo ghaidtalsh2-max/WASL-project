@@ -13,6 +13,11 @@ import {
   User,
   HelpCircle,
   Minimize2,
+  ShieldAlert,
+  Navigation,
+  PhoneCall,
+  MapPin,
+  ChevronUp,
 } from 'lucide-react';
 
 interface ChatMessage {
@@ -29,8 +34,10 @@ export default function AIAssistantDrawer() {
     setAssistantOpen,
     toggleAssistant,
     journey,
+    setActiveTab,
   } = useJourney();
 
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -59,16 +66,16 @@ export default function AIAssistantDrawer() {
 
   const suggestedQuestions = isRtl
     ? [
-        'ما هي التصرفات التي يجب تجنبها عند زيارة منزل ياباني؟',
-        'كيف أطلب تاكسي باللغة المحلية في حالة الطوارئ؟',
-        'ما هي أفضل طريقة لفتح حساب بنكي كطالب جديد؟',
-        'هل مياه الصنبور صالحة للشرب مباشرة في الوجهة؟',
+        `ما هي أفضل الأماكن للتسوق في ${journey.destinationCity || journey.destination.nameAr}؟`,
+        `كيف أطلب تاكسي باللغة المحلية في حالة الطوارئ؟`,
+        `ما هي العادات الاجتماعية المهمة التي يجب معرفتها في ${journey.destination.nameAr}؟`,
+        `هل تتوفر مطاعم حلال قريبة في ${journey.destinationCity}؟`,
       ]
     : [
-        'What etiquette should I follow when visiting a local home?',
-        'How do I hail an emergency taxi in the local language?',
-        'What is the best way to open a bank account as a student?',
-        'Is tap water safe to drink directly here?',
+        `What are the top shopping spots in ${journey.destinationCity || journey.destination.name}?`,
+        `How do I hail an emergency taxi in the local language?`,
+        `What key cultural etiquette should I know in ${journey.destination.name}?`,
+        `Where can I find halal food in ${journey.destinationCity}?`,
       ];
 
   const handleSendMessage = async (customText?: string) => {
@@ -116,19 +123,87 @@ export default function AIAssistantDrawer() {
     }
   };
 
+  const handleSelectOption = (option: 'chat' | 'emergency' | 'nearby') => {
+    setMenuOpen(false);
+    if (option === 'chat') {
+      setAssistantOpen(true);
+    } else if (option === 'emergency') {
+      setActiveTab('emergency');
+    } else if (option === 'nearby') {
+      setActiveTab('nearby');
+    }
+  };
+
   return (
     <>
-      {/* Floating Sparkles Trigger Button (Bottom Right) */}
-      <button
-        onClick={toggleAssistant}
-        className={`fixed bottom-6 ${
-          isRtl ? 'left-6' : 'right-6'
-        } z-40 p-4 rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-indigo-600 text-white shadow-2xl shadow-pink-500/50 hover:scale-110 active:scale-95 transition-all duration-300 group flex items-center justify-center`}
-        title="WASL AI Assistant"
-      >
-        <Sparkles className="w-6 h-6 animate-pulse group-hover:rotate-12 transition-transform" />
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#0B0F1C]" />
-      </button>
+      {/* Floating Action Menu Trigger (Requirement 21: 3 accessible options) */}
+      <div className={`fixed bottom-6 ${isRtl ? 'left-6' : 'right-6'} z-40 flex flex-col items-end gap-3`}>
+        {/* Expanded 3-Option Mini Menu */}
+        {menuOpen && (
+          <div
+            className={`flex flex-col gap-2 p-2 rounded-2xl bg-[#0F1424]/95 backdrop-blur-xl border border-white/15 shadow-2xl shadow-pink-500/20 animate-in fade-in slide-in-from-bottom-3 duration-200 mb-1 w-52 sm:w-56 text-xs`}
+          >
+            {/* 1. AI Assistant */}
+            <button
+              type="button"
+              onClick={() => handleSelectOption('chat')}
+              className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-pink-500/20 text-gray-200 hover:text-pink-300 transition text-start group"
+            >
+              <div className="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-500/30 flex items-center justify-center text-pink-400 group-hover:scale-110 transition-transform">
+                <Bot className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-white">{isRtl ? 'المساعد الذكي' : 'AI Assistant'}</span>
+                <span className="text-[10px] text-gray-400">{isRtl ? 'محادثة وتخطيط فوري' : 'Chat & Smart Companion'}</span>
+              </div>
+            </button>
+
+            {/* 2. Emergency Mode */}
+            <button
+              type="button"
+              onClick={() => handleSelectOption('emergency')}
+              className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-rose-500/20 text-gray-200 hover:text-rose-300 transition text-start group"
+            >
+              <div className="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 group-hover:scale-110 transition-transform">
+                <PhoneCall className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-white">{isRtl ? 'مركز الطوارئ' : 'Emergency Hub'}</span>
+                <span className="text-[10px] text-gray-400">{isRtl ? 'الشرطة، الإسعاف، السفارة' : 'Police, Embassy, Audio'}</span>
+              </div>
+            </button>
+
+            {/* 3. Near Me Radar */}
+            <button
+              type="button"
+              onClick={() => handleSelectOption('nearby')}
+              className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-cyan-500/20 text-gray-200 hover:text-cyan-300 transition text-start group"
+            >
+              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform">
+                <Navigation className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-white">{isRtl ? 'الأماكن القريبة' : 'Near Me Radar'}</span>
+                <span className="text-[10px] text-gray-400">{isRtl ? 'بناءً على موقعك الجغرافي' : 'GPS Location & Places'}</span>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* Main Floating Trigger Button */}
+        <button
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className={`p-4 rounded-full bg-gradient-to-tr from-pink-500 via-rose-500 to-indigo-600 text-white shadow-2xl shadow-pink-500/50 hover:scale-110 active:scale-95 transition-all duration-300 group flex items-center justify-center relative`}
+          title={isRtl ? 'المساعد الذكي والطوارئ' : 'WASL Assistant & Quick Tools'}
+        >
+          {menuOpen ? (
+            <X className="w-6 h-6 rotate-90 group-hover:rotate-0 transition-transform" />
+          ) : (
+            <Sparkles className="w-6 h-6 animate-pulse group-hover:rotate-12 transition-transform" />
+          )}
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#0B0F1C]" />
+        </button>
+      </div>
 
       {/* Floating Drawer / Sliding Panel */}
       {assistantOpen && (
@@ -143,22 +218,23 @@ export default function AIAssistantDrawer() {
               <div className="w-8 h-8 rounded-xl bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400">
                 <Bot className="w-4 h-4" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-bold text-white leading-tight">
-                  {t.assistantTitle}
-                </span>
-                <span className="text-[10px] text-pink-400">
-                  {journey.destination.flag} {journey.destinationCity} ({journey.purpose})
-                </span>
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <span>{isRtl ? 'مساعد وصل الذكي' : 'WASL AI Companion'}</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                </h3>
+                <p className="text-[10px] text-gray-400">
+                  {journey.origin.flag} {journey.origin.name} → {journey.destination.flag} {journey.destination.name} ({journey.destinationCity})
+                </p>
               </div>
             </div>
 
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setAssistantOpen(false)}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white transition"
+                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition"
               >
-                <Minimize2 className="w-4 h-4" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>

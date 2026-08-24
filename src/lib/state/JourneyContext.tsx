@@ -7,23 +7,55 @@ import {
   CultureGuidance,
   LocalLanguageData,
   ReligionContextData,
+  TourismItineraryOption,
+  EmergencyContactInfo,
+  AccommodationRecommendation,
+  MedicalGuidance,
   generateDefaultStages,
   getDefaultCulture,
   getDefaultPhrases,
   getDefaultReligion,
+  getDefaultTourismOptions,
+  getDefaultAccommodation,
+  getDefaultMedicalGuidance,
+  getEmergencyData,
 } from '../data/defaultJourneys';
 
-export type JourneyScreen = 'landing' | 'setup' | 'transition' | 'dashboard';
-export type NavTab = 'journey' | 'discover' | 'culture' | 'language' | 'translate' | 'religion' | 'safety' | 'assistant';
-export type JourneyPurpose = 'study' | 'work' | 'travel' | 'relocation' | 'visit' | 'business' | 'other';
+export type JourneyScreen = 'landing' | 'intro' | 'setup' | 'transition' | 'dashboard';
+export type NavTab =
+  | 'journey'
+  | 'discover'
+  | 'nearby'
+  | 'culture'
+  | 'language'
+  | 'translate'
+  | 'religion'
+  | 'safety'
+  | 'emergency'
+  | 'assistant';
+
+export type JourneyPurpose = 'tourism' | 'study' | 'work' | 'relocation' | 'medical' | 'recovery' | 'visit' | 'business' | 'other';
 export type JourneyDuration = 'days' | 'weeks' | 'months' | 'yearPlus';
+export type TravelParty = 'solo' | 'couple' | 'family' | 'friends' | 'group';
+export type BudgetLevel = 'budget' | 'moderate' | 'luxury';
 
 export interface JourneyDetails {
   origin: CountryInfo;
   destination: CountryInfo;
   destinationCity: string;
+  travelParty: TravelParty;
+  budget: BudgetLevel;
   accommodationArea?: string;
   accommodationStatus?: 'booked' | 'not_booked' | 'unknown';
+  accommodationRecommendations?: any[];
+  medicalGuidance?: any;
+  medicalDetails?: {
+    specialty?: string;
+    patientAge?: number | string;
+    purpose?: string;
+    companionCount?: number;
+  };
+  durationText?: string;
   dates?: string;
   travelStyle?: string;
   interests?: string[];
@@ -32,6 +64,8 @@ export interface JourneyDetails {
   duration: JourneyDuration;
   persona: string;
   additionalNeeds: string;
+  tourismOptions?: TourismItineraryOption[];
+  selectedTourismOptionId?: string;
 }
 
 interface JourneyContextType {
@@ -46,6 +80,12 @@ interface JourneyContextType {
   activeStageIndex: number;
   setActiveStageIndex: (idx: number) => void;
   toggleTaskCompletion: (stageId: string, taskId: string) => void;
+  readinessPercentage: number;
+  tourismOptions: TourismItineraryOption[];
+  selectedTourismOptionId: string;
+  setSelectedTourismOptionId: (id: string) => void;
+  emergencyData: EmergencyContactInfo;
+  setEmergencyData: React.Dispatch<React.SetStateAction<EmergencyContactInfo>>;
   culture: CultureGuidance;
   setCulture: React.Dispatch<React.SetStateAction<CultureGuidance>>;
   languageData: LocalLanguageData;
@@ -61,6 +101,10 @@ interface JourneyContextType {
   setAiProvider: (p: string) => void;
   customApiKey: string;
   setCustomApiKey: (k: string) => void;
+  customPlacesKey: string;
+  setCustomPlacesKey: (k: string) => void;
+  customSearchKey: string;
+  setCustomSearchKey: (k: string) => void;
   startNewJourney: () => void;
   commitJourney: (details: JourneyDetails) => Promise<void>;
   refreshCultureAI: () => Promise<void>;
@@ -78,10 +122,12 @@ const initialJourney: JourneyDetails = {
   origin: defaultOrigin,
   destination: defaultDestination,
   destinationCity: 'Tokyo',
+  travelParty: 'solo',
+  budget: 'moderate',
   accommodationArea: '',
-  purpose: 'study',
-  duration: 'yearPlus',
-  persona: 'Student',
+  purpose: 'tourism',
+  duration: 'weeks',
+  persona: 'Traveler',
   additionalNeeds: '',
 };
 
@@ -94,8 +140,13 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
   const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [assistantOpen, setAssistantOpen] = useState<boolean>(false);
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
+  
+  // API Keys state
   const [aiProvider, setAiProviderState] = useState<string>('gemini');
   const [customApiKey, setCustomApiKeyState] = useState<string>('');
+  const [customPlacesKey, setCustomPlacesKeyState] = useState<string>('');
+  const [customSearchKey, setCustomSearchKeyState] = useState<string>('');
+
   const [isLoadingJourneyData, setIsLoadingJourneyData] = useState<boolean>(false);
   const [isAiRefreshing, setIsAiRefreshing] = useState<boolean>(false);
 
@@ -107,6 +158,28 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
       initialJourney.destinationCity
     )
   );
+
+  const [tourismOptions, setTourismOptions] = useState<TourismItineraryOption[]>(() =>
+    getDefaultTourismOptions(
+      initialJourney.destination.name,
+      initialJourney.destinationCity,
+      initialJourney.duration,
+      initialJourney.interests,
+      initialJourney.travelParty
+    )
+  );
+
+  const [selectedTourismOptionId, setSelectedTourismOptionId] = useState<string>(() =>
+    tourismOptions[0]?.id || 'option-a'
+  );
+
+  const [emergencyData, setEmergencyData] = useState<EmergencyContactInfo>(() =>
+    getEmergencyData(
+      initialJourney.destination.name,
+      initialJourney.origin.name
+    )
+  );
+
   const [culture, setCulture] = useState<CultureGuidance>(() =>
     getDefaultCulture(initialJourney.destination.name, initialJourney.destinationCity)
   );
@@ -122,6 +195,10 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
     if (savedProvider) setAiProviderState(savedProvider);
     const savedKey = localStorage.getItem('wasl_custom_api_key');
     if (savedKey) setCustomApiKeyState(savedKey);
+    const savedPlaces = localStorage.getItem('wasl_places_key');
+    if (savedPlaces) setCustomPlacesKeyState(savedPlaces);
+    const savedSearch = localStorage.getItem('wasl_search_key');
+    if (savedSearch) setCustomSearchKeyState(savedSearch);
   }, []);
 
   const setAiProvider = (p: string) => {
@@ -132,6 +209,16 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
   const setCustomApiKey = (k: string) => {
     setCustomApiKeyState(k);
     localStorage.setItem('wasl_custom_api_key', k);
+  };
+
+  const setCustomPlacesKey = (k: string) => {
+    setCustomPlacesKeyState(k);
+    localStorage.setItem('wasl_places_key', k);
+  };
+
+  const setCustomSearchKey = (k: string) => {
+    setCustomSearchKeyState(k);
+    localStorage.setItem('wasl_search_key', k);
   };
 
   const updateJourney = (partial: Partial<JourneyDetails>) => {
@@ -155,20 +242,33 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  // Calculate overall readiness percentage
+  const allTasks = stages.flatMap((s) => s.thingsToCheck);
+  const completedTasks = allTasks.filter((t) => t.completed);
+  const readinessPercentage =
+    allTasks.length > 0 ? Math.round((completedTasks.length / allTasks.length) * 100) : 0;
+
   const startNewJourney = () => {
     setScreen('setup');
   };
 
   const getPayload = (details = journey) => ({
     origin: details.origin.name,
+    originCountry: details.origin,
     destination: details.destination.name,
+    destinationCountry: details.destination,
     destinationCity: details.destinationCity || details.destination.capital,
     accommodationArea: details.accommodationArea,
+    travelParty: details.travelParty,
+    budget: details.budget,
     purpose: details.purpose,
     duration: details.duration,
     persona: details.persona,
     additionalNeeds: details.additionalNeeds,
+    interests: details.interests,
     apiKey: customApiKey || undefined,
+    placesKey: customPlacesKey || undefined,
+    searchKey: customSearchKey || undefined,
     provider: aiProvider,
   });
 
@@ -249,25 +349,61 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
   };
 
   const commitJourney = async (details: JourneyDetails) => {
+    const destName = details.destination.name;
+    const originName = details.origin.name;
+    const cityName = details.destinationCity || details.destination.capital;
+
+    // Attach accommodation recommendations if not already booked
+    if (details.accommodationStatus !== 'booked' && !details.accommodationRecommendations) {
+      details.accommodationRecommendations = getDefaultAccommodation(
+        destName,
+        cityName,
+        details.durationText || details.duration,
+        details.purpose,
+        details.budget,
+        details.travelParty
+      );
+    }
+
+    // Attach medical guidance if purpose is medical/recovery
+    if ((details.purpose === 'medical' || details.purpose === 'recovery') && !details.medicalGuidance) {
+      details.medicalGuidance = getDefaultMedicalGuidance(
+        destName,
+        cityName,
+        details.medicalDetails?.specialty || 'General Medicine & Recovery',
+        details.medicalDetails?.purpose || 'Consultation & Treatment',
+        details.medicalDetails?.patientAge
+      );
+    }
+
     setJourney(details);
     setActiveStageIndex(0);
     setScreen('transition');
 
-    const destName = details.destination.name;
-    const cityName = details.destinationCity || details.destination.capital;
+    // Instant local default rendering
+    const defaultStgs = generateDefaultStages(originName, destName, details.purpose, cityName);
+    const defaultOpts = getDefaultTourismOptions(
+      destName,
+      cityName,
+      details.durationText || details.duration,
+      details.interests,
+      details.travelParty
+    );
+    const defaultEmerg = getEmergencyData(destName, originName);
 
-    // Set immediate defaults for instant rendering
-    setStages(generateDefaultStages(details.origin.name, destName, details.purpose, cityName));
+    setStages(defaultStgs);
+    setTourismOptions(defaultOpts);
+    setSelectedTourismOptionId(defaultOpts[0]?.id || 'plan-a-balanced');
+    setEmergencyData(defaultEmerg);
     setCulture(getDefaultCulture(destName, cityName));
     setLanguageData(getDefaultPhrases(destName, cityName));
     setReligion(getDefaultReligion(destName, cityName));
 
-    // Staggered parallel AI calls with our multi-model cascade
+    // Async AI enhancements
     setIsLoadingJourneyData(true);
     try {
       const payload = getPayload(details);
 
-      // Trigger AI calls
       fetch('/api/culture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -309,6 +445,10 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
         .then((r) => r.json())
         .then((data) => {
           if (data.success && data.stages) setStages(data.stages);
+          if (data.success && data.tourismOptions && data.tourismOptions.length > 0) {
+            setTourismOptions(data.tourismOptions);
+            setSelectedTourismOptionId(data.tourismOptions[0].id);
+          }
         })
         .catch(console.warn);
     } catch (err) {
@@ -332,6 +472,12 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
         activeStageIndex,
         setActiveStageIndex,
         toggleTaskCompletion,
+        readinessPercentage,
+        tourismOptions,
+        selectedTourismOptionId,
+        setSelectedTourismOptionId,
+        emergencyData,
+        setEmergencyData,
         culture,
         setCulture,
         languageData,
@@ -347,6 +493,10 @@ export function JourneyProvider({ children }: { children: React.ReactNode }) {
         setAiProvider,
         customApiKey,
         setCustomApiKey,
+        customPlacesKey,
+        setCustomPlacesKey,
+        customSearchKey,
+        setCustomSearchKey,
         startNewJourney,
         commitJourney,
         refreshCultureAI,

@@ -12,6 +12,39 @@
   --wasl-particle-color: #f472b6;
 }
 
+html.light {
+  --background: #0d1326;
+  --foreground: #f8fafc;
+  --wasl-primary: #ec4899;
+  --wasl-secondary: #818cf8;
+  --wasl-accent: #38bdf8;
+  --wasl-glow: rgba(236, 72, 153, 0.38);
+  --wasl-card-bg: rgba(20, 27, 48, 0.88);
+  --wasl-border-glow: rgba(236, 72, 153, 0.35);
+  --wasl-particle-color: #f472b6;
+}
+
+html.light body {
+  background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, rgba(236, 72, 153, 0.12) 30%, #0d1326 70%);
+  background-color: #0d1326;
+  color: #f8fafc;
+}
+
+html.light .bg-\[\#070A14\],
+html.light .bg-\[\#0B0E17\],
+html.light .bg-\[\#0F1424\],
+html.light .bg-\[\#121728\],
+html.light .bg-\[\#14192B\] {
+  background-color: rgba(20, 27, 48, 0.9) !important;
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2), 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+html.light .border-white\/10,
+html.light .border-white\/15,
+html.light .border-white\/20 {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
 html {
   font-family: 'Plus Jakarta Sans', 'Cairo', system-ui, -apple-system, sans-serif;
 }

@@ -6,6 +6,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useTheme } from '@/lib/theme/ThemeContext';
 import { useJourney } from '@/lib/state/JourneyContext';
 import { Globe, Moon, Sun, ArrowRight, ArrowLeft, Settings, Sparkles, ChevronDown } from 'lucide-react';
+import AboutWaslFooter from '@/components/common/AboutWaslFooter';
 
 const GlobeCanvas = dynamic(() => import('./GlobeCanvas'), { ssr: false });
 
@@ -108,13 +109,14 @@ export default function LandingHero() {
             </p>
           </div>
 
-          {/* Primary CTA Button (matches reference design pink pill with circle arrow) */}
-          <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          {/* Action Button: About WASL (Leads directly to IntroScreen) */}
+          <div className="pt-4 flex items-center">
             <button
-              onClick={() => setScreen('setup')}
+              onClick={() => setScreen('intro')}
               className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white font-semibold text-base sm:text-lg shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
             >
-              <span>{t.startJourney}</span>
+              <Sparkles className="w-5 h-5 text-white animate-pulse" />
+              <span>{isRtl ? 'عن وَصل' : 'About WASL'}</span>
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 group-hover:scale-110 transition-transform">
                 {isRtl ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
               </div>
@@ -142,13 +144,16 @@ export default function LandingHero() {
       {/* Bottom Scroll Indicator */}
       <footer className="relative z-10 w-full py-6 flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 transition">
         <button
-          onClick={() => setScreen('setup')}
+          onClick={() => setScreen('intro')}
           className="flex flex-col items-center gap-1.5 text-xs uppercase tracking-widest animate-bounce"
         >
           <ChevronDown className="w-4 h-4 text-pink-400" />
           <span>{t.scrollExplore}</span>
         </button>
       </footer>
+
+      {/* About WASL & Team Footer (Requirements 26 & 27) */}
+      <AboutWaslFooter />
     </div>
   );
 }

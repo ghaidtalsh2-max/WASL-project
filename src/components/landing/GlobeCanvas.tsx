@@ -184,25 +184,110 @@ export default function GlobeCanvas({
       return new THREE.Vector3(x, y, z);
     }
 
-    // 7. Markers (Origin & Destination)
+    // 7. Global Transit Network Hubs & Secondary Arcs
+    const globalHubs = [
+      { name: 'Riyadh', lat: 24.7136, lng: 46.6753 },
+      { name: 'Tokyo', lat: 35.6762, lng: 139.6503 },
+      { name: 'Dubai', lat: 25.2048, lng: 55.2708 },
+      { name: 'Istanbul', lat: 41.0082, lng: 28.9784 },
+      { name: 'Cairo', lat: 30.0444, lng: 31.2357 },
+      { name: 'London', lat: 51.5074, lng: -0.1278 },
+      { name: 'Paris', lat: 48.8566, lng: 2.3522 },
+      { name: 'Prague', lat: 50.0755, lng: 14.4378 },
+      { name: 'Singapore', lat: 1.3521, lng: 103.8198 },
+      { name: 'New York', lat: 40.7128, lng: -74.0060 },
+    ];
+
+    const hubPositions = globalHubs.map((h) =>
+      latLngToVector3(h.lat, h.lng, globeRadius * 1.01)
+    );
+
+    // Add visual beacons for all global network hubs
+    const hubMarkerGeo = new THREE.SphereGeometry(0.014, 12, 12);
+    const hubMarkerMat = new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0.85 });
+
+    hubPositions.forEach((pos) => {
+      const hubMesh = new THREE.Mesh(hubMarkerGeo, hubMarkerMat);
+      hubMesh.position.copy(pos);
+      globeMesh.add(hubMesh);
+    });
+
+    // Secondary Global Transit Arcs & Moving Photons
+    interface NetworkArc {
+      curve: THREE.QuadraticBezierCurve3;
+      photon: THREE.Mesh;
+      progress: number;
+      speed: number;
+    }
+
+    const networkArcs: NetworkArc[] = [];
+    const hubConnections: Array<[number, number]> = [
+      [0, 2], // Riyadh - Dubai
+      [2, 3], // Dubai - Istanbul
+      [0, 4], // Riyadh - Cairo
+      [3, 7], // Istanbul - Prague
+      [7, 6], // Prague - Paris
+      [6, 5], // Paris - London
+      [5, 9], // London - New York
+      [2, 8], // Dubai - Singapore
+      [8, 1], // Singapore - Tokyo
+      [3, 1], // Istanbul - Tokyo
+      [4, 6], // Cairo - Paris
+    ];
+
+    const secondaryArcMat = new THREE.LineBasicMaterial({
+      color: 0x818cf8,
+      linewidth: 1,
+      transparent: true,
+      opacity: 0.35,
+    });
+
+    const photonGeoSecondary = new THREE.SphereGeometry(0.012, 8, 8);
+    const photonMatSecondary = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+    hubConnections.forEach(([i1, i2]) => {
+      const p1 = hubPositions[i1];
+      const p2 = hubPositions[i2];
+      const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
+      const dist = p1.distanceTo(p2);
+      mid.normalize().multiplyScalar(globeRadius + dist * 0.28);
+
+      const curve = new THREE.QuadraticBezierCurve3(p1, mid, p2);
+      const points = curve.getPoints(25);
+      const geom = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geom, secondaryArcMat);
+      globeMesh.add(line);
+
+      const photon = new THREE.Mesh(photonGeoSecondary, photonMatSecondary);
+      globeMesh.add(photon);
+
+      networkArcs.push({
+        curve,
+        photon,
+        progress: Math.random(),
+        speed: 0.004 + Math.random() * 0.007,
+      });
+    });
+
+    // 8. Markers (Origin & Destination)
     const originPos = latLngToVector3(originLat, originLng, globeRadius * 1.01);
     const destPos = latLngToVector3(destLat, destLng, globeRadius * 1.01);
 
     // Origin Marker (Gold / Sand)
-    const originMarkerGeo = new THREE.SphereGeometry(0.024, 16, 16);
+    const originMarkerGeo = new THREE.SphereGeometry(0.026, 16, 16);
     const originMarkerMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
     const originMarker = new THREE.Mesh(originMarkerGeo, originMarkerMat);
     originMarker.position.copy(originPos);
     globeMesh.add(originMarker);
 
     // Destination Marker (Pink / Magenta)
-    const destMarkerGeo = new THREE.SphereGeometry(0.028, 16, 16);
+    const destMarkerGeo = new THREE.SphereGeometry(0.03, 16, 16);
     const destMarkerMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e });
     const destMarker = new THREE.Mesh(destMarkerGeo, destMarkerMat);
     destMarker.position.copy(destPos);
     globeMesh.add(destMarker);
 
-    // 8. Flight Trajectory Arc
+    // 9. Primary Flight Trajectory Arc
     let curveMesh: THREE.Line | null = null;
     let photonMesh: THREE.Mesh | null = null;
     let curvePath: THREE.QuadraticBezierCurve3 | null = null;
@@ -211,22 +296,22 @@ export default function GlobeCanvas({
       // Calculate arc apex point above sphere
       const midPoint = new THREE.Vector3().addVectors(originPos, destPos).multiplyScalar(0.5);
       const distance = originPos.distanceTo(destPos);
-      midPoint.normalize().multiplyScalar(globeRadius + distance * 0.4);
+      midPoint.normalize().multiplyScalar(globeRadius + distance * 0.42);
 
       curvePath = new THREE.QuadraticBezierCurve3(originPos, midPoint, destPos);
       const points = curvePath.getPoints(50);
       const arcGeometry = new THREE.BufferGeometry().setFromPoints(points);
       const arcMaterial = new THREE.LineBasicMaterial({
         color: 0xec4899,
-        linewidth: 2,
+        linewidth: 3,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.95,
       });
       curveMesh = new THREE.Line(arcGeometry, arcMaterial);
       globeMesh.add(curveMesh);
 
-      // Flying photon / plane light
-      const photonGeo = new THREE.SphereGeometry(0.02, 16, 16);
+      // Flying primary photon / plane light with glow
+      const photonGeo = new THREE.SphereGeometry(0.024, 16, 16);
       const photonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
       photonMesh = new THREE.Mesh(photonGeo, photonMat);
       globeMesh.add(photonMesh);
@@ -310,17 +395,26 @@ export default function GlobeCanvas({
         starField.rotation.y += 0.0003;
       }
 
-      // Animate flight photon along arc
+      // Animate secondary network photons across the 3D globe
+      networkArcs.forEach((na) => {
+        na.progress += na.speed;
+        if (na.progress > 1) na.progress = 0;
+        const pt = na.curve.getPoint(na.progress);
+        na.photon.position.copy(pt);
+      });
+
+      // Animate primary flight photon along main arc
       if (photonMesh && curvePath) {
-        progress += 0.007;
+        progress += 0.008;
         if (progress > 1) progress = 0;
         const currentPos = curvePath.getPoint(progress);
         photonMesh.position.copy(currentPos);
       }
 
-      // Marker pulse animation
-      const scale = 1 + Math.sin(Date.now() * 0.005) * 0.2;
+      // Marker pulse animation for origin & destination
+      const scale = 1 + Math.sin(Date.now() * 0.006) * 0.25;
       destMarker.scale.set(scale, scale, scale);
+      originMarker.scale.set(1 + Math.cos(Date.now() * 0.006) * 0.2, 1 + Math.cos(Date.now() * 0.006) * 0.2, 1 + Math.cos(Date.now() * 0.006) * 0.2);
 
       renderer.render(scene, camera);
     };

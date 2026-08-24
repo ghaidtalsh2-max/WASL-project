@@ -48,7 +48,7 @@ export default function DestinationTransition() {
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [journey.destination.name, destinationTheme, setDestinationThemeByName, setScreen]);
+  }, [journey.destination.name, setDestinationThemeByName, setScreen]);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-[#070A14] text-white p-6 overflow-hidden">

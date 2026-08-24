@@ -5,6 +5,16 @@
 
 > **One world. Many cultures. One connection.**
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fghaidtalsh2-max%2FWASL-project)
+
+---
+
+## 🚀 Live Demo & Deployment
+- **GitHub Repository:** [https://github.com/ghaidtalsh2-max/WASL-project](https://github.com/ghaidtalsh2-max/WASL-project)
+- **Deploy to Vercel:** Click the Deploy button above or import the repository directly on [Vercel Dashboard](https://vercel.com/new).
+
+---
+
 ## 🌍 About WASL
 
 Traditional travel apps help people find places, hotels, transportation, and attractions. WASL focuses on what happens around those decisions: understanding a destination and adapting to daily life there.

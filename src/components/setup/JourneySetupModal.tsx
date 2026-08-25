@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useJourney, JourneyPurpose, JourneyDuration, JourneyDetails } from '@/lib/state/JourneyContext';
-import { COUNTRIES, CountryInfo, findCountry } from '@/lib/data/countries';
+import { COUNTRIES, CountryInfo, findCountry, createDynamicCountry, getCountryFlagEmoji } from '@/lib/data/countries';
+import { parseDurationToDays } from '@/lib/data/defaultJourneys';
+import { useSpeechToText } from '@/lib/hooks/useSpeechToText';
 import NetworkTransitMesh from './NetworkTransitMesh';
 import {
   ArrowLeft,
@@ -21,6 +23,8 @@ import {
   Building,
   Clock,
   Plane,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 
 interface MissingQuestion {
@@ -173,6 +177,31 @@ export default function JourneySetupModal() {
   const [suggestedPlans, setSuggestedPlans] = useState<any[] | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
+  // Requirement 2: Dynamic "No Plan" 2-Question Diagnostic Filter State
+  const [noPlanHasCity, setNoPlanHasCity] = useState<'yes' | 'no' | null>(null);
+  const [noPlanCityText, setNoPlanCityText] = useState<string>('');
+  const [noPlanPreferredVibe, setNoPlanPreferredVibe] = useState<string>('nature');
+
+  // Requirement 4: Global Custom Hook for Speech Recognition (Safari & Web Speech API)
+  const {
+    isListening: isListeningManual,
+    toggleListening: toggleManualSpeechHook,
+  } = useSpeechToText({
+    lang: isRtl ? 'ar-SA' : 'en-US',
+  });
+
+  const toggleManualSpeechRecognition = () => {
+    toggleManualSpeechHook(isRtl ? 'ar-SA' : 'en-US', (text) => {
+      if (text) {
+        setManualText((prev) => {
+          // If the text starts fresh or appends
+          const trimmed = prev.trim();
+          return trimmed ? `${trimmed} ${text}` : text;
+        });
+      }
+    });
+  };
+
   const swapLocations = () => {
     const temp = origin;
     setOrigin(destination);
@@ -186,7 +215,7 @@ export default function JourneySetupModal() {
     );
   };
 
-  // Generate 2 suggested plans when user has no destination in mind
+  // Generate 2 suggested plans dynamically when user has no destination in mind
   const handleGenerateSuggestedPlans = async () => {
     setIsGeneratingPlans(true);
     setApiError(null);
@@ -198,11 +227,15 @@ export default function JourneySetupModal() {
         body: JSON.stringify({
           interests: selectedInterests,
           duration,
+          durationPreset,
+          customDurationDays,
           dates: datesOrSeason,
           travelParty,
           budget,
           travelStyle,
           purpose,
+          preferredVibe: noPlanPreferredVibe,
+          targetCities: noPlanHasCity === 'yes' ? noPlanCityText : '',
           origin: origin?.name || 'Any',
           freeText: manualText || additionalNotes,
         }),
@@ -214,7 +247,7 @@ export default function JourneySetupModal() {
         setSelectedPlanId(data.suggestedPlans[0].id);
         setSetupStep('plans');
       } else {
-        setApiError(data.error || 'Could not generate plans. Please check settings or select a destination directly.');
+        setApiError(data.error || (isRtl ? 'تعذر تصميم الخطط بالذكاء. يرجى المحاولة مرة أخرى.' : 'Could not generate plans. Please try again.'));
       }
     } catch (err: any) {
       setApiError(err.message || 'Connection error while creating plans.');
@@ -223,29 +256,49 @@ export default function JourneySetupModal() {
     }
   };
 
-  // Launch journey with adopted plan
+  // Launch journey with adopted plan - Single Source of Truth for Country, City, and Flag
   const handleAdoptPlan = (plan: any) => {
-    const matchedDest =
+    const countryQuery = plan.destinationCountry || plan.destinationCountryAr || '';
+    let matchedDest =
+      findCountry(countryQuery) ||
       findCountry(plan.destinationCountry) ||
-      COUNTRIES.find((c) => c.name.toLowerCase().includes(plan.destinationCountry.toLowerCase())) ||
-      destination ||
-      COUNTRIES[1];
+      findCountry(plan.destinationCountryAr) ||
+      findCountry(plan.destinationCity) ||
+      findCountry(plan.isoCode) ||
+      createDynamicCountry(plan.destinationCountry || 'Destination', plan.destinationCountryAr, plan.destinationCity);
+
+    // Guaranteed matching flag
+    const verifiedFlag = plan.flag && plan.flag !== '🌐'
+      ? plan.flag
+      : getCountryFlagEmoji(plan.destinationCountry || plan.isoCode || matchedDest.name);
+
+    matchedDest = {
+      ...matchedDest,
+      flag: verifiedFlag,
+      name: plan.destinationCountry || matchedDest.name,
+      nameAr: plan.destinationCountryAr || matchedDest.nameAr,
+      capital: plan.destinationCity || matchedDest.capital,
+      capitalAr: plan.destinationCityAr || matchedDest.capitalAr,
+    };
+
+    const targetCity = plan.destinationCity || matchedDest.capital;
 
     commitJourney({
       origin: origin || COUNTRIES[0],
       destination: matchedDest,
-      destinationCity: plan.destinationCity || matchedDest.capital,
+      destinationCity: targetCity,
       accommodationArea: '',
       accommodationStatus,
       travelParty,
       budget,
-      dates: datesOrSeason,
+      dates: datesOrSeason || '2026-09-01',
       travelStyle,
       interests: selectedInterests,
       purpose: purpose || 'tourism',
       duration: duration || 'weeks',
       persona: purpose === 'study' ? 'Student' : travelParty === 'family' ? 'Family' : 'Traveler',
       additionalNeeds: `${plan.title} - ${plan.tagline}`,
+      activePlan: plan,
     });
   };
 
@@ -256,22 +309,43 @@ export default function JourneySetupModal() {
       return;
     }
 
+    // [A] Mandatory Departure Date Validation for ALL categories
+    if (!datesOrSeason.trim()) {
+      setApiError(
+        isRtl
+          ? '⚠️ تاريخ المغادرة إلزامي لجميع أغراض السفر لمطابقة المواسم والتوقيتات التشغيلية والمواعيد الرسمية.'
+          : '⚠️ Departure date is strictly mandatory across all travel categories.'
+      );
+      return;
+    }
+
+    // [B] Mandatory City Validation for Study, Work, and Relocation
+    if ((purpose === 'study' || purpose === 'work' || purpose === 'relocation') && !destinationCity.trim()) {
+      setApiError(
+        isRtl
+          ? '⚠️ تحديد مدينة الوجهة إلزامي لرحلات الدراسة والعمل والاستقرار لتجهيز السكن والخدمات المعيشية.'
+          : '⚠️ Destination city is strictly mandatory for Study, Work, and Relocation.'
+      );
+      return;
+    }
+
+    setApiError(null);
+
     const finalOrigin = origin || COUNTRIES[0];
     const finalDest = destination || COUNTRIES[1];
     const finalCity = destinationCity.trim() || finalDest.capital || 'Capital';
 
-    let durationText = `${customDurationDays} days`;
-    if (duration === 'days') {
-      durationText = `${customDurationDays || 5} days`;
-    } else if (duration === 'weeks') {
-      const w = durationPreset === '1_week' ? 1 : durationPreset === '2_weeks' ? 2 : durationPreset === '3_weeks' ? 3 : durationPreset === '4_weeks' ? 4 : Math.max(1, Math.round((customDurationDays || 14) / 7));
-      durationText = `${w} weeks`;
+    let finalDays = customDurationDays || 14;
+    if (duration === 'weeks') {
+      finalDays = durationPreset === '1_week' ? 7 : durationPreset === '2_weeks' ? 14 : durationPreset === '3_weeks' ? 21 : durationPreset === '4_weeks' ? 28 : (customDurationDays || 14);
     } else if (duration === 'months') {
-      const m = durationPreset === '1_month' ? 1 : durationPreset === '2_months' ? 2 : durationPreset === '3_months' ? 3 : durationPreset === '6_months' ? 6 : 1;
-      durationText = `${m} months`;
+      finalDays = 30;
     } else if (duration === 'yearPlus') {
-      durationText = '1 year';
+      finalDays = 30;
+    } else if (duration === 'days') {
+      finalDays = customDurationDays || 5;
     }
+    const durationText = `${finalDays} days`;
 
     commitJourney({
       origin: finalOrigin,
@@ -290,7 +364,8 @@ export default function JourneySetupModal() {
       medicalDetails: (purpose === 'medical' || (purpose as any) === 'recovery') ? {
         specialty: medicalSpecialty || 'General Medicine & Recovery',
         patientAge: patientAge || undefined,
-        purpose: medicalPurpose || 'Consultation & Treatment',
+        purpose: medicalPurpose || 'SURGERY_SPECIALIZED',
+        medicalSubCategory: (medicalPurpose === 'wellness' || medicalPurpose === 'RECOVERY_WELLNESS' || medicalPurpose === 'rehabilitation') ? 'RECOVERY_WELLNESS' : 'SURGERY_SPECIALIZED',
         companionCount: companionCount || 1,
       } : undefined,
       persona: purpose === 'study' ? 'Student' : purpose === 'work' ? 'Professional' : (purpose === 'medical' || (purpose as any) === 'recovery') ? 'Patient / Health Traveler' : 'Traveler',
@@ -373,7 +448,7 @@ export default function JourneySetupModal() {
             interests: ext.interests || [],
             purpose: ext.purpose || 'tourism',
             duration: ext.duration || 'weeks',
-            durationText: ext.duration || (ext.durationDays ? `${ext.durationDays} days` : '2 weeks'),
+            durationText: `${ext.durationDays || parseDurationToDays(ext.durationText || manualText || '14 days')} days`,
             medicalDetails: ext.medicalDetails || undefined,
             persona: ext.persona || 'Traveler',
             additionalNeeds: manualText,
@@ -911,6 +986,91 @@ export default function JourneySetupModal() {
                   </p>
                 </button>
               </div>
+
+              {/* Requirement 2: Dynamic "No Plan" 2-Question Diagnostic Filter */}
+              {destinationChoice === 'plan_for_me' && (
+                <div className="mt-4 p-5 rounded-2xl bg-gradient-to-br from-purple-500/15 via-pink-500/5 to-transparent border border-purple-500/30 space-y-4">
+                  <div className="flex items-center gap-2 border-b border-white/10 pb-2.5">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <span className="text-xs font-bold text-white">
+                      {isRtl ? 'استبيان التوجيه الذكي المخصص (خطوات سريعة):' : 'Smart Autonomous Routing Diagnostic:'}
+                    </span>
+                  </div>
+
+                  {/* Q1: Do you have specific cities/countries in mind? */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-semibold text-purple-300">
+                      {isRtl ? 'السؤال 1: هل لديك مدن أو دول محددة تود الذهاب إليها؟' : 'Q1: Do you have specific cities or countries in mind?'}
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNoPlanHasCity('yes')}
+                        className={`p-2.5 rounded-xl border text-xs font-semibold transition ${
+                          noPlanHasCity === 'yes'
+                            ? 'bg-purple-500/30 border-purple-400 text-white shadow-md'
+                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                        }`}
+                      >
+                        {isRtl ? 'نعم (أود تحديدها)' : 'Yes (I have preferences)'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNoPlanHasCity('no');
+                          setNoPlanCityText('');
+                        }}
+                        className={`p-2.5 rounded-xl border text-xs font-semibold transition ${
+                          noPlanHasCity === 'no'
+                            ? 'bg-purple-500/30 border-purple-400 text-white shadow-md'
+                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                        }`}
+                      >
+                        {isRtl ? 'لا (اقترح لي ذكياً بالكامل)' : 'No (AI Autonomous Routing)'}
+                      </button>
+                    </div>
+
+                    {noPlanHasCity === 'yes' && (
+                      <input
+                        type="text"
+                        value={noPlanCityText}
+                        onChange={(e) => setNoPlanCityText(e.target.value)}
+                        placeholder={isRtl ? 'مثال: سويسرا، إيطاليا، طوكيو، فلوريدا...' : 'e.g. Switzerland, Tokyo, Tuscany, Florida...'}
+                        className="w-full mt-2 bg-white/5 border border-purple-500/40 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-purple-400"
+                      />
+                    )}
+                  </div>
+
+                  {/* Q2: Preferred Atmosphere */}
+                  <div className="space-y-2 pt-2 border-t border-white/10">
+                    <label className="block text-xs font-semibold text-purple-300">
+                      {isRtl ? 'السؤال 2: ما هي الأجواء وتجربة السفر المفضلة لديك؟' : 'Q2: What is your preferred atmosphere & travel vibe?'}
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'nature', icon: '🌿', labelAr: 'هدوء وطبيعة', labelEn: 'Nature & Serenity' },
+                        { id: 'history', icon: '🏛️', labelAr: 'تاريخ وثقافة', labelEn: 'History & Culture' },
+                        { id: 'entertainment', icon: '🎢', labelAr: 'ألعاب ومدن', labelEn: 'Fun & City Life' },
+                        { id: 'beach', icon: '🏖️', labelAr: 'شواطئ ونقاهة', labelEn: 'Beaches & Recovery' },
+                      ].map((vibe) => (
+                        <button
+                          key={vibe.id}
+                          type="button"
+                          onClick={() => setNoPlanPreferredVibe(vibe.id)}
+                          className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition ${
+                            noPlanPreferredVibe === vibe.id
+                              ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-pink-400 text-white shadow-md'
+                              : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                          }`}
+                        >
+                          <span className="text-base">{vibe.icon}</span>
+                          <span>{isRtl ? vibe.labelAr : vibe.labelEn}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* If Specific Destination Chosen: Render Origin & Destination Selectors */}
@@ -1185,10 +1345,10 @@ export default function JourneySetupModal() {
                         onChange={(e) => setMedicalPurpose(e.target.value)}
                         className="w-full bg-[#14192B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
                       >
-                        <option value="consultation">{isRtl ? 'فحوصات واستشارة تخصصية (Second Opinion)' : 'Consultation & Diagnostics'}</option>
-                        <option value="surgery">{isRtl ? 'عملية جراحية وعلاج متقدم' : 'Specialized Surgery / Procedure'}</option>
-                        <option value="rehabilitation">{isRtl ? 'علاج طبيعي وتأهيل حركي' : 'Rehabilitation & Physical Therapy'}</option>
-                        <option value="wellness">{isRtl ? 'استشفاء ونقاهة واستجمام صحي' : 'Wellness Recovery & Convalescence'}</option>
+                        <option value="SURGERY_SPECIALIZED">{isRtl ? '🏥 جراحة وعلاج متخصص ومستشفيات معتمدة (Specialized Surgery)' : '🏥 Specialized Surgery & Academic Medical Centers'}</option>
+                        <option value="RECOVERY_WELLNESS">{isRtl ? '🌿 استشفاء ونقاهة ومصحات المياه المعدنية (Sanatoriums & Wellness)' : '🌿 Spa Sanatoriums & Wellness Recovery'}</option>
+                        <option value="consultation">{isRtl ? '🩺 استشارة تخصصية وفحوصات دقيقة (Second Opinion)' : '🩺 Specialist Consultation & Diagnostics'}</option>
+                        <option value="rehabilitation">{isRtl ? '🏊 علاج طبيعي وتأهيل حركي (Rehabilitation)' : '🏊 Physical Therapy & Motor Rehab'}</option>
                       </select>
                     </div>
                     <div>
@@ -1446,18 +1606,57 @@ export default function JourneySetupModal() {
                 </div>
               )}
 
+              {duration === 'yearPlus' && (
+                <div className="flex flex-wrap gap-2 pt-2 items-center">
+                  {[
+                    { key: '1_year', days: 365, labelEn: '1 Year', labelAr: 'سنة واحدة' },
+                    { key: '2_years', days: 730, labelEn: '2 Years', labelAr: 'سنتان (ماجستير)' },
+                    { key: '3_years', days: 1095, labelEn: '3 Years', labelAr: '3 سنوات' },
+                    { key: '4_years', days: 1460, labelEn: '4 Years (Bachelor)', labelAr: '4 سنوات (بكالوريوس)' },
+                  ].map((yr) => (
+                    <button
+                      key={yr.key}
+                      type="button"
+                      onClick={() => {
+                        setDurationPreset(yr.key);
+                        setCustomDurationDays(yr.days);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
+                        durationPreset === yr.key
+                          ? 'bg-pink-500/30 border-pink-500 text-white'
+                          : 'bg-white/5 border-white/10 text-gray-300'
+                      }`}
+                    >
+                      {isRtl ? yr.labelAr : yr.labelEn}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Dates / Season Input */}
               <div className="pt-2">
                 <label className="block text-[11px] text-gray-400 mb-1 flex items-center gap-1.5">
                   <Calendar className="w-3 h-3 text-pink-400" />
-                  <span>{isRtl ? 'توقيت السفر أو الموسم (اختياري):' : 'Travel Season / Dates (Optional):'}</span>
+                  <span className={purpose === 'study' || purpose === 'work' || purpose === 'relocation' ? 'text-pink-300 font-bold' : ''}>
+                    {purpose === 'study' || purpose === 'work' || purpose === 'relocation'
+                      ? (isRtl ? 'تاريخ الذهاب (مطلوب) *' : 'Departure Date (Required) *')
+                      : (isRtl ? 'توقيت السفر أو الموسم (اختياري)' : 'Travel Timing / Season (Optional)')}
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={datesOrSeason}
                   onChange={(e) => setDatesOrSeason(e.target.value)}
-                  placeholder={isRtl ? 'مثال: أكتوبر القادم، موسم الخريف' : 'e.g. Next month, Autumn, Summer vacation'}
-                  className="w-full bg-white/5 border border-white/15 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                  placeholder={
+                    purpose === 'study' || purpose === 'work' || purpose === 'relocation'
+                      ? (isRtl ? 'مثال: 2026-09-01 أو 15 سبتمبر' : 'e.g. 2026-09-01, Sept 15')
+                      : (isRtl ? 'مثال: أكتوبر القادم، موسم الخريف' : 'e.g. Next month, Autumn, Summer vacation')
+                  }
+                  className={`w-full bg-white/5 border rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none transition ${
+                    purpose === 'study' || purpose === 'work' || purpose === 'relocation'
+                      ? 'border-pink-500/40 focus:border-pink-500'
+                      : 'border-white/15 focus:border-pink-500'
+                  }`}
                 />
               </div>
             </div>
@@ -1611,10 +1810,28 @@ export default function JourneySetupModal() {
             </div>
 
             <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-gray-300">
+                  {isRtl ? 'الوصف الحر لرحلتك:' : 'Free Trip Description:'}
+                </label>
+                <button
+                  type="button"
+                  onClick={toggleManualSpeechRecognition}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
+                    isListeningManual
+                      ? 'bg-rose-500 text-white animate-pulse border-rose-400'
+                      : 'bg-white/5 hover:bg-white/10 text-pink-300 border-pink-500/30'
+                  }`}
+                >
+                  {isListeningManual ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                  <span>{isListeningManual ? (isRtl ? 'جاري الاستماع...' : 'Listening...') : (isRtl ? 'إدخال صوتي 🎙️' : 'Voice Input 🎙️')}</span>
+                </button>
+              </div>
+
               <textarea
                 value={manualText}
                 onChange={(e) => setManualText(e.target.value)}
-                placeholder={t.naturalLanguagePlaceholder}
+                placeholder={isListeningManual ? (isRtl ? 'تحدث الآن، جاري تحويل صوتك إلى نص...' : 'Speak now, converting voice to text...') : t.naturalLanguagePlaceholder}
                 rows={5}
                 className="w-full p-4 rounded-3xl bg-white/5 border border-white/15 focus:border-pink-500 text-white text-sm focus:outline-none leading-relaxed transition"
               />

@@ -44,10 +44,10 @@ export default function NetworkTransitMesh({
   const originFlag = origin?.flag || '🇸🇦';
   const originCityAr = origin?.capitalAr || origin?.capital || 'الرياض';
 
-  const destNameAr = destination?.nameAr || 'اليابان';
-  const destNameEn = destination?.name || 'Japan';
-  const destFlag = destination?.flag || '🇯🇵';
-  const destCityAr = destinationCity || destination?.capitalAr || destination?.capital || 'طوكيو';
+  const destNameAr = destination?.nameAr || (isRtl ? 'الوجهة المحددة' : 'Destination');
+  const destNameEn = destination?.name || 'Destination';
+  const destFlag = destination?.flag || '🌐';
+  const destCityAr = destinationCity || destination?.capitalAr || destination?.capital || (isRtl ? 'المدينة' : 'City');
 
   useEffect(() => {
     const canvas = canvasRef.current;

@@ -122,12 +122,12 @@ export default function IntroScreen() {
           <div className="p-6 rounded-3xl bg-[#14192B]/80 border border-white/10 backdrop-blur-xl space-y-2.5 shadow-xl hover:border-indigo-500/30 transition-all">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-indigo-400" />
-              <span>{isRtl ? 'فلسفة الألوان ' : 'Cosmic Color Palette'}</span>
+              <span>{isRtl ? 'فلسفة الألوان' : 'Visual & Color Philosophy'}</span>
             </h3>
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
               {isRtl
-                ? 'الكحلي الفضائي العميق يرمز لعمق الفضاء ورسوخ الذكاء الاصطناعي، والوردي والأرجواني يعبران عن الدفء الإنساني والتنوع الثقافي الحي للأرض.'
-                : 'Deep space navy embodies technological depth, while vibrant magenta and violet evoke warm human cultural diversity.'}
+                ? 'تستلهم الهوية البصرية عمقها من أفق المجرة والفضاء الخارجي؛ حيث يرمز الأزرق الكحلي الداكن إلى الثقة، الاستقرار، ورصانة التخطيط، بينما يضفي الوردي الأرجواني لمسة من الحيوية، المرونة، وشغف الاكتشاف التنوعي، لتوفر تجربة بصرية متوازنة تجمع بين أمان الاستقرار وحماس الانطلاق.'
+                : 'The visual identity draws inspiration from the depth of galaxies and deep space; deep navy blue symbolizes trust, stability, and thoughtful planning, while vibrant magenta and violet add vitality, agility, and the passion of diverse cultural discovery.'}
             </p>
           </div>
         </div>

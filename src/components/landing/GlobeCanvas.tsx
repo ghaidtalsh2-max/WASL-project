@@ -239,11 +239,12 @@ export default function GlobeCanvas({
       color: 0x818cf8,
       linewidth: 1,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.5,
+      depthTest: false,
     });
 
     const photonGeoSecondary = new THREE.SphereGeometry(0.012, 8, 8);
-    const photonMatSecondary = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+    const photonMatSecondary = new THREE.MeshBasicMaterial({ color: 0x38bdf8, depthTest: false });
 
     hubConnections.forEach(([i1, i2]) => {
       const p1 = hubPositions[i1];
@@ -256,9 +257,11 @@ export default function GlobeCanvas({
       const points = curve.getPoints(25);
       const geom = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(geom, secondaryArcMat);
+      line.renderOrder = 998;
       globeMesh.add(line);
 
       const photon = new THREE.Mesh(photonGeoSecondary, photonMatSecondary);
+      photon.renderOrder = 998;
       globeMesh.add(photon);
 
       networkArcs.push({
@@ -275,16 +278,18 @@ export default function GlobeCanvas({
 
     // Origin Marker (Gold / Sand)
     const originMarkerGeo = new THREE.SphereGeometry(0.026, 16, 16);
-    const originMarkerMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+    const originMarkerMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, depthTest: false });
     const originMarker = new THREE.Mesh(originMarkerGeo, originMarkerMat);
     originMarker.position.copy(originPos);
+    originMarker.renderOrder = 999;
     globeMesh.add(originMarker);
 
     // Destination Marker (Pink / Magenta)
     const destMarkerGeo = new THREE.SphereGeometry(0.03, 16, 16);
-    const destMarkerMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e });
+    const destMarkerMat = new THREE.MeshBasicMaterial({ color: 0xf43f5e, depthTest: false });
     const destMarker = new THREE.Mesh(destMarkerGeo, destMarkerMat);
     destMarker.position.copy(destPos);
+    destMarker.renderOrder = 999;
     globeMesh.add(destMarker);
 
     // 9. Primary Flight Trajectory Arc
@@ -306,14 +311,17 @@ export default function GlobeCanvas({
         linewidth: 3,
         transparent: true,
         opacity: 0.95,
+        depthTest: false,
       });
       curveMesh = new THREE.Line(arcGeometry, arcMaterial);
+      curveMesh.renderOrder = 999;
       globeMesh.add(curveMesh);
 
       // Flying primary photon / plane light with glow
       const photonGeo = new THREE.SphereGeometry(0.024, 16, 16);
-      const photonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const photonMat = new THREE.MeshBasicMaterial({ color: 0xffffff, depthTest: false });
       photonMesh = new THREE.Mesh(photonGeo, photonMat);
+      photonMesh.renderOrder = 1000;
       globeMesh.add(photonMesh);
     }
 

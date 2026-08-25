@@ -53,6 +53,7 @@ export interface JourneyDetails {
     specialty?: string;
     patientAge?: number | string;
     purpose?: string;
+    medicalSubCategory?: 'RECOVERY_WELLNESS' | 'SURGERY_SPECIALIZED' | string;
     companionCount?: number;
   };
   durationText?: string;
@@ -66,6 +67,7 @@ export interface JourneyDetails {
   additionalNeeds: string;
   tourismOptions?: TourismItineraryOption[];
   selectedTourismOptionId?: string;
+  activePlan?: any;
 }
 
 interface JourneyContextType {

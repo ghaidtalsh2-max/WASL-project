@@ -1,3 +1,5 @@
+import { getDestinationOfficialPortals } from './officialTravelPortals';
+
 export interface DestinationResource {
   name: string;
   nameAr: string;
@@ -1174,6 +1176,157 @@ export const COUNTRIES: CountryInfo[] = [
       },
     ],
   },
+  {
+    id: 'malaysia',
+    name: 'Malaysia',
+    nameAr: 'ماليزيا',
+    flag: '🇲🇾',
+    code: 'MY',
+    capital: 'Kuala Lumpur',
+    capitalAr: 'كوالالمبور',
+    lat: 3.1390,
+    lng: 101.6869,
+    currency: 'MYR (رينغيت ماليزي)',
+    language: 'Malay / English',
+    languageCode: 'ms',
+    famousCities: [
+      { name: 'Kuala Lumpur', nameAr: 'كوالالمبور', lat: 3.1390, lng: 101.6869 },
+      { name: 'Penang', nameAr: 'بينانج', lat: 5.4141, lng: 100.3288 },
+      { name: 'Langkawi', nameAr: 'لنكاوي', lat: 6.3500, lng: 99.8000 },
+      { name: 'Putrajaya', nameAr: 'بوتراجايا', lat: 2.9264, lng: 101.6964 },
+    ],
+    officialResources: [
+      {
+        name: 'Malaysia Immigration Department (MyOnlineVisa)',
+        nameAr: 'إدارة الهجرة الماليزية (التأشيرة الإلكترونية)',
+        description: 'Official MDAC digital arrival card and eVisa system',
+        descriptionAr: 'البوابة الرسمية لبطاقة الوصول الرقمية MDAC والتأشيرات',
+        url: 'https://imigresen-online.imi.gov.my',
+        category: 'visa',
+      },
+      {
+        name: 'Tourism Malaysia',
+        nameAr: 'هيئة السياحة الماليزية الرسمية',
+        description: 'Official tourism portal and Halal culinary guide',
+        descriptionAr: 'الدليل السياحي الرسمي والمطاعم الحلال في ماليزيا',
+        url: 'https://www.malaysia.travel',
+        category: 'culture',
+      },
+    ],
+  },
+  {
+    id: 'singapore',
+    name: 'Singapore',
+    nameAr: 'سنغافورة',
+    flag: '🇸🇬',
+    code: 'SG',
+    capital: 'Singapore',
+    capitalAr: 'سنغافورة',
+    lat: 1.3521,
+    lng: 103.8198,
+    currency: 'SGD (دولار سنغافوري)',
+    language: 'English / Malay / Mandarin',
+    languageCode: 'en',
+    famousCities: [
+      { name: 'Singapore', nameAr: 'سنغافورة', lat: 1.3521, lng: 103.8198 },
+      { name: 'Sentosa', nameAr: 'سنتوسا', lat: 1.2494, lng: 103.8303 },
+      { name: 'Marina Bay', nameAr: 'مارينا باي', lat: 1.2847, lng: 103.8610 },
+    ],
+    officialResources: [
+      {
+        name: 'Immigration & Checkpoints Authority (ICA)',
+        nameAr: 'هيئة الهجرة ونقاط التفتيش السنغافورية',
+        description: 'Official SG Arrival Card and digital entry passes',
+        descriptionAr: 'البوابة الرسمية لبطاقة الوصول الإلكترونية SG Arrival Card',
+        url: 'https://www.ica.gov.sg',
+        category: 'visa',
+      },
+      {
+        name: 'Visit Singapore Official Guide',
+        nameAr: 'مجلس السياحة السنغافوري (Visit Singapore)',
+        description: 'Official attractions, events and transport maps',
+        descriptionAr: 'دليل الفعاليات والمواصلات والوجهات الترفيهية',
+        url: 'https://www.visitsingapore.com',
+        category: 'culture',
+      },
+    ],
+  },
+  {
+    id: 'indonesia',
+    name: 'Indonesia',
+    nameAr: 'إندونيسيا',
+    flag: '🇮🇩',
+    code: 'ID',
+    capital: 'Jakarta',
+    capitalAr: 'جاكرتا',
+    lat: -6.2088,
+    lng: 106.8456,
+    currency: 'IDR (روبية إندونيسية)',
+    language: 'Indonesian (الإندونيسية)',
+    languageCode: 'id',
+    famousCities: [
+      { name: 'Jakarta', nameAr: 'جاكرتا', lat: -6.2088, lng: 106.8456 },
+      { name: 'Bali', nameAr: 'بالي', lat: -8.3405, lng: 115.0920 },
+      { name: 'Bandung', nameAr: 'باندونق', lat: -6.9175, lng: 107.6191 },
+      { name: 'Surabaya', nameAr: 'سورابايا', lat: -7.2575, lng: 112.7521 },
+    ],
+    officialResources: [
+      {
+        name: 'Molina Official eVisa Indonesia',
+        nameAr: 'بوابة التأشيرات الإلكترونية الإندونيسية الرسمية',
+        description: 'Official Directorate General of Immigration eVisa platform',
+        descriptionAr: 'المنصة الرسمية للتأشيرة الإلكترونية السياحية والتجارية',
+        url: 'https://evisa.imigrasi.go.id',
+        category: 'visa',
+      },
+      {
+        name: 'Wonderful Indonesia Official Portal',
+        nameAr: 'بوابة إندونيسيا السياحية الرسمية',
+        description: 'Official culture, nature, and island travel guides',
+        descriptionAr: 'الدليل الرسمي للثقافة والطبيعة والجزر الإندونيسية',
+        url: 'https://www.indonesia.travel',
+        category: 'culture',
+      },
+    ],
+  },
+  {
+    id: 'netherlands',
+    name: 'Netherlands',
+    nameAr: 'هولندا',
+    flag: '🇳🇱',
+    code: 'NL',
+    capital: 'Amsterdam',
+    capitalAr: 'أمستردام',
+    lat: 52.3676,
+    lng: 4.9041,
+    currency: 'EUR (€)',
+    language: 'Dutch / English',
+    languageCode: 'nl',
+    famousCities: [
+      { name: 'Amsterdam', nameAr: 'أمستردام', lat: 52.3676, lng: 4.9041 },
+      { name: 'Rotterdam', nameAr: 'روتردام', lat: 51.9244, lng: 4.4777 },
+      { name: 'The Hague', nameAr: 'لاهاي', lat: 52.0705, lng: 4.3007 },
+      { name: 'Utrecht', nameAr: 'أوتريخت', lat: 52.0907, lng: 5.1214 },
+    ],
+    officialResources: [
+      {
+        name: 'IND Netherlands Immigration and Naturalisation',
+        nameAr: 'مصلحة الهجرة والجنسية الهولندية (IND)',
+        description: 'Official Schengen visas, permits and residence regulations',
+        descriptionAr: 'الإجراءات والتأشيرات الرسمية للإقامة والدخول',
+        url: 'https://ind.nl',
+        category: 'visa',
+      },
+      {
+        name: 'Holland Official Travel Guide',
+        nameAr: 'الموقع الرسمي للسياحة في هولندا',
+        description: 'Official museum passes, transport cards and city routes',
+        descriptionAr: 'دليل المتاحف والمواصلات العامة واستئجار الدراجات',
+        url: 'https://www.holland.com',
+        category: 'culture',
+      },
+    ],
+  },
 ];
 
 // Extensive Aliases mapping for instant smart Arabic & English detection
@@ -1194,9 +1347,9 @@ const COUNTRY_ALIASES: Record<string, string[]> = {
   'bahrain': ['البحرين', 'بحرين', 'بحريني', 'بحرينية', 'المنامة', 'bahrain', 'bahraini', 'manama'],
   'oman': ['عمان', 'عُمان', 'عماني', 'عمانية', 'مسقط', 'صلالة', 'oman', 'omani', 'muscat', 'salalah'],
   'qatar': ['قطر', 'قطري', 'قطرية', 'الدوحة', 'لوسيل', 'qatar', 'qatari', 'doha', 'lusail'],
-  'singapore': ['سنغافورة', 'سنغافوره', 'سنغافوري', 'سنغافورية', 'singapore', 'singaporean'],
+  'singapore': ['سنغافورة', 'سنغافوره', 'سنغافوري', 'سنغافورية', 'سنتوسا', 'singapore', 'singaporean', 'sentosa'],
   'united-kingdom': ['بريطانيا', 'بريطانيه', 'بريطاني', 'بريطانية', 'انجلترا', 'إنجلترا', 'المملكة المتحدة', 'لندن', 'مانشستر', 'uk', 'britain', 'british', 'england', 'london', 'manchester', 'edinburgh', 'birmingham'],
-  'united-states': ['امريكا', 'أمريكا', 'أميركا', 'اميركا', 'امريكي', 'أمريكي', 'أمريكية', 'امريكية', 'الولايات المتحدة', 'امريكيا', 'نيويورك', 'واشنطن', 'كاليفورنيا', 'لوس انجلوس', 'usa', 'us', 'american', 'america', 'united states', 'new york', 'california'],
+  'united-states': ['امريكا', 'أمريكا', 'أميركا', 'اميركا', 'امريكي', 'أمريكي', 'أمريكية', 'امريكية', 'الولايات المتحدة', 'امريكيا', 'نيويورك', 'واشنطن', 'كاليفورنيا', 'لوس انجلوس', 'اورلاندو', 'أورلاندو', 'فلوريدا', 'ميامي', 'usa', 'us', 'american', 'america', 'united states', 'new york', 'california', 'orlando', 'florida', 'miami'],
   'japan': ['اليابان', 'ياباني', 'يابانية', 'طوكيو', 'كيوتو', 'اوساكا', 'أوساكا', 'japan', 'japanese', 'tokyo', 'kyoto', 'osaka', 'sapporo', 'fukuoka'],
   'turkey': ['تركيا', 'تركي', 'تركية', 'اسطنبول', 'إسطنبول', 'أنقرة', 'انقرة', 'انطاليا', 'أنطاليا', 'طرابزون', 'turkey', 'turkish', 'türkiye', 'istanbul', 'ankara', 'antalya', 'trabzon'],
   'france': ['فرنسا', 'فرنسي', 'فرنسية', 'باريس', 'ليون', 'مارسيليا', 'نيس', 'france', 'french', 'paris', 'lyon', 'marseille', 'nice'],
@@ -1206,9 +1359,11 @@ const COUNTRY_ALIASES: Record<string, string[]> = {
   'uae': ['الامارات', 'الإمارات', 'اماراتي', 'إماراتي', 'إماراتية', 'اماراتية', 'دبي', 'ابوظبي', 'أبوظبي', 'الشارقة', 'uae', 'emirati', 'emirates', 'dubai', 'abu dhabi', 'sharjah'],
   'egypt': ['مصر', 'مصري', 'مصريه', 'مصرية', 'القاهرة', 'الإسكندرية', 'الاسكندرية', 'شرم الشيخ', 'egypt', 'egyptian', 'cairo', 'alexandria', 'giza'],
   'morocco': ['المغرب', 'مغربي', 'مغربية', 'مراكش', 'الرباط', 'الدار البيضاء', 'كازابلانكا', 'طنجة', 'فاس', 'morocco', 'moroccan', 'marrakech', 'rabat', 'casablanca', 'tangier'],
-  'italy': ['ايطاليا', 'إيطاليا', 'ايطالي', 'إيطالي', 'إيطالية', 'ايطالية', 'روما', 'ميلانو', 'فلورنسا', 'البندقية', 'فينيسيا', 'italy', 'italian', 'rome', 'milan', 'florence', 'venice'],
+  'italy': ['ايطاليا', 'إيطاليا', 'ايطالي', 'إيطالي', 'إيطالية', 'ايطالية', 'روما', 'ميلانو', 'فلورنسا', 'البندقية', 'فينيسيا', 'كومو', 'بحيرة كومو', 'italy', 'italian', 'rome', 'milan', 'florence', 'venice', 'como', 'lake como'],
   'spain': ['اسبانيا', 'إسبانيا', 'اسباني', 'إسباني', 'إسبانية', 'اسبانية', 'مدريد', 'برشلونة', 'بلنسية', 'اشبيلية', 'إشبيلية', 'spain', 'spanish', 'madrid', 'barcelona', 'valencia', 'seville'],
-  'malaysia': ['ماليزيا', 'ماليزي', 'ماليزية', 'كوالالمبور', 'بينانج', 'سيلانجور', 'malaysia', 'malaysian', 'kuala lumpur', 'penang'],
+  'malaysia': ['ماليزيا', 'ماليزي', 'ماليزية', 'كوالالمبور', 'بينانج', 'لنكاوي', 'سيلانجور', 'malaysia', 'malaysian', 'kuala lumpur', 'penang', 'langkawi'],
+  'indonesia': ['اندونيسيا', 'إندونيسيا', 'اندونيسي', 'إندونيسي', 'جاكرتا', 'بالي', 'باندونق', 'indonesia', 'indonesian', 'jakarta', 'bali', 'bandung'],
+  'netherlands': ['هولندا', 'هولندي', 'هولندية', 'امستردام', 'أمستردام', 'روتردام', 'لاهاي', 'netherlands', 'dutch', 'holland', 'amsterdam', 'rotterdam', 'the hague'],
 };
 
 function normalizeArabic(text: string): string {
@@ -1219,6 +1374,65 @@ function normalizeArabic(text: string): string {
     .replace(/ى/g, 'ي')
     .replace(/[\u064B-\u065F]/g, '') // remove tashkeel
     .trim();
+}
+
+/**
+ * Resolves country flag emoji dynamically from ISO 2-letter code or country name
+ */
+export function getCountryFlagEmoji(countryOrCode: string): string {
+  if (!countryOrCode) return '🌐';
+  const clean = countryOrCode.trim();
+
+  // If already 2 letters ISO code
+  if (clean.length === 2 && /^[A-Za-z]{2}$/.test(clean)) {
+    const codePoints = clean
+      .toUpperCase()
+      .split('')
+      .map((char) => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  }
+
+  // Lookup in COUNTRIES list
+  const found = findCountry(clean);
+  if (found && found.flag) return found.flag;
+
+  // Well known quick fallback map
+  const flagMap: Record<string, string> = {
+    'malaysia': '🇲🇾',
+    'united states': '🇺🇸',
+    'usa': '🇺🇸',
+    'japan': '🇯🇵',
+    'singapore': '🇸🇬',
+    'indonesia': '🇮🇩',
+    'france': '🇫🇷',
+    'italy': '🇮🇹',
+    'spain': '🇪🇸',
+    'germany': '🇩🇪',
+    'switzerland': '🇨🇭',
+    'united kingdom': '🇬🇧',
+    'uk': '🇬🇧',
+    'saudi arabia': '🇸🇦',
+    'turkey': '🇹🇷',
+    'uae': '🇦🇪',
+    'qatar': '🇶🇦',
+    'egypt': '🇪🇬',
+    'morocco': '🇲🇦',
+    'maldives': '🇲🇻',
+    'thailand': '🇹🇭',
+    'australia': '🇦🇺',
+    'canada': '🇨🇦',
+    'austria': '🇦🇹',
+    'czech republic': '🇨🇿',
+    'netherlands': '🇳🇱',
+    'greece': '🇬🇷',
+  };
+
+  const lower = clean.toLowerCase();
+  for (const [k, v] of Object.entries(flagMap)) {
+    if (lower.includes(k) || k.includes(lower)) return v;
+  }
+
+  return '🌐';
 }
 
 export function findCountry(query?: string): CountryInfo | undefined {
@@ -1241,16 +1455,18 @@ export function findCountry(query?: string): CountryInfo | undefined {
     }
   }
 
-  // 3. Check country names and famous cities
+  // 3. Check country names, ISO codes, and famous cities
   return COUNTRIES.find((c) => {
     const normNameAr = normalizeArabic(c.nameAr);
     const normCapital = normalizeArabic(c.capitalAr);
     const nameEn = c.name.toLowerCase();
     const capEn = c.capital.toLowerCase();
+    const code = c.code.toLowerCase();
 
     return (
       nameEn === rawQ ||
       normNameAr === normQ ||
+      code === rawQ ||
       nameEn.includes(rawQ) ||
       rawQ.includes(nameEn) ||
       normNameAr.includes(normQ) ||
@@ -1276,11 +1492,13 @@ export function createDynamicCountry(nameEn: string, nameAr?: string, city?: str
   if (existing) return existing;
 
   const id = nameEn.toLowerCase().replace(/[^a-z0-9]/g, '-');
+  const flag = getCountryFlagEmoji(nameEn);
+  const portals = getDestinationOfficialPortals(nameEn, city);
   return {
     id,
     name: nameEn,
     nameAr: nameAr || nameEn,
-    flag: '🌐',
+    flag: flag || '🌐',
     code: id.slice(0, 2).toUpperCase(),
     capital: city || 'Capital',
     capitalAr: city || 'العاصمة',
@@ -1290,18 +1508,17 @@ export function createDynamicCountry(nameEn: string, nameAr?: string, city?: str
     language: 'Official Language',
     languageCode: 'en',
     famousCities: city ? [{ name: city, nameAr: city, lat: 20.0, lng: 0.0 }] : [],
-    officialResources: [
-      {
-        name: `Official Portal of ${nameEn}`,
-        nameAr: `البوابة الرسمية لـ ${nameAr || nameEn}`,
-        description: 'Official government and visitor immigration platform',
-        descriptionAr: 'البوابة الحكومية الرسمية لمعلومات السفر والدخول',
-        url: `https://www.google.com/search?q=official+visa+portal+${encodeURIComponent(nameEn)}`,
-        category: 'government',
-      },
-    ],
+    officialResources: portals.map((p) => ({
+      name: p.name,
+      nameAr: p.nameAr,
+      description: p.description,
+      descriptionAr: p.descriptionAr,
+      url: p.url,
+      category: (p.category === 'visa' ? 'visa' : p.category === 'transport' ? 'transport' : 'government') as any,
+    })),
   };
 }
+
 
 
 

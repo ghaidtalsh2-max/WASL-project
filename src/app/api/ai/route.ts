@@ -3,6 +3,7 @@ import { callAI } from '@/lib/ai/provider';
 import { AI_SYSTEM_PROMPTS } from '@/lib/ai/prompts';
 import { COUNTRIES, findCountry, createDynamicCountry } from '@/lib/data/countries';
 import { safeParseJSON } from '@/lib/ai/jsonHelper';
+import { parseDurationToDays } from '@/lib/data/defaultJourneys';
 
 function buildFallbackExtraction(text: string) {
   const textLower = text.toLowerCase();
@@ -243,6 +244,10 @@ function buildFallbackExtraction(text: string) {
     });
   }
 
+  const calculatedDays = parseDurationToDays(text);
+  const calculatedText = `${calculatedDays} days`;
+  const calculatedPreset = calculatedDays === 7 ? '1_week' : calculatedDays === 14 ? '2_weeks' : calculatedDays === 21 ? '3_weeks' : calculatedDays === 28 ? '4_weeks' : calculatedDays === 30 ? '1_month' : `${calculatedDays}_days`;
+
   return {
     success: true,
     extracted: {
@@ -252,6 +257,9 @@ function buildFallbackExtraction(text: string) {
       travelParty,
       budget: 'moderate',
       duration: durationCategory,
+      durationDays: calculatedDays,
+      durationText: calculatedText,
+      durationPreset: calculatedPreset,
       accommodationStatus,
       hasDestination,
       hasDuration: Boolean(hasDuration || durationCategory),
@@ -586,6 +594,10 @@ Extract all travel parameters with strict precision. Nationality/origin is NOT t
     const hasDuration = Boolean(durationCategory || known.duration || known.hasDuration || hasExplicitDuration);
     const hasAccommodation = Boolean(known.accommodationStatus === 'booked' || known.hasAccommodation || hasExplicitAccommodation);
 
+    const calculatedDays = parseDurationToDays(String(known.durationText || known.duration || text));
+    const calculatedText = `${calculatedDays} days`;
+    const calculatedPreset = calculatedDays === 7 ? '1_week' : calculatedDays === 14 ? '2_weeks' : calculatedDays === 21 ? '3_weeks' : calculatedDays === 28 ? '4_weeks' : calculatedDays === 30 ? '1_month' : `${calculatedDays}_days`;
+
     return NextResponse.json({
       success: true,
       provider: aiRes.provider,
@@ -598,6 +610,9 @@ Extract all travel parameters with strict precision. Nationality/origin is NOT t
         travelParty,
         budget: known.budget || 'moderate',
         duration: durationCategory || known.duration || 'weeks',
+        durationDays: calculatedDays,
+        durationText: calculatedText,
+        durationPreset: calculatedPreset,
         hasDuration,
         hasDestination,
         hasAccommodation,

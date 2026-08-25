@@ -53,10 +53,10 @@ export const ABOUT_WASL: AboutWaslContent = {
     'استُوحيَت الهوية البصرية من الفضاء والأجرام الكونية لترمز إلى ترابط البشر في عالم واحد مشترك تحت سماء لا حدود لها.',
 
   colorMeanings: {
-    navyEn: 'Deep Navy represents the depth of space, institutional trust, stability, and advanced intelligence.',
-    navyAr: 'الكحلي العميق يرمز إلى فضاء الكون، والثقة، والاستقرار، والذكاء التقني الرصين.',
-    pinkPurpleEn: 'Rose Pink & Purple represent human connection, cultural diversity, empathy, and warmth.',
-    pinkPurpleAr: 'الوردي والبنفسجي يمثلان الدفء الإنساني، والتواصل الثقافي، والتنوع الحضاري النابض.',
+    navyEn: 'Deep Navy represents the depth of space, institutional trust, stability, and thoughtful planning.',
+    navyAr: 'الأزرق الكحلي الداكن يرمز إلى الثقة، الاستقرار، ورصانة التخطيط.',
+    pinkPurpleEn: 'Magenta & Violet add vitality, agility, and the passion of diverse cultural discovery.',
+    pinkPurpleAr: 'الوردي الأرجواني يضفي لمسة من الحيوية، المرونة، وشغف الاكتشاف التنوعي.',
   },
 
   creators: [

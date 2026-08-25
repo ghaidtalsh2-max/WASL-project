@@ -1,3 +1,6 @@
+import { getOriginTravelPortals, getDestinationOfficialPortals } from './officialTravelPortals';
+import { getDynamicAccommodations } from './accommodationDatabase';
+
 export type JourneyPhaseId =
   | 'before_you_go'
   | 'travel_day'
@@ -334,6 +337,75 @@ export function generateDefaultStages(
   const isRelocation = normPurpose === 'relocation';
   const isMedical = normPurpose === 'medical' || normPurpose === 'recovery';
 
+  const originPortals = getOriginTravelPortals(originName);
+  const destPortals = getDestinationOfficialPortals(destinationName, cityName);
+
+  const visaPortal = destPortals.find((p) => p.category === 'visa') || destPortals[0];
+  const originGovPortal = originPortals.find((p) => p.category === 'origin_government') || originPortals[0];
+  const originDocPortal = originPortals[1] || originGovPortal;
+  const destCustomsPortal = destPortals.find((p) => p.category === 'customs') || {
+    name: `Official Customs Authority (${destinationName})`,
+    nameAr: `هيئة الجمارك والمنافذ الرسمية (${destinationName})`,
+    url: visaPortal.url,
+    description: 'Official customs regulations, duty-free allowances and medication declaration rules',
+    descriptionAr: 'اللوائح الرسمية للجمارك والمواد المسموحة والإفصاح عن الأدوية',
+  };
+  const destTourismPortal = destPortals.find((p) => p.category === 'tourism') || {
+    name: `National Tourism Authority (${destinationName})`,
+    nameAr: `الهيئة الرسمية للسياحة والتراث (${destinationName})`,
+    url: visaPortal.url,
+    description: 'Official visitor heritage passes, attraction bookings and cultural guides',
+    descriptionAr: 'الدليل الرسمي للآثار والفعاليات الثقافية وتذاكر المعالم',
+  };
+  const destTransportPortal = destPortals.find((p) => p.category === 'transport') || {
+    name: `Official City Transit Network (${cityName})`,
+    nameAr: `شبكة المواصلات والمترو الرسمية (${cityName})`,
+    url: destTourismPortal.url,
+    description: 'Airport express rail, contactless transit fare cards, and metro lines',
+    descriptionAr: 'حافلات وقطارات المطار وتذاكر المترو الرسمية والدفع اللاتلامسي',
+  };
+
+  const originCode = (originName || '').toLowerCase();
+  const isSaudi = originCode.includes('saudi') || originCode.includes('سعودي') || originCode === 'sa';
+  const isUAE = originCode.includes('uae') || originCode.includes('emirates') || originCode.includes('إمارات') || originCode === 'ae';
+  const isKuwait = originCode.includes('kuwait') || originCode.includes('كويت') || originCode === 'kw';
+  const isEgypt = originCode.includes('egypt') || originCode.includes('مصر') || originCode === 'eg';
+
+  const originSpecificTasks: any[] = isSaudi
+    ? [
+        { id: 'orig-1', text: 'Verify passport validity and travel permits via Absher platform (Ministry of Interior)', textAr: 'التحقق من سريان الجواز وتصاريح السفر الرسمية لجميع أفراد الأسرة عبر منصة أبشر (وزارة الداخلية)', mandatory: true, category: 'visa' },
+        { id: 'orig-2', text: 'Register trip & companions with MOFA Citizen Abroad Registration platform', textAr: 'تسجيل بيانات الرحلة والمرافقين في منصة تسجيل المواطنين بالخارج (وزارة الخارجية السعودية)', mandatory: true, category: 'visa' },
+        { id: 'orig-3', text: 'Review departure customs & passenger declarations via ZATCA portal', textAr: 'مراجعة اشتراطات الإفصاح الجمركي والأمتعة وتداول النقد عبر بوابة زاتكا (هيئة الزكاة والضريبة والجمارك)', category: 'finance' },
+      ]
+    : isUAE
+    ? [
+        { id: 'orig-1', text: 'Register with Twajudi citizen abroad care service (UAE Ministry of Foreign Affairs)', textAr: 'التسجيل في خدمة تواجدي لرعاية مواطني دولة الإمارات بالخارج (وزارة الخارجية والتعاون الدولي)', mandatory: true, category: 'visa' },
+        { id: 'orig-2', text: 'Verify Emirates ID and passport validity via Federal Authority for Identity (ICP)', textAr: 'التحقق من صلاحية بطاقة الهوية وجواز السفر عبر الهيئة الاتحادية للهوية والجنسية (ICP)', mandatory: true, category: 'visa' },
+      ]
+    : isKuwait
+    ? [
+        { id: 'orig-1', text: 'Register travel with Kuwait MOFA & verify passport validity via MOI Nationality & Travel Docs', textAr: 'تسجيل بيانات السفر في وزارة الخارجية الكويتية ومراجعة صلاحية الجواز في الإدارة العامة للجنسية ووثائق السفر', mandatory: true, category: 'visa' },
+      ]
+    : isEgypt
+    ? [
+        { id: 'orig-1', text: 'Verify passport validity and travel permits with General Administration of Passports & Immigration', textAr: 'مراجعة صلاحية الجواز وتصاريح السفر الرسمية في مصلحة الجوازات والهجرة المصرية', mandatory: true, category: 'visa' },
+      ]
+    : [
+        { id: 'orig-1', text: `Verify departure passport requirements and citizen travel registration with government of ${originName}`, textAr: `التحقق من سريان الجواز والتسجيل في البوابة الرسمية لرعاية المسافرين لدى حكومة ${originName}`, mandatory: true, category: 'visa' },
+      ];
+
+  const beforeYouGoTasks = [
+    ...originSpecificTasks,
+    { id: 'b1', text: 'Passport validity verified (minimum 6 months validity from departure date)', textAr: 'التحقق من سريان الجواز لمدة لا تقل عن 6 أشهر قبل السفر', mandatory: true, category: 'visa' },
+    { id: 'b2', text: `Apply & confirm official visa / eVisa / electronic travel authorization for ${destinationName}`, textAr: `استخراج التأشيرة الرسمية أو تصريح الدخول لـ ${destinationName}`, mandatory: true, category: 'visa' },
+    { id: 'b3', text: isMedical ? 'Obtain medical acceptance letter, doctor reports in English & hospital appointment confirmation' : isStudy ? 'Obtain university admission letters, student visa certificate & scholarship guarantee' : isWork ? 'Confirm employment contract, work visa approval & employer sponsor contacts' : isRelocation ? 'Attest birth/marriage certificates, degree certificates & tenancy deposits' : 'Confirm flight tickets and accommodation bookings with verified addresses', textAr: isMedical ? 'تجهيز التقارير الطبية المعتمدة بالإنجليزية وتأكيد موعد المستشفى' : isStudy ? 'تجهيز قبول الجامعة والضمان المالي ووثائق الابتعاث' : isWork ? 'تأكيد عقد العمل وتصريح العمل الرسمي' : isRelocation ? 'تصديق الشهادات الرسمية والوثائق العائلية وعقود الانتقال' : 'تأكيد تذاكر الطيران وتأكيد حجز السكن بالعناوين المعتمدة', mandatory: true, category: 'visa' },
+    { id: 'b4', text: 'Purchase comprehensive international medical & travel insurance covering your entire stay', textAr: 'شراء وثيقة تأمين طبي دولي شاملة تغطي فترة الرحلة بالكامل', mandatory: true, category: 'health' },
+    { id: 'b5', text: 'Notify home bank of international card usage & set up backup multi-currency payment cards', textAr: 'إبلاغ البنك بالسفر وتجهيز بطاقات سفر متعددة العملات مع تفعيل Apple/Google Pay', category: 'finance' },
+    { id: 'b6', text: `Pre-order destination eSIM / local SIM and download offline navigation & translation apps for ${destinationName}`, textAr: `تجهيز شريحة إلكترونية eSIM وتحميل تطبيقات الخرائط والترجمة والمواصلات`, category: 'apps' },
+    { id: 'b7', text: 'Pack prescription medications in original labeled boxes with official doctor prescription', textAr: 'تجهيز الأدوية المصروفة بعبواتها الأصلية مع تقرير طبي رسمي بالإنجليزية', category: 'health' },
+    { id: 'b8', text: `Register trip with Embassy of ${originName} in ${destinationName} and save 24/7 hotline`, textAr: `تسجيل الرحلة في منصة رعاية المواطنين وسفارة ${originName} وحفظ خط الطوارئ`, mandatory: true, category: 'visa' },
+  ];
+
   return [
     // 1. BEFORE YOU GO
     {
@@ -344,38 +416,22 @@ export function generateDefaultStages(
       titleAr: 'قبل السفر',
       subtitle: `Readiness, visa, official documents & preparations for ${cityName}, ${destinationName}`,
       subtitleAr: `التجهيزات والوثائق الرسمية والجاهزية قبل السفر إلى ${cityName}`,
-      thingsToCheck: [
-        { id: 'b1', text: 'Passport validity verified (minimum 6 months validity from departure date)', textAr: 'التحقق من سريان الجواز لمدة لا تقل عن 6 أشهر قبل السفر', mandatory: true, category: 'visa' },
-        { id: 'b2', text: `Apply & confirm official visa / eVisa / electronic travel authorization for ${destinationName}`, textAr: `استخراج التأشيرة الرسمية أو تصريح الدخول لـ ${destinationName}`, mandatory: true, category: 'visa' },
-        { id: 'b3', text: isMedical ? 'Obtain medical acceptance letter, doctor reports in English & hospital appointment confirmation' : isStudy ? 'Obtain university admission letters, student visa certificate & scholarship guarantee' : isWork ? 'Confirm employment contract, work visa approval & employer sponsor contacts' : isRelocation ? 'Attest birth/marriage certificates, degree certificates & tenancy deposits' : 'Confirm flight tickets and accommodation bookings with verified addresses', textAr: isMedical ? 'تجهيز التقارير الطبية المعتمدة بالإنجليزية وتأكيد موعد المستشفى' : isStudy ? 'تجهيز قبول الجامعة والضمان المالي ووثائق الابتعاث' : isWork ? 'تأكيد عقد العمل وتصريح العمل الرسمي' : isRelocation ? 'تصديق الشهادات الرسمية والوثائق العائلية وعقود الانتقال' : 'تأكيد تذاكر الطيران وتأكيد حجز السكن بالعناوين المعتمدة', mandatory: true, category: 'visa' },
-        { id: 'b4', text: 'Purchase comprehensive international medical & travel insurance covering your entire stay', textAr: 'شراء وثيقة تأمين طبي دولي شاملة تغطي فترة الرحلة بالكامل', mandatory: true, category: 'health' },
-        { id: 'b5', text: 'Notify home bank of international card usage & set up backup multi-currency payment cards', textAr: 'إبلاغ البنك بالسفر وتجهيز بطاقات سفر متعددة العملات مع تفعيل Apple/Google Pay', category: 'finance' },
-        { id: 'b6', text: `Pre-order destination eSIM / local SIM and download offline navigation & translation apps for ${destinationName}`, textAr: `تجهيز شريحة إلكترونية eSIM وتحميل تطبيقات الخرائط والترجمة والمواصلات`, category: 'apps' },
-        { id: 'b7', text: 'Pack prescription medications in original labeled boxes with official doctor prescription', textAr: 'تجهيز الأدوية المصروفة بعبواتها الأصلية مع تقرير طبي رسمي بالإنجليزية', category: 'health' },
-        { id: 'b8', text: `Register trip with Embassy of ${originName} in ${destinationName} and save 24/7 hotline`, textAr: `تسجيل الرحلة في منصة وزارة الخارجية وسفارة ${originName} وحفظ خط الطوارئ`, mandatory: true, category: 'visa' },
-      ],
+      thingsToCheck: beforeYouGoTasks,
       officialResources: [
-        {
-          name: `Official Visa & Entry Portal (${destinationName})`,
-          nameAr: `البوابة الرسمية للتأشيرات والهجرة (${destinationName})`,
-          url: `https://www.google.com/search?q=official+visa+entry+portal+${encodeURIComponent(destinationName)}`,
-          description: 'Official government visa requirements, processing times and digital entry forms',
-          descriptionAr: 'المتطلبات الرسمية للتأشيرات ونماذج الدخول الإلكترونية المعتمدة',
-        },
-        {
-          name: `Ministry of Foreign Affairs (${originName} Citizen Care abroad)`,
-          nameAr: `وزارة الخارجية - رعاية المواطنين في الخارج`,
-          url: 'https://www.mofa.gov.sa',
-          description: 'Citizen registration, emergency consular lines, and travel advisories',
-          descriptionAr: 'تسجيل الرحلة في السفارة والتواصل المباشر في حالات الطوارئ',
-        },
-        {
-          name: `Customs & Border Control (${destinationName})`,
-          nameAr: `هيئة الجمارك والمنافذ الرسمية (${destinationName})`,
-          url: `https://www.google.com/search?q=customs+declarations+duty+free+allowance+${encodeURIComponent(destinationName)}`,
-          description: 'Restricted items, medication allowance and customs declaration rules',
-          descriptionAr: 'لوائح المواد المقيدة والأدوية المسموحة والإفصاح الجمركي',
-        },
+        ...originPortals.map((p) => ({
+          name: p.name,
+          nameAr: `[${originName}] ${p.nameAr}`,
+          url: p.url,
+          description: p.description,
+          descriptionAr: p.descriptionAr,
+        })),
+        ...destPortals.map((p) => ({
+          name: p.name,
+          nameAr: `[${destinationName}] ${p.nameAr}`,
+          url: p.url,
+          description: p.description,
+          descriptionAr: p.descriptionAr,
+        })),
       ],
       quickTip: {
         title: 'Pre-Departure Readiness',
@@ -404,15 +460,15 @@ export function generateDefaultStages(
       ],
       officialResources: [
         {
-          name: `Departure Airport & Flight Status Guide`,
-          nameAr: `بوابة تتبع الرحلات المباشرة وحالة المطار`,
-          url: `https://www.google.com/search?q=flight+tracker+airport+departure+status`,
+          name: 'FlightRadar24 (Live Flight Tracker & Airport Departure Status)',
+          nameAr: 'بوابة تتبع الرحلات المباشرة وحالة المطار (FlightRadar24)',
+          url: 'https://www.flightradar24.com',
           description: 'Live flight tracking, terminal maps, gate status, and baggage carousel updates',
           descriptionAr: 'متابعة مباشرة لحالة الرحلات وبوابات الصعود واستلام الأمتعة',
         },
         {
-          name: `International Air Transport Association (IATA Travel Center)`,
-          nameAr: `مركز معلومات اتحاد النقل الجوي الدولي (IATA)`,
+          name: 'International Air Transport Association (IATA Travel Center)',
+          nameAr: 'مركز معلومات اتحاد النقل الجوي الدولي (IATA)',
           url: 'https://www.iatatravelcentre.com',
           description: 'Official airline travel rules, transit requirements, and passport validation',
           descriptionAr: 'الشروط الرسمية لشركات الطيران وقواعد العبور (الترانزيت)',
@@ -446,18 +502,18 @@ export function generateDefaultStages(
       ],
       officialResources: [
         {
-          name: `Airport Transfer & Transit Network (${cityName})`,
-          nameAr: `دليل مطار ${cityName} وشبكة المواصلات الرسمية`,
-          url: `https://www.google.com/search?q=official+airport+express+transit+train+taxi+${encodeURIComponent(cityName)}`,
-          description: 'Official airport express rail, licensed taxi stands and shuttle schedules',
-          descriptionAr: 'مواعيد القطارات السريعة وحافلات المطار ومكاتب التاكسي المرخصة',
+          name: destTransportPortal.name,
+          nameAr: destTransportPortal.nameAr,
+          url: destTransportPortal.url,
+          description: destTransportPortal.description,
+          descriptionAr: destTransportPortal.descriptionAr,
         },
         {
-          name: `City Municipal & Tourist Welcome Services (${cityName})`,
-          nameAr: `بوابة خدمات مدينة ${cityName} ومراكز المعلومات السياحية`,
-          url: `https://www.google.com/search?q=city+tourist+information+center+${encodeURIComponent(cityName)}`,
-          description: 'Official tourist information centers, free city maps, and transit passes',
-          descriptionAr: 'مراكز الإرشاد السياحي المعتمدة وخرائط المدينة وتذاكر المترو المخفضة',
+          name: destTourismPortal.name,
+          nameAr: destTourismPortal.nameAr,
+          url: destTourismPortal.url,
+          description: destTourismPortal.description,
+          descriptionAr: destTourismPortal.descriptionAr,
         },
       ],
       quickTip: {
@@ -486,18 +542,18 @@ export function generateDefaultStages(
       ],
       officialResources: [
         {
-          name: `National Tourism & Cultural Heritage Authority (${destinationName})`,
-          nameAr: `الهيئة الرسمية للسياحة والآثار والتراث (${destinationName})`,
-          url: `https://www.google.com/search?q=official+tourism+board+cultural+heritage+${encodeURIComponent(destinationName)}`,
-          description: 'Official cultural calendars, museum passes, and heritage guides',
-          descriptionAr: 'جدول الفعاليات والمعارض الرسمية وتذاكر المواقع الأثرية',
+          name: destTourismPortal.name,
+          nameAr: destTourismPortal.nameAr,
+          url: destTourismPortal.url,
+          description: destTourismPortal.description,
+          descriptionAr: destTourismPortal.descriptionAr,
         },
         {
-          name: `Public Transport Journey Planner (${cityName})`,
-          nameAr: `مخطط الرحلات وشبكة المترو والمواصلات (${cityName})`,
-          url: `https://www.google.com/search?q=metro+subway+public+transport+map+${encodeURIComponent(cityName)}`,
-          description: 'Real-time transit navigation, train timetables, and delay alerts',
-          descriptionAr: 'خرائط المترو التفاعلية والمسارات وتنبيهات مواعيد القطارات',
+          name: destTransportPortal.name,
+          nameAr: destTransportPortal.nameAr,
+          url: destTransportPortal.url,
+          description: destTransportPortal.description,
+          descriptionAr: destTransportPortal.descriptionAr,
         },
       ],
       quickTip: {
@@ -527,18 +583,18 @@ export function generateDefaultStages(
       ],
       officialResources: [
         {
-          name: `Customs & Tax Refund Office (${destinationName})`,
-          nameAr: `مكتب استرداد الضرائب والجمارك بالمطار (${destinationName})`,
-          url: `https://www.google.com/search?q=airport+vat+tax+refund+customs+${encodeURIComponent(destinationName)}`,
-          description: 'Official tax refund validation booths and duty-free departure customs regulations',
-          descriptionAr: 'مواقع مكاتب استرداد الضرائب في صالات المغادرة بالمطار',
+          name: destCustomsPortal.name,
+          nameAr: destCustomsPortal.nameAr,
+          url: destCustomsPortal.url,
+          description: destCustomsPortal.description,
+          descriptionAr: destCustomsPortal.descriptionAr,
         },
         {
-          name: `Official Departure Airport Passenger Guide (${cityName})`,
-          nameAr: `دليل المسافرين في صالات المغادرة بمطار ${cityName}`,
-          url: `https://www.google.com/search?q=departure+airport+terminal+guide+${encodeURIComponent(cityName)}`,
-          description: 'Terminal departure maps, security fast-track, and airline check-in counters',
-          descriptionAr: 'خريطة صالات المغادرة ومكاتب شحن الأمتعة والمطاعم قبل البوابات',
+          name: originDocPortal.name,
+          nameAr: originDocPortal.nameAr,
+          url: originDocPortal.url,
+          description: originDocPortal.description,
+          descriptionAr: originDocPortal.descriptionAr,
         },
       ],
       quickTip: {
@@ -1467,160 +1523,100 @@ export function getDefaultAccommodation(
   durationStr?: string,
   purpose: string = 'tourism',
   budget: string = 'moderate',
-  travelerType: string = 'solo'
+  travelerType: string = 'solo',
+  medicalSubCategory?: string
 ): AccommodationRecommendation[] {
-  const normDest = (destinationName || '').toLowerCase();
-  const city = cityName || 'Central District';
-  const isFamily = travelerType === 'family' || travelerType === 'group';
-  const isMedical = purpose === 'medical' || purpose === 'recovery';
-  const isStudy = purpose === 'study';
-  const isRelocation = purpose === 'relocation' || purpose === 'work';
+  const dynamicList = getDynamicAccommodations(
+    destinationName,
+    cityName,
+    purpose,
+    budget,
+    travelerType,
+    medicalSubCategory
+  );
 
-  const bookingBase = `https://www.booking.com/searchresults.html?ss=${encodeURIComponent(city + ' ' + destinationName)}`;
-  const tripBase = `https://www.trip.com/hotels/list?keyword=${encodeURIComponent(city + ' ' + destinationName)}`;
-  const airbnbBase = `https://www.airbnb.com/s/${encodeURIComponent(city + '--' + destinationName)}/homes`;
-
-  if (isMedical) {
-    return [
-      {
-        id: 'acc-med-1',
-        name: `${city} Central Medical Suites & Serviced Lodging`,
-        nameAr: `أجنحة الإقامة الفندقية بالقرب من المراكز الطبية في ${city}`,
-        type: 'medical_lodging',
-        priceEstimate: '$130 - $210 / night',
-        priceEstimateAr: '130 - 210 دولار / ليلة',
-        location: `Hospital District, ${city}`,
-        locationAr: `حي المرافق والمستشفيات، ${city}`,
-        whyItFits: 'Wheelchair accessible with elevator, quiet soundproofed rooms, close to specialist clinics and 24h pharmacies.',
-        whyItFitsAr: 'مهيأ بالكامل للكراسي المتحركة وغرف هادئة عازلة للصوت وقريب جداً من العيادات والصيدليات على مدار 24 ساعة.',
-        directUrl: bookingBase,
-        rating: 4.8,
-        sourceProvider: 'Booking.com',
-      },
-      {
-        id: 'acc-med-2',
-        name: `Quiet Recovery Garden Serviced Residences`,
-        nameAr: `شقق فندقية هادئة بإطلالة حدائق الاستشفاء`,
-        type: 'apartment',
-        priceEstimate: '$110 - $175 / night',
-        priceEstimateAr: '110 - 175 دولار / ليلة',
-        location: `Green District, ${city}`,
-        locationAr: `حي الحدائق والهدوء، ${city}`,
-        whyItFits: 'Equipped with full private kitchen for dietary control, peaceful surroundings, and companion sofa beds.',
-        whyItFitsAr: 'مزودة بمطبخ متكامل للتحكم بالنظام الغذائي وأسرّة مريحة للمرافق ومحيط أخضر يساعد على الراحة والتعافي.',
-        directUrl: tripBase,
-        rating: 4.7,
-        sourceProvider: 'Trip.com',
-      },
-    ];
-  }
-
-  if (isStudy) {
-    return [
-      {
-        id: 'acc-stu-1',
-        name: `${city} University Quarter Student Residence`,
-        nameAr: `سكن الطلاب المعتمد بالقرب من الجامعات في ${city}`,
-        type: 'student_housing',
-        priceEstimate: '$650 - $1,100 / month',
-        priceEstimateAr: '650 - 1,100 دولار / شهرياً',
-        location: `University Campus Belt, ${city}`,
-        locationAr: `نطاق الجامعات والمكتبات، ${city}`,
-        whyItFits: 'High-speed Wi-Fi, study lounges, laundry facilities, and safe international student community.',
-        whyItFitsAr: 'إنترنت فائق السرعة، صالات دراسة جماعية، مرافق غسيل ومجتمع طلابي دولي آمن.',
-        directUrl: `https://www.student.com/search?q=${encodeURIComponent(city)}`,
-        rating: 4.6,
-        sourceProvider: 'Student.com',
-      },
-      {
-        id: 'acc-stu-2',
-        name: `Modern Studio Student Apartments in ${city}`,
-        nameAr: `استوديو حديث ومفروش للطلاب والباحثين في ${city}`,
-        type: 'apartment',
-        priceEstimate: '$750 - $1,350 / month',
-        priceEstimateAr: '750 - 1,350 دولار / شهرياً',
-        location: `Subway Line 1 Station, ${city}`,
-        locationAr: `بجوار محطة المترو الرئيسية، ${city}`,
-        whyItFits: 'Direct subway access to major university campuses, private kitchenette, and included utility bills.',
-        whyItFitsAr: 'ربط مباشر بالمترو لمختلف الكليات مع مطبخ خاص وشامل الفواتير والخدمات.',
-        directUrl: airbnbBase,
-        rating: 4.7,
-        sourceProvider: 'Airbnb',
-      },
-    ];
-  }
-
-  if (isRelocation) {
-    return [
-      {
-        id: 'acc-rel-1',
-        name: `${city} Premium Serviced Executive Apartments`,
-        nameAr: `شقق تنفيذية مخدومة للإقامة المتوسطة والطويلة في ${city}`,
-        type: 'serviced_apartment',
-        priceEstimate: '$1,400 - $2,600 / month',
-        priceEstimateAr: '1,400 - 2,600 دولار / شهرياً',
-        location: `Central Business District, ${city}`,
-        locationAr: `حي الأعمال والخدمات، ${city}`,
-        whyItFits: 'Ideal for initial 1-3 months relocation: weekly housekeeping, registered lease contracts for city registration, and fitness center.',
-        whyItFitsAr: 'مثالي للشهر الأول حتى الاستقرار التام: تنظيف دوري، عقود معتمدة لتسجيل البلدية، وصالة رياضية.',
-        directUrl: bookingBase,
-        rating: 4.8,
-        sourceProvider: 'Booking.com',
-      },
-    ];
-  }
-
-  // Tourism Options (Solo / Couple / Family)
-  return [
-    {
-      id: 'acc-tour-1',
-      name: isFamily ? `${city} Family-Friendly Grand Suites Hotel` : `${city} Central Boutique Heritage Hotel`,
-      nameAr: isFamily ? `أجنحة فندقية فسيحة للعائلات في ${city}` : `فندق بوتيك مركزي في قلب ${city}`,
-      type: 'hotel',
-      priceEstimate: budget === 'luxury' ? '$240 - $450 / night' : '$90 - $160 / night',
-      priceEstimateAr: budget === 'luxury' ? '240 - 450 دولار / ليلة' : '90 - 160 دولار / ليلة',
-      location: `City Center / Historic Quarter, ${city}`,
-      locationAr: `وسط المدينة والحي التاريخي، ${city}`,
-      whyItFits: isFamily
-        ? 'Spacious interconnected family suites, child-friendly amenities, and walking distance to metro lines.'
-        : 'Steps away from major landmarks, cafes, certified halal dining options, and public transport hubs.',
-      whyItFitsAr: isFamily
-        ? 'أجنحة عائلية متصلة ومرافق للأطفال مع سهولة الوصول لمحطات المترو والمطاعم.'
-        : 'موقع استراتيجي وسط المعالم والمقاهي ومحطات النقل وخيارات الطعام المناسبة.',
-      directUrl: bookingBase,
-      rating: 4.8,
-      sourceProvider: 'Booking.com',
-    },
-    {
-      id: 'acc-tour-2',
-      name: `${city} Panorama Residences & Self-Check Apartment`,
-      nameAr: `شقق بانوراما الذكية المجهزة بالكامل في ${city}`,
-      type: 'apartment',
-      priceEstimate: '$85 - $145 / night',
-      priceEstimateAr: '85 - 145 دولار / ليلة',
-      location: `Trendy Arts & Dining Quarter, ${city}`,
-      locationAr: `حي الفنون والمطاعم العصري، ${city}`,
-      whyItFits: 'Private washing machine, kitchen for home cooking, contactless self check-in, and vibrant cafe neighborhood.',
-      whyItFitsAr: 'غسالة ملابس خاصة، مطبخ مجهز، تسجيل دخول ذاتي ذكي، وحي مفعم بالمقاهي.',
-      directUrl: airbnbBase,
-      rating: 4.7,
-      sourceProvider: 'Airbnb',
-    },
-  ];
+  return dynamicList.map((item) => ({
+    id: item.id,
+    name: item.name,
+    nameAr: item.nameAr,
+    type: (item.type.toLowerCase().includes('apartment')
+      ? 'serviced_apartment'
+      : item.type.toLowerCase().includes('sanatorium') || item.type.toLowerCase().includes('spa')
+      ? 'resort'
+      : 'hotel') as any,
+    priceEstimate: item.price,
+    priceEstimateAr: item.price.replace('/ night', 'لكل ليلة').replace('/ month', 'شهرياً'),
+    location: item.location,
+    locationAr: item.location,
+    whyItFits: item.description,
+    whyItFitsAr: item.descriptionAr,
+    directUrl: item.directUrl,
+    rating: parseFloat(item.rating) || 4.8,
+    sourceProvider: 'Booking.com' as const,
+  }));
 }
 
 export function parseDurationToDays(durationStr?: string): number {
-  if (!durationStr) return 7;
-  const match = durationStr.match(/(\d+)/);
-  if (!match) return 7;
-  const num = parseInt(match[1], 10);
-  if (durationStr.toLowerCase().includes('month') || durationStr.includes('شهر')) {
-    return Math.min(num * 30, 30);
+  if (!durationStr) return 14;
+  
+  // Normalize eastern arabic digits (٠-٩) to western digits (0-9)
+  let str = String(durationStr)
+    .replace(/[\u0660-\u0669]/g, (d) => (d.charCodeAt(0) - 0x0660).toString())
+    .replace(/[\u06F0-\u06F9]/g, (d) => (d.charCodeAt(0) - 0x06F0).toString())
+    .toLowerCase()
+    .trim();
+
+  // Explicit string tokens & presets
+  if (str === '1_week' || str === '1 week' || str === 'one week' || str === 'أسبوع' || str === 'اسبوع' || str === 'اسبوع واحد' || str === 'أسبوع واحد') return 7;
+  if (str === '2_weeks' || str === '2 weeks' || str === 'two weeks' || str === 'أسبوعين' || str === 'اسبوعين' || str === 'اسبوعان' || str === 'أسبوعان' || str === 'نصف شهر') return 14;
+  if (str === '3_weeks' || str === '3 weeks' || str === 'three weeks' || str === 'ثلاثة أسابيع' || str === 'ثلاث اسابيع' || str === '٣ أسابيع' || str === '٣ اسابيع') return 21;
+  if (str === '4_weeks' || str === '4 weeks' || str === 'four weeks' || str === 'أربعة أسابيع' || str === 'اربع اسابيع' || str === '٤ أسابيع' || str === '٤ اسابيع') return 28;
+  if (str === '1_month' || str === '1 month' || str === 'one month' || str === 'شهر' || str === 'شهر واحد' || str === '١ شهر') return 30;
+  if (str === '2_months' || str === '2 months' || str === 'two months' || str === 'شهرين' || str === 'شهران' || str === '٢ شهر') return 30;
+  if (str === '3_months' || str === '3 months' || str === 'ثلاثة أشهر' || str === 'ثلاثة شهور' || str === '٣ أشهر') return 30;
+  if (str === '6_months' || str === '6 months' || str === 'ستة أشهر' || str === 'ستة شهور' || str === 'نصف سنة') return 30;
+  if (str === 'yearplus' || str === 'year' || str === '1 year' || str === 'سنة' || str === 'سنتين' || str === 'عام') return 30;
+  if (str === 'يوم' || str === 'يوم واحد' || str === '1 day') return 1;
+  if (str === 'يومين' || str === 'يومان' || str === '2 days') return 2;
+  if (str === 'ثلاثة أيام' || str === 'ثلاث ايام' || str === '3 days') return 3;
+  if (str === 'أربعة أيام' || str === 'اربع ايام' || str === '4 days') return 4;
+  if (str === 'خمسة أيام' || str === 'خمس ايام' || str === '5 days') return 5;
+  if (str === 'ستة أيام' || str === 'ست ايام' || str === '6 days') return 6;
+  if (str === 'سبعة أيام' || str === 'سبع ايام' || str === '7 days') return 7;
+  if (str === 'ثمانية أيام' || str === 'ثمان ايام' || str === '8 days') return 8;
+  if (str === 'تسعة أيام' || str === 'تسع ايام' || str === '9 days') return 9;
+  if (str === 'عشرة أيام' || str === 'عشر ايام' || str === '10 days' || str === '10 أيام' || str === '١٠ أيام' || str === '١٠ ايام') return 10;
+
+  // Regex extract any digits
+  const match = str.match(/(\d+)/);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    if (str.includes('month') || str.includes('شهر')) {
+      return Math.min(num * 30, 30);
+    }
+    if (str.includes('week') || str.includes('أسبوع') || str.includes('اسبوع') || str.includes('أسابيع') || str.includes('اسابيع')) {
+      return Math.min(num * 7, 30);
+    }
+    if (str.includes('year') || str.includes('سنة') || str.includes('عام') || str.includes('سنوات')) {
+      return 30;
+    }
+    return Math.min(Math.max(num, 1), 30);
   }
-  if (durationStr.toLowerCase().includes('week') || durationStr.includes('أسبوع') || durationStr.includes('اسبوع')) {
-    return Math.min(num * 7, 30);
-  }
-  return Math.min(Math.max(num, 1), 30);
+
+  // Fallback word detections
+  if (str.includes('أسبوعين') || str.includes('اسبوعين') || str.includes('اسبوعان') || str.includes('أسبوعان') || str.includes('نصف شهر') || str.includes('two weeks')) return 14;
+  if (str.includes('ثلاثة أسابيع') || str.includes('ثلاث اسابيع') || str.includes('3 أسابيع') || str.includes('three weeks')) return 21;
+  if (str.includes('أربعة أسابيع') || str.includes('اربع اسابيع') || str.includes('4 أسابيع') || str.includes('four weeks')) return 28;
+  if (str.includes('أسبوع') || str.includes('اسبوع') || str.includes('one week')) return 7;
+  if (str.includes('شهرين') || str.includes('شهران') || str.includes('two months')) return 30;
+  if (str.includes('شهر') || str.includes('month')) return 30;
+  if (str.includes('سنة') || str.includes('عام') || str.includes('year')) return 30;
+
+  if (str === 'weeks') return 14;
+  if (str === 'days') return 5;
+  if (str === 'months') return 30;
+
+  return 14;
 }
 
 export function getDefaultMedicalGuidance(
@@ -1635,7 +1631,67 @@ export function getDefaultMedicalGuidance(
 
   let hospitals: any[] = [];
 
-  if (normDest.includes('turkey') || normDest.includes('تركيا') || normDest.includes('istanbul') || normDest.includes('أنقرة')) {
+  if (normDest.includes('czech') || normDest.includes('تشيك') || normDest.includes('prague') || normDest.includes('براغ') || normDest.includes('karlovy') || normDest.includes('كارلوفي')) {
+    hospitals = [
+      {
+        id: 'cz-hosp-1',
+        name: 'Motol University Hospital (International Medical Department)',
+        nameAr: 'مستشفى موتول الجامعي ببراغ (قسم المرضى الدوليين)',
+        city: 'Prague / Praha',
+        specialtyFocus: specialty || 'Specialized Surgery, Orthopedics & Oncology',
+        specialtyFocusAr: 'الجراحة الدقيقة، جراحة العظام والمفاصل، وعلاج الأورام',
+        leadDoctor: 'Prof. Dr. Miloslav Jan (Senior Surgical Board)',
+        leadDoctorAr: 'البروفيسور د. ميلوسلاف يان (رئيس الهيئة الجراحية)',
+        rating: 4.9,
+        accreditation: 'JCI Accredited & Leading Central European University Center',
+        contactPhone: '+420 224 431 111',
+        googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Motol+University+Hospital+Prague',
+        websiteUrl: 'https://www.fnmotol.cz/en/',
+        appointmentUrl: 'https://www.fnmotol.cz/en/foreign-patients/',
+        accessibilityNotes: 'Full handicap accessibility, direct Arabic translation coordinators, family suites.',
+        accessibilityNotesAr: 'مجهز بالكامل للكراسي المتحركة، مع مترجمين للمرضى العرب وأجنحة فندقية للمرافقين.',
+      },
+      {
+        id: 'cz-spa-1',
+        name: 'Karlovy Vary Thermal Sanatorium & Spa Resort Imperial',
+        nameAr: 'مصحة ومنتجع إمبريال الاستشفائي الطبي (كارلوفي فاري)',
+        city: 'Karlovy Vary',
+        specialtyFocus: 'Thermal Mineral Hydrotherapy & Post-Op Physical Recovery',
+        specialtyFocusAr: 'العلاج بالمياه المعدنية الحارة، التأهيل الحركي، والاستشفاء بعد العمليات',
+        leadDoctor: 'Dr. Pavel Vitek (Medical Spa Director)',
+        leadDoctorAr: 'د. بافل فيتيك (مدير الطب الطبيعي والاستشفاء)',
+        rating: 4.8,
+        accreditation: 'EU Certified Medical Thermal Spa Sanatorium',
+        contactPhone: '+420 353 441 111',
+        googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Spa+Resort+Imperial+Karlovy+Vary',
+        websiteUrl: 'https://www.spa-resort-imperial.cz/en/',
+        appointmentUrl: 'https://www.spa-resort-imperial.cz/en/medical-spa/',
+        accessibilityNotes: 'Elevator access across all mineral spring treatment wings and private recovery rooms.',
+        accessibilityNotesAr: 'مصاعد خاصة لكافة أجنحة العلاج بالمياه المعدنية وأجنحة إقامة صحية مريحة.',
+      },
+    ];
+  } else if (normDest.includes('switzerland') || normDest.includes('سويسرا') || normDest.includes('geneva') || normDest.includes('جنيف')) {
+    hospitals = [
+      {
+        id: 'ch-hosp-1',
+        name: 'Geneva University Hospitals (HUG - International Patient Center)',
+        nameAr: 'مستشفيات جامعة جنيف (HUG - مركز رعاية المرضى الدوليين)',
+        city: 'Geneva',
+        specialtyFocus: specialty || 'Precision Neurosurgery, Cardiology & Advanced Diagnostics',
+        specialtyFocusAr: 'جراحة المخ والأعصاب المتقدمة، أمراض القلب، والتشخيص الدقيق',
+        leadDoctor: 'Prof. Dr. Arnaud Perrier (Chief Medical Officer)',
+        leadDoctorAr: 'البروفيسور د. أرنو بيرييه (كبير المستشارين الطبيين)',
+        rating: 4.9,
+        accreditation: 'Swiss Healthcare Excellence & ISO Gold Certified',
+        contactPhone: '+41 22 372 33 11',
+        googleMapsUrl: 'https://www.google.com/maps/search/?api=1&query=Geneva+University+Hospitals+HUG',
+        websiteUrl: 'https://www.hug.ch/en',
+        appointmentUrl: 'https://www.hug.ch/en/international-patients',
+        accessibilityNotes: 'Private VIP medical concierge, bilingual doctors, and scenic lake recovery suites.',
+        accessibilityNotesAr: 'مكتب استقبال VIP خاص، أطباء ناطقون بعدة لغات، وأجنحة مطلة باعثة على الهدوء.',
+      },
+    ];
+  } else if (normDest.includes('turkey') || normDest.includes('تركيا') || normDest.includes('istanbul') || normDest.includes('أنقرة')) {
     hospitals = [
       {
         id: 'tr-hosp-1',
@@ -1699,8 +1755,8 @@ export function getDefaultMedicalGuidance(
     hospitals = [
       {
         id: 'uni-hosp-1',
-        name: `${city} Central University Hospital & Specialty Medical Complex`,
-        nameAr: `المستشفى الجامعي المركزي والمجمع الطبي التخصصي في ${city}`,
+        name: `${city} University Academic Medical Center`,
+        nameAr: `المركز الطبي الأكاديمي الجامعي في ${city}`,
         city,
         specialtyFocus: specialty || 'Specialized Diagnostic, Surgical & Therapeutic Care',
         specialtyFocusAr: 'التشخيص الطبي المتقدم، الجراحة التخصصية، والرعاية الاستشفائية',
@@ -1710,8 +1766,8 @@ export function getDefaultMedicalGuidance(
         accreditation: 'National & International JCI Accredited Facility',
         contactPhone: '+1 800 456 7890',
         googleMapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(city + ' central hospital international medical center ' + destinationName)}`,
-        websiteUrl: `https://www.google.com/search?q=${encodeURIComponent('hospital international patient center ' + city + ' ' + destinationName)}`,
-        appointmentUrl: `https://www.google.com/search?q=${encodeURIComponent('doctor appointment booking medical ' + city + ' ' + destinationName)}`,
+        websiteUrl: 'https://home-affairs.ec.europa.eu/policies/schengen-borders-and-visa_en',
+        appointmentUrl: 'https://www.iatatravelcentre.com',
         accessibilityNotes: 'Full wheelchair accessibility, international patient translation coordinators, and private recovery suites.',
         accessibilityNotesAr: 'مهيأ بالكامل للكراسي المتحركة، مع مترجمين للمرضى الدوليين وأجنحة إقامة واستشفاء خاصة.',
       },

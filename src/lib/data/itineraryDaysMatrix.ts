@@ -1,4 +1,5 @@
 import { TourismOptionDay } from './defaultJourneys';
+import { getUSPlanADays, getUSPlanBDays } from './usItineraries';
 
 // Helper to sanitize array to requested day count
 export function buildCustomDays(
@@ -9,6 +10,26 @@ export function buildCustomDays(
 ): TourismOptionDay[] {
   const normDest = (destinationName || '').toLowerCase();
   const city = cityName || 'Central District';
+  const combined = `${normDest} ${city.toLowerCase()}`;
+
+  if (
+    combined.includes('united states') ||
+    combined.includes('usa') ||
+    combined.includes('us') ||
+    combined.includes('america') ||
+    combined.includes('أمريكا') ||
+    combined.includes('orlando') ||
+    combined.includes('أورلاندو') ||
+    combined.includes('florida') ||
+    combined.includes('فلوريدا') ||
+    combined.includes('miami') ||
+    combined.includes('ميامي') ||
+    combined.includes('california') ||
+    combined.includes('los angeles') ||
+    combined.includes('new york')
+  ) {
+    return style === 'balanced' ? getUSPlanADays(totalDays, city) : getUSPlanBDays(totalDays, city);
+  }
 
   if (normDest.includes('turkey') || normDest.includes('تركيا') || normDest.includes('istanbul') || normDest.includes('إسطنبول')) {
     return style === 'balanced' ? getTurkeyPlanADays(totalDays, city) : getTurkeyPlanBDays(totalDays, city);
@@ -1776,15 +1797,15 @@ function getUniversalPlanADays(totalDays: number, city: string, dest: string): T
       estimatedCost: '$65 - $120',
       city,
       cityAr: city,
-      morning: `Morning exploration of ${city}’s prominent landmarks, discovering ${t.title.toLowerCase()} with knowledgeable local insight.`,
+      morning: `Morning exploration of ${city}’s prominent historical landmarks, discovering ${t.title.toLowerCase()} with knowledgeable local insight.`,
       morningAr: `جولة صباحية لاستكشاف أبرز معالم ${city} والتعرف على ${t.titleAr} في أجواء ممتعة ومريحة.`,
       afternoon: `Visit specialized cultural museums, artisan workshops, and scenic observation points across ${city}.`,
       afternoonAr: `زيارة المتاحف التخصصية وورش الحرف التقليدية والمطلات البانورامية في ${city}.`,
-      evening: `Evening dining at a certified Halal-friendly local restaurant featuring signature regional culinary specialties.`,
-      eveningAr: `أمسية عشاء ممتعة في مطعم محلي يقدم خيارات حلال معتمدة وأشهى المأكولات الإقليمية الشهيرة.`,
-      diningRecommendation: `Authentic Local & Halal-Friendly Restaurant in ${city}`,
-      diningRecommendationAr: `مطعم محلي معتمد يقدم خيارات حلال وأجواء راقية في ${city}`,
-      highlights: [`${city} Landmark ${i}`, t.title, 'Cultural Experience', 'Local Dining'],
+      evening: `Evening dining at a certified Halal-friendly restaurant featuring signature regional culinary specialties.`,
+      eveningAr: `أمسية عشاء ممتعة في مطعم يقدم خيارات حلال معتمدة وأشهى المأكولات الإقليمية الشهيرة في ${city}.`,
+      diningRecommendation: `${city} Gourmet Halal Dining & Artisan Cafe`,
+      diningRecommendationAr: `مطعم مأكولات حلال ومقهى تراثي راقٍ في ${city}`,
+      highlights: [`${city} Grand Plaza`, t.title, `${city} Cultural Gallery`, 'Halal Gourmet Dining'],
     });
   }
 
@@ -1792,22 +1813,65 @@ function getUniversalPlanADays(totalDays: number, city: string, dest: string): T
 }
 
 function getUniversalPlanBDays(totalDays: number, city: string, dest: string): TourismOptionDay[] {
-  const planA = getUniversalPlanADays(totalDays, city, dest);
-  return planA.map((day) => ({
-    ...day,
-    title: `Day ${day.dayNumber}: Slow Living, Nature Reserves & Quiet Cafes in ${city}`,
-    titleAr: `اليوم ${day.dayNumber}: المسار الهادئ، الطبيعة والاستجمام، والمقاهي المميزة في ${city}`,
-    theme: 'Slow Living & Mindful Discovery',
-    themeAr: 'الهدوء والسكينة والابتعاد عن الزحام',
-    morning: `Unrushed morning in botanical parks and quiet historic quarters of ${city} with artisan coffee.`,
-    morningAr: `صباح هادئ في الحدائق والأحياء التراثية في ${city} مع جلسة قهوة مريحة.`,
-    afternoon: `Explore peaceful gardens, scenic lakesides, and local craft workshops at your own relaxed pace.`,
-    afternoonAr: `استكشاف الحدائق الهادئة وضفاف البحيرات وورش الحرفيين دون استعجال.`,
-    evening: `Sunset relaxation and organic farm-to-table dining with gentle background melodies.`,
-    eveningAr: `أمسية استرخاء مع غروب الشمس وعشاء مأكولات عضوية طازجة وأجواء موسيقية هادئة.`,
-    diningRecommendation: `Artisan Farm-to-Table Bistro in ${city}`,
-    diningRecommendationAr: `مطعم مأكولات عضوية طازجة وأجواء حدائق في ${city}`,
-  }));
+  const quietThemes = [
+    { title: 'Botanical Conservatories, Glasshouses & Serene Herbal Tea', titleAr: 'الحدائق النباتية والبيوت الزجاجية وجلسات الشاي العطري' },
+    { title: 'Tranquil Canal Pathways, Historic Watermills & Riverside Cafes', titleAr: 'مماشي القنوات الهادئة وطواحين المياه التاريخية ومقاهي الضفاف' },
+    { title: 'Protected Forest Sanctuaries, Pine Canopies & Fresh Breeze', titleAr: 'المحميات الطبيعية ومسارات الصنوبر والهواء النقي المنعش' },
+    { title: 'Historic Cloistered Courtyards & Shaded Reading Gardens', titleAr: 'الأفنية التراثية المعزولة وحدائق القراءة والمقاعد الهادئة' },
+    { title: 'Panoramic Hilltop Outlooks & Gentle Sunset Nature Walk', titleAr: 'المطلات الجبلية البانورامية ومسارات المشي وقت الغروب' },
+    { title: 'Artisan Ceramic Studios, Clay Masterclasses & Local Crafts', titleAr: 'ورش الخزف والصلصال وصناعة الفخار اليدوي التراثي' },
+    { title: 'Natural Thermal Springs, Mineral Water Baths & Spa Wellness', titleAr: 'الينابيع المعدنية الطبيعية وحمامات الاسترخاء والنقاهة' },
+    { title: 'Scenic Lake Reflections & Silent Electric Boat Drift', titleAr: 'البحيرات الهادئة وقوارب التجديف الكهربائية الصامتة' },
+    { title: 'Organic Farmsteads, Fruit Orchards & Farm-to-Table Dining', titleAr: 'المزارع العضوية وبساتين الفاكهة ووجبات المزارع الطازجة' },
+    { title: 'Ancient Shaded Groves, Stone Pavilions & Mindful Stroll', titleAr: 'بساتين الأشجار المعمرة والاستراحات الحجرية والتأمل' },
+    { title: 'Secret Walled Rose Gardens & Traditional Perfume Workshops', titleAr: 'حدائق الورود المسورة وأروقة العطور التراثية والزيوت الطبيعية' },
+    { title: 'Quiet Coastal Cove, Soft Pebble Beach & Marine Vista', titleAr: 'الخلجان الساحلية الهادئة ومسارات الشواطئ غير المزدحمة' },
+    { title: 'Zen Meditation Pavilions, Bonsai Gardens & Water Bowls', titleAr: 'حدائق التأمل والسكينة وأحواض الماء الحجرية والمروج الخضراء' },
+    { title: 'Scenic Alpine Valley Meadow & Traditional Wooden Chalet', titleAr: 'المروج الجبلية الخضراء والأكواخ الخشبية التراثية' },
+    { title: 'Herbology Gardens, Essential Oil Distilleries & Aromatics', titleAr: 'حدائق الأعشاب الطبية ومصانع تقطير الزيوت العطرية' },
+    { title: 'Secluded Island Nature Sanctuary & Birdwatching Hideouts', titleAr: 'المحميات الطبيعية في جزر الأنهار ومشاهدة الطيور النادرة' },
+    { title: 'Artisan Herbal Bakeries, Sourdough Breads & Quiet Brunch', titleAr: 'المخابز التراثية ومخبوزات الحبوب الطبيعية وفطور الصباح الهادئ' },
+    { title: 'Old Vineyard Landscapes, Grape Valley Walk & Juice Tasting', titleAr: 'مزارع الكروم الريفية والممرات الخضراء وعصائر الفاكهة الطازجة' },
+    { title: 'Quiet Lakeside Wooden Docks & Book Reading Pavilions', titleAr: 'الأرصفة الخشبية على البحيرة وأكشاك القراءة والاسترخاء' },
+    { title: 'Hidden Mountain Springs & Shaded Waterfall Cascades', titleAr: 'الينابيع الجبلية الخفية وشلالات المياه المنعشة وسط الغابة' },
+    { title: 'Traditional Handmade Paper & Calligraphy Studio Tour', titleAr: 'صناعة الورق اليدوي وفنون الخط العربي والتراث' },
+    { title: 'Panoramic Hill Meditation & Evening Ambient Music', titleAr: 'جلسة الغروب على التلال والموسيقى الوترية الهادئة' },
+    { title: 'Quiet Heritage Village Stroll, Stone Cottages & Honey Tasting', titleAr: 'القرى التراثية الحجرية وتذوق العسل الطبيعي والمربيات' },
+    { title: 'Serene Botanical Greenhouse Walk & Exotic Orchid Collections', titleAr: 'البيوت المحمية لأزهار الأوركيد النادرة والزهور الاستوائية' },
+    { title: 'Riverbank Sunset Stroll & Organic Farmstead Supper', titleAr: 'الممشى النهري الهادئ وعشاء المأكولات العضوية الريفية' },
+    { title: 'Handcrafted Wood Furniture & Natural Resin Workshop', titleAr: 'ورش النحت على الخشب والحرف التراثية المستدامة' },
+    { title: 'Quiet Shaded Valley Sanctuary & Soft Breeze Retreat', titleAr: 'الوديان المحمية والابتعاد التام عن ضوضاء المدن' },
+    { title: 'Artisan Herbal Tea Blending & Mindful Evening Reflection', titleAr: 'جلسة إعداد خلطات الشاي الخاصة والتأمل المسائي' },
+    { title: 'Slow Morning Promenade, Scented Gardens & Souvenir Notes', titleAr: 'صباح هادئ بين الأزهار العطرة وتدوين خواطر السفر' },
+    { title: 'Farewell Quiet Sunset Dinner by the Peaceful Water Edge', titleAr: 'عشاء الوداع الهادئ على ضفاف المياه الهادئة وأضواء الشموع' },
+  ];
+
+  const fullDays: TourismOptionDay[] = [];
+  for (let i = 1; i <= Math.min(totalDays, 30); i++) {
+    const t = quietThemes[i - 1] || quietThemes[0];
+    fullDays.push({
+      dayNumber: i,
+      title: `Day ${i}: ${t.title} in ${city}`,
+      titleAr: `اليوم ${i}: ${t.titleAr} في ${city}`,
+      theme: t.title,
+      themeAr: t.titleAr,
+      neighborhood: `${city} Green Outskirts & Quiet Sanctuaries`,
+      estimatedCost: '$50 - $95',
+      city,
+      cityAr: city,
+      morning: `Unrushed morning embracing ${t.title.toLowerCase()} with artisan fresh tea and gentle nature sounds.`,
+      morningAr: `صباح مريح وهادئ يبدأ بالاستمتاع بـ ${t.titleAr} مع جلسة شاي عضوي وأجواء طبيعية باعثة على الراحة.`,
+      afternoon: `Slow-paced exploration of shaded garden pavilions, private artisan workshops, and calm water views.`,
+      afternoonAr: `استكشاف بطيء ومريح للمساحات الخضراء والورش الحرفية الهادئة دون أي تزاحم.`,
+      evening: `Tranquil evening dining featuring farm-to-table organic ingredients and gentle background atmosphere.`,
+      eveningAr: `أمسية عشاء هادئة بمأكولات عضوية طازجة وأجواء استرخاء مثالية لراحة البال.`,
+      diningRecommendation: `Artisan Organic Farm-to-Table Bistro in ${city}`,
+      diningRecommendationAr: `مطعم مأكولات عضوية طازجة وأجواء حدائق مريحة في ${city}`,
+      highlights: [`${city} Nature Sanctuary ${i}`, t.title, 'Slow Living & Nature', 'Halal Organic Dining'],
+    });
+  }
+
+  return fullDays;
 }
 
 

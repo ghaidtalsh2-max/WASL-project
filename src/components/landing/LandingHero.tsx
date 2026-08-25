@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { useTheme } from '@/lib/theme/ThemeContext';
 import { useJourney } from '@/lib/state/JourneyContext';
-import { Globe, Moon, Sun, ArrowRight, ArrowLeft, Settings, Sparkles, ChevronDown } from 'lucide-react';
+import { Globe, Moon, Sun, ArrowRight, ArrowLeft, Settings, Sparkles, ChevronDown, Compass } from 'lucide-react';
 import AboutWaslFooter from '@/components/common/AboutWaslFooter';
 
 const GlobeCanvas = dynamic(() => import('./GlobeCanvas'), { ssr: false });
@@ -109,17 +109,27 @@ export default function LandingHero() {
             </p>
           </div>
 
-          {/* Action Button: About WASL (Leads directly to IntroScreen) */}
-          <div className="pt-4 flex items-center">
+          {/* Action Buttons: 1. Start Journey & 2. Learn About WASL */}
+          <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto">
+            {/* 1. Start Journey Button */}
             <button
-              onClick={() => setScreen('intro')}
-              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white font-semibold text-base sm:text-lg shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+              onClick={() => setScreen('setup')}
+              className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 hover:from-pink-600 hover:to-rose-600 text-white font-semibold text-base sm:text-lg shadow-xl shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
             >
-              <Sparkles className="w-5 h-5 text-white animate-pulse" />
-              <span>{isRtl ? 'عن وَصل' : 'About WASL'}</span>
+              <Compass className="w-5 h-5 text-white animate-spin-slow group-hover:rotate-45 transition-transform duration-500" />
+              <span>{t.startJourney || (isRtl ? 'ابدأ رحلتك' : 'Start Your Journey')}</span>
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 group-hover:scale-110 transition-transform">
                 {isRtl ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
               </div>
+            </button>
+
+            {/* 2. Learn About WASL Button (Leads to Intro Screen) */}
+            <button
+              onClick={() => setScreen('intro')}
+              className="group inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-full bg-white/5 hover:bg-white/10 border border-white/15 hover:border-pink-500/40 text-gray-200 hover:text-white font-medium text-sm sm:text-base transition-all duration-300 backdrop-blur-md shadow-inner hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Sparkles className="w-4 h-4 text-pink-400 group-hover:scale-110 transition-transform" />
+              <span>{isRtl ? 'اعرف عن وَصل' : 'About WASL'}</span>
             </button>
           </div>
         </div>

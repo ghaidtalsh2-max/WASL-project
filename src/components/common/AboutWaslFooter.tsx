@@ -112,7 +112,7 @@ export default function AboutWaslFooter() {
             </span>
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
               <a
-                href="https://www.linkedin.com/in/ghaidaa-alshareef"
+                href="https://www.linkedin.com/in/ghaidaa-alshareef-83741940a"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 text-pink-200 text-xs font-semibold transition group"
@@ -123,7 +123,7 @@ export default function AboutWaslFooter() {
               </a>
 
               <a
-                href="https://www.linkedin.com/in/taleen-alqahtani"
+                href="https://www.linkedin.com/in/taleen-alqhatani-220205358"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-200 text-xs font-semibold transition group"

@@ -31,7 +31,7 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
     }
   }, []);
 
-  // Stop listening
+  // Stop listening safely
   const stopListening = useCallback(() => {
     isListeningRef.current = false;
     if (recognitionRef.current) {
@@ -44,9 +44,9 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
     setIsListening(false);
   }, []);
 
-  // Start listening
+  // Start listening with proactive mic permission check
   const startListening = useCallback(
-    (lang?: string, onResultCallback?: (text: string) => void) => {
+    async (lang?: string, onResultCallback?: (text: string) => void) => {
       if (typeof window === 'undefined') return;
 
       const SpeechRecognition =
@@ -55,7 +55,7 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
 
       if (!SpeechRecognition) {
         setIsSupported(false);
-        setPermissionError('متصفحك لا يدعم التعرف على الصوت. جرب متصفح Safari أو Chrome.');
+        setPermissionError('متصفحك لا يدعم التعرف الصوتي. يرجى تجربة متصفح Safari أو Google Chrome.');
         return;
       }
 
@@ -64,7 +64,28 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
         onResultCallbackRef.current = onResultCallback;
       }
 
-      // Stop any existing instance
+      // 1. Cancel any active speech synthesis output to prevent audio engine lock
+      if ('speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+          setIsSpeaking(false);
+          setSpeakingMessageId(null);
+        } catch (e) {}
+      }
+
+      // 2. Request mic permission explicitly if available
+      try {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+      } catch (micErr: any) {
+        console.warn('Microphone permission request rejected:', micErr);
+        setPermissionError('يرجى السماح بالوصول إلى الميكروفون من إعدادات المتصفح للبدء بالتحدث.');
+        setIsListening(false);
+        return;
+      }
+
+      // 3. Stop any existing recognition instance
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -73,14 +94,16 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
 
       try {
         const recognition = new SpeechRecognition();
-        recognition.lang = lang || options?.lang || 'ar-SA';
+        const targetLang = lang || options?.lang || 'ar-SA';
+        recognition.lang = targetLang;
         recognition.continuous = options?.continuous ?? false;
-        recognition.interimResults = true; // Show words as spoken
+        recognition.interimResults = true;
         recognition.maxAlternatives = 1;
 
         recognition.onstart = () => {
           isListeningRef.current = true;
           setIsListening(true);
+          setPermissionError(null);
         };
 
         recognition.onresult = (event: any) => {
@@ -112,7 +135,9 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
           if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
             setPermissionError('تم رفض إذن الميكروفون. الرجاء السماح بالوصول للميكروفون من إعدادات المتصفح.');
           } else if (event.error === 'no-speech') {
-            // benign - no speech detected
+            // benign - no voice detected in timeframe
+          } else if (event.error === 'audio-capture') {
+            setPermissionError('تعذر التقاط الصوت. تأكد من توصيل الميكروفون بشكل صحيح.');
           }
           isListeningRef.current = false;
           setIsListening(false);
@@ -127,7 +152,7 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
         recognition.start();
       } catch (err: any) {
         console.error('Failed to initialize speech recognition:', err);
-        setPermissionError('تعذر تفعيل الميكروفون. تأكد من تفعيل صلاحيات الصوت في المتصفح.');
+        setPermissionError('تعذر تفعيل الميكروفون. يرجى التأكد من صلاحيات الصوت بالمتصفح.');
         isListeningRef.current = false;
         setIsListening(false);
       }

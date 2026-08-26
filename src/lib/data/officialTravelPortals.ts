@@ -535,22 +535,304 @@ export function getDestinationOfficialPortals(destinationCodeOrName: string, cit
     ];
   }
 
-  // Generic / Default Destination Official Portal
+  // Saudi Arabia (المملكة العربية السعودية)
+  if (norm.includes('saudi') || norm.includes('سعودي') || norm.includes('riyadh') || norm.includes('الرياض') || norm.includes('jeddah') || norm.includes('جدة') || norm.includes('alula') || norm.includes('العلا') || norm.includes('dammam') || norm.includes('الدمام')) {
+    return [
+      {
+        name: 'KSA Visa Official National Platform (Ministry of Foreign Affairs)',
+        nameAr: 'المنصة الوطنية الموحدة للتأشيرات (وزارة الخارجية السعودية - KSA Visa)',
+        url: 'https://ksavisa.sa',
+        description: 'Official Saudi electronic visa, tourist eVisa, transit and business entry permits',
+        descriptionAr: 'البوابة الحكومية الرسمية المعتمدة للتقديم على تأشيرة الزيارة السياحية وتأشيرات الدخول للمملكة',
+        category: 'visa',
+      },
+      {
+        name: 'Saudi Tourism Authority (Visit Saudi - روح السعودية)',
+        nameAr: 'الهيئة السعودية للسياحة (روح السعودية - Visit Saudi)',
+        url: 'https://www.visitsaudi.com',
+        description: 'Official tourism authority portal, seasonal festivals (Riyadh Season), heritage guides and bookings',
+        descriptionAr: 'البوابة الرسمية للسياحة السعودية، فعاليات موسم الرياض، الدليل الثقافي وحجوزات المعالم',
+        category: 'tourism',
+      },
+      {
+        name: 'Heritage Commission (Ministry of Culture Saudi Arabia)',
+        nameAr: 'هيئة التراث (وزارة الثقافة السعودية - مواقع التراث العالمي والدرعية والعلا)',
+        url: 'https://heritage.moc.gov.sa',
+        description: 'Official Saudi UNESCO heritage sites, historic Diriyah, Al-Balad Jeddah & AlUla archaeological wonders',
+        descriptionAr: 'الدليل الرسمي للمواقع الأثرية ومواقع اليونسكو وحي الطريف التاريخي وجدة التاريخية',
+        category: 'tourism',
+      },
+      {
+        name: 'ZATCA (Zakat, Tax and Customs Authority - Saudi Arabia)',
+        nameAr: 'هيئة الزكاة والضريبة والجمارك السعودية (زاتكا - الإفصاح الجمركي والأمتعة)',
+        url: 'https://zatca.gov.sa',
+        description: 'Official Saudi customs regulations, passenger declaration limits, medication clearances & duty-free rules',
+        descriptionAr: 'اللوائح الرسمية للجمارك السعودية، الإفصاح عن الأدوية الشخصية والعملات والمواد المصرح بدخولها',
+        category: 'customs',
+      },
+      {
+        name: 'General Authority of Civil Aviation & Saudi Railway (SAR / Haramain)',
+        nameAr: 'الهيئة العامة للطيران المدني والخطوط الحديدية السعودية (SAR وقطار الحرمين)',
+        url: 'https://www.sar.com.sa',
+        description: 'Official high-speed railway bookings between Riyadh, Jeddah, Makkah, and Madinah',
+        descriptionAr: 'حجوزات قطارات الركاب السريعة وشبكة النقل والمطارات الدولية في المملكة',
+        category: 'transport',
+      },
+    ];
+  }
+
+  // United Arab Emirates (الإمارات العربية المتحدة)
+  if (norm.includes('uae') || norm.includes('emirates') || norm.includes('إمارات') || norm.includes('dubai') || norm.includes('دبي') || norm.includes('abu dhabi') || norm.includes('أبوظبي')) {
+    return [
+      {
+        name: 'Federal Authority for Identity, Citizenship, Customs & Port Security (ICP / GDRFA)',
+        nameAr: 'الهيئة الاتحادية للهوية والجنسية والإقامة (ICP وتأشيرات دبي GDRFA)',
+        url: 'https://icp.gov.ae',
+        description: 'Official UAE entry visa applications, tourist visa extensions, and entry requirements',
+        descriptionAr: 'البوابة الحكومية الرسمية لإصدار تأشيرات الدخول والإقامة وتصاريح الزيارة لدولة الإمارات',
+        category: 'visa',
+      },
+      {
+        name: 'Visit Dubai & Department of Economy and Tourism',
+        nameAr: 'دائرة الاقتصاد والسياحة في دبي (Visit Dubai)',
+        url: 'https://www.visitdubai.com',
+        description: 'Official tourism guide, Burj Khalifa attractions, theme parks, and lifestyle calendar',
+        descriptionAr: 'الدليل الرسمي للفعاليات، المعالم الترفيهية، الشواطئ وحجوزات برج خليفة',
+        category: 'tourism',
+      },
+      {
+        name: 'Dubai Customs Authority',
+        nameAr: 'جمارك دبي الرسمية (لوائح الأمتعة والأدوية المصرح بها)',
+        url: 'https://www.dubaicustoms.gov.ae',
+        description: 'Customs declaration rules, passenger duty-free allowances, and restricted medication lists',
+        descriptionAr: 'لوائح الإفصاح الجمركي للمسافرين والأمتعة وقوائم الأدوية المسموح بإدخالها',
+        category: 'customs',
+      },
+    ];
+  }
+
+  // Egypt (جمهورية مصر العربية)
+  if (norm.includes('egypt') || norm.includes('مصر') || norm.includes('cairo') || norm.includes('القاهرة') || norm.includes('alexandria') || norm.includes('الإسكندرية')) {
+    return [
+      {
+        name: 'Arab Republic of Egypt eVisa Portal (Ministry of Interior)',
+        nameAr: 'بوابة التأشيرة الإلكترونية الرسمية لجمهورية مصر العربية (وزارة الداخلية)',
+        url: 'https://visa2egypt.gov.eg',
+        description: 'Official government portal for electronic tourist visa applications to Egypt',
+        descriptionAr: 'البوابة الرسمية الوحيدة المعتمدة من وزارة الداخلية المصرية لإصدار تأشيرات السياحة الإلكترونية',
+        category: 'visa',
+      },
+      {
+        name: 'Egyptian Tourism Authority (Experience Egypt)',
+        nameAr: 'الهيئة المصرية العامة للتنشيط السياحي (Experience Egypt)',
+        url: 'https://www.experienceegypt.eg',
+        description: 'Official pyramids ticketing, Grand Egyptian Museum (GEM) guides, and Nile cruise directory',
+        descriptionAr: 'الدليل الرسمي للمتاحف، تذاكر الأهرامات، المتحف المصري الكبير ورحلات النيل',
+        category: 'tourism',
+      },
+      {
+        name: 'Egyptian Customs Authority',
+        nameAr: 'مصلحة الجمارك المصرية (تعليمات وإقرارات الركاب)',
+        url: 'https://customs.gov.eg',
+        description: 'Official customs regulations, currency declaration limits and duty-free provisions',
+        descriptionAr: 'لوائح مصلحة الجمارك المصرية وإقرارات النقد الأجنبي والأمتعة الشخصية',
+        category: 'customs',
+      },
+    ];
+  }
+
+  // Qatar (دولة قطر)
+  if (norm.includes('qatar') || norm.includes('قطر') || norm.includes('doha') || norm.includes('الدوحة')) {
+    return [
+      {
+        name: 'Hayya Portal Qatar (Official Entry & Visa Authority)',
+        nameAr: 'منصة هيّا الرسمية لتأشيرات ودخول دولة قطر (Hayya Portal)',
+        url: 'https://www.hayya.qa',
+        description: 'Official entry permits, tourist visas, and GCC resident visitor approvals',
+        descriptionAr: 'البوابة الحكومية المعتمدة لاستخراج تصاريح الدخول والتأشيرات السياحية لقطر',
+        category: 'visa',
+      },
+      {
+        name: 'Visit Qatar (Qatar Tourism)',
+        nameAr: 'قطر للسياحة (Visit Qatar)',
+        url: 'https://visitqatar.com',
+        description: 'Official destination guide, Souq Waqif, Katara Cultural Village, and museum passes',
+        descriptionAr: 'الدليل الرسمي للفعاليات، سوق واقف، الحي الثقافي كتارا ومتاحف قطر',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Kuwait (دولة الكويت)
+  if (norm.includes('kuwait') || norm.includes('الكويت') || norm.includes('كويت')) {
+    return [
+      {
+        name: 'Ministry of Interior Kuwait eVisa Portal',
+        nameAr: 'بوابة التأشيرة الإلكترونية الرسمية (وزارة الداخلية الكويتية)',
+        url: 'https://evisa.moi.gov.kw',
+        description: 'Official tourist eVisa applications, entry regulations, and passport criteria',
+        descriptionAr: 'البوابة الحكومية الرسمية لإصدار سمات الدخول والتأشيرات الإلكترونية للكويت',
+        category: 'visa',
+      },
+      {
+        name: 'Kuwait Tourism & Culture Directory',
+        nameAr: 'قطاع السياحة والتراث (وزارة الإعلام الكويتية)',
+        url: 'https://www.media.gov.kw',
+        description: 'Official directory for Kuwait Towers, Sheikh Jaber Cultural Centre and museums',
+        descriptionAr: 'الدليل الرسمي لأبراج الكويت، مركز الشيخ جابر الأحمد الثقافي والمعالم التاريخية',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Bahrain (مملكة البحرين)
+  if (norm.includes('bahrain') || norm.includes('البحرين') || norm.includes('بحرين') || norm.includes('manama') || norm.includes('المنامة')) {
+    return [
+      {
+        name: 'Kingdom of Bahrain eVisa System (NPRA)',
+        nameAr: 'شؤون الجنسية والجوازات والإقامة (بوابة التأشيرات الإلكترونية للبحرين)',
+        url: 'https://www.evisa.gov.bh',
+        description: 'Official online visa applications, entry requirements, and GCC visitor permits',
+        descriptionAr: 'المنصة الرسمية المعتمدة لإصدار التأشيرات الإلكترونية وتصاريح الزيارة لمملكة البحرين',
+        category: 'visa',
+      },
+      {
+        name: 'Bahrain Tourism and Exhibitions Authority (Visit Bahrain)',
+        nameAr: 'هيئة البحرين للسياحة والمعارض (Visit Bahrain)',
+        url: 'https://www.bahrain.com',
+        description: 'Official guide to historic Muharraq, Bab Al Bahrain, and Formula 1 calendar',
+        descriptionAr: 'الدليل الرسمي لسوق باب البحرين، مسار اللؤلؤ التاريخي والفعاليات الثقافية',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Oman (سلطنة عمان)
+  if (norm.includes('oman') || norm.includes('عمان') || norm.includes('عُمان') || norm.includes('muscat') || norm.includes('مسقط') || norm.includes('salalah') || norm.includes('صلالة')) {
+    return [
+      {
+        name: 'Royal Oman Police eVisa Portal',
+        nameAr: 'شرطة عمان السلطانية (بوابة التأشيرة الإلكترونية الرسمية)',
+        url: 'https://evisa.rop.gov.om',
+        description: 'Official entry visa system for the Sultanate of Oman and GCC residents',
+        descriptionAr: 'البوابة الحكومية المعتمدة لإصدار تأشيرات الدخول السياحية لسلطنة عُمان',
+        category: 'visa',
+      },
+      {
+        name: 'Experience Oman (Ministry of Heritage and Tourism)',
+        nameAr: 'وزارة التراث والسياحة العمانية (Experience Oman)',
+        url: 'https://experienceoman.om',
+        description: 'Official tourism guide, Sultan Qaboos Grand Mosque, Salalah khareef and wadi tours',
+        descriptionAr: 'الدليل الرسمي لجامع السلطان قابوس الأكبر وموسم خريف صلالة والواحات الطبيعية',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Morocco (المملكة المغربية)
+  if (norm.includes('morocco') || norm.includes('المغرب') || norm.includes('marrakech') || norm.includes('مراكش') || norm.includes('casablanca') || norm.includes('الدار البيضاء') || norm.includes('rabat') || norm.includes('الرباط')) {
+    return [
+      {
+        name: 'Access Maroc eVisa Portal (Ministry of Foreign Affairs Morocco)',
+        nameAr: 'منصة التأشيرة الإلكترونية للمملكة المغربية (Accès Maroc / eVisa)',
+        url: 'https://www.acces-maroc.ma',
+        description: 'Official Moroccan electronic visa (eVisa) and Electronic Travel Authorisation (AEVM)',
+        descriptionAr: 'البوابة الرسمية لوزارة الشؤون الخارجية والتعاون الإفريقي لاستخراج التأشيرة الإلكترونية للمغرب',
+        category: 'visa',
+      },
+      {
+        name: 'Moroccan National Tourism Office (Visit Morocco)',
+        nameAr: 'المكتب الوطني المغربي للسياحة (Visit Morocco)',
+        url: 'https://www.visitmorocco.com',
+        description: 'Official guide to Marrakech historic medinas, Majorelle Gardens, and Atlas Mountains',
+        descriptionAr: 'الدليل السياحي الرسمي للمدن العتيقة في مراكش وفاس، حدائق ماجوريل وجبال الأطلس',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Spain (إسبانيا)
+  if (norm.includes('spain') || norm.includes('إسبانيا') || norm.includes('اسبانيا') || norm.includes('madrid') || norm.includes('مدريد') || norm.includes('barcelona') || norm.includes('برشلونة')) {
+    return [
+      {
+        name: 'Ministry of Foreign Affairs, European Union and Cooperation Spain (Schengen Visas)',
+        nameAr: 'وزارة الشؤون الخارجية الإسبانية (بوابة تأشيرات شنغن الرسمية)',
+        url: 'https://www.exteriores.gob.es/en/ServiciosAlCiudadano/Paginas/Visados.aspx',
+        description: 'Official Spanish and Schengen visa requirements, documentation, and consulate appointments',
+        descriptionAr: 'البوابة الحكومية الرسمية لمتطلبات تأشيرة شنغن وتصاريح السفر لإسبانيا',
+        category: 'visa',
+      },
+      {
+        name: 'Turespaña (Spain.info - Official Tourism Portal of Spain)',
+        nameAr: 'المعهد الإسباني للسياحة (Spain.info - البوابة الرسمية للسياحة في إسبانيا)',
+        url: 'https://www.spain.info',
+        description: 'Official cultural monuments, Alhambra Palace Granada, Sagrada Familia and museum passes',
+        descriptionAr: 'الدليل الرسمي لقصر الحمراء بغرناطة وكنيسة ساغرادا فاميليا ومتاحف مدريد الملكية',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Germany (ألمانيا)
+  if (norm.includes('germany') || norm.includes('ألمانيا') || norm.includes('المانيا') || norm.includes('berlin') || norm.includes('برلين') || norm.includes('munich') || norm.includes('ميونخ')) {
+    return [
+      {
+        name: 'Federal Foreign Office Germany (Visa Navigator & Schengen)',
+        nameAr: 'وزارة الخارجية الألمانية (دليل تأشيرات شنغن الرسمي Visa Navigator)',
+        url: 'https://www.auswaertiges-amt.de/en/visa-service',
+        description: 'Official German entry rules, Schengen visa applications, and medical visa criteria',
+        descriptionAr: 'المنصة الرسمية لوزارة الخارجية الألمانية لمتطلبات تأشيرة شنغن وتأشيرات العلاج الطبي',
+        category: 'visa',
+      },
+      {
+        name: 'German National Tourist Board (Germany Travel)',
+        nameAr: 'المجلس الوطني الألماني للسياحة (Germany Travel)',
+        url: 'https://www.germany.travel',
+        description: 'Official Bavarian castle tours, thermal mineral spas (Baden-Baden), and transport passes',
+        descriptionAr: 'الدليل الرسمي لقلاع بافاريا ومصحات بادن بادن العلاجية وشبكة القطارات الألمانية',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Austria (النمسا)
+  if (norm.includes('austria') || norm.includes('النمسا') || norm.includes('vienna') || norm.includes('فيينا') || norm.includes('salzburg') || norm.includes('سالزبورغ')) {
+    return [
+      {
+        name: 'Federal Ministry for European and International Affairs Austria (Visas)',
+        nameAr: 'وزارة الشؤون الأوروبية والدولية النمساوية (تأشيرات شنغن الرسمية)',
+        url: 'https://www.bmeia.gv.at/en/travel-stay/entry-and-residence-in-austria/entry-and-visa',
+        description: 'Official Austrian entry visa documentation, medical travel criteria and Schengen forms',
+        descriptionAr: 'البوابة الرسمية لمتطلبات تأشيرة شنغن النمساوية وإجراءات السفر والعلاج في النمسا',
+        category: 'visa',
+      },
+      {
+        name: 'Austrian National Tourist Office (Austria.info)',
+        nameAr: 'المكتب الوطني النمساوي للسياحة (Austria.info)',
+        url: 'https://www.austria.info',
+        description: 'Official Imperial Vienna palaces, Lake Zell am See, Alpine nature resorts and culture passes',
+        descriptionAr: 'الدليل الرسمي لقصور فيينا الإمبراطورية وبحيرة زيلامسي وقمم جبال الألب النمساوية',
+        category: 'tourism',
+      },
+    ];
+  }
+
+  // Universal Global Fallback (100% Zero Fake Sites / Generic to IATA & UN Tourism)
   return [
     {
-      name: `Official Immigration & Visa Authority (${destinationCodeOrName})`,
-      nameAr: `الهيئة الرسمية للهجرة والتأشيرات (${destinationCodeOrName})`,
-      url: 'https://home-affairs.ec.europa.eu/policies/schengen-borders-and-visa_en',
-      description: 'Official immigration rules, entry visas, and border requirements',
-      descriptionAr: 'المتطلبات الرسمية للتأشيرات وتصاريح الدخول والإقامة المعتمدة',
+      name: `IATA Travel Centre (Official International Entry & Visa Verification)`,
+      nameAr: `مركز معلومات السفر الدولي الرسمي (IATA Travel Centre لمتطلبات الدخول)`,
+      url: 'https://www.iatatravelcentre.com',
+      description: 'Official passport validity, visa criteria, and health requirements for all international airlines',
+      descriptionAr: 'المنصة العالمية المعتمدة لشركات الطيران للتحقق من صلاحية الجوازات والتأشيرات الرسمية لأي وجهة بالعالم',
       category: 'visa',
     },
     {
-      name: `National Tourism & Heritage Board (${destinationCodeOrName})`,
-      nameAr: `الهيئة الرسمية للسياحة والآثار (${destinationCodeOrName})`,
-      url: 'https://www.visitczechia.com',
-      description: 'Official cultural guides, museum passes, and regional routes',
-      descriptionAr: 'الدليل الرسمي للمتاحف والمعالم التراثية والأنشطة السياحية المعتمدة',
+      name: `UN Tourism & Official Destination Heritage Directory`,
+      nameAr: `منظمة السياحة العالمية ودليل الوجهات الرسمية المعتمدة`,
+      url: 'https://www.unwto.org',
+      description: 'Official global tourism standards, national heritage protections, and visitor guidance',
+      descriptionAr: 'الدليل المعتمد لمنظمة السياحة العالمية والوجهات التراثية والأنشطة السياحية الرسمية',
       category: 'tourism',
     },
   ];

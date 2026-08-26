@@ -401,7 +401,7 @@ export default function JourneySetupModal() {
       const data = await res.json();
       if (data.success && data.extracted) {
         const ext = data.extracted;
-        
+
         // Update state with extracted knowns
         if (ext.origin) setOrigin(ext.origin);
         if (ext.destination) setDestination(ext.destination);
@@ -694,22 +694,20 @@ export default function JourneySetupModal() {
             <div className="p-1 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-1 text-xs">
               <button
                 onClick={() => setInputMode('choices')}
-                className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 ${
-                  inputMode === 'choices'
-                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+                className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-2 ${inputMode === 'choices'
+                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25'
+                  : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 <Compass className="w-3.5 h-3.5" />
                 <span>{isRtl ? 'خيارات الرحلة (الأساسي)' : 'Choice-Based Setup (Primary)'}</span>
               </button>
               <button
                 onClick={() => setInputMode('manual')}
-                className={`px-4 py-2 rounded-xl font-medium transition flex items-center gap-2 ${
-                  inputMode === 'manual'
-                    ? 'bg-pink-500 text-white shadow-md shadow-pink-500/25'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+                className={`px-4 py-2 rounded-xl font-medium transition flex items-center gap-2 ${inputMode === 'manual'
+                  ? 'bg-pink-500 text-white shadow-md shadow-pink-500/25'
+                  : 'text-gray-400 hover:text-white'
+                  }`}
               >
                 <Sparkles className="w-3.5 h-3.5 text-pink-400" />
                 <span>{isRtl ? 'وصف حر مخصص (يدوي)' : 'Write Trip Description'}</span>
@@ -788,11 +786,10 @@ export default function JourneySetupModal() {
                             key={choice.value}
                             type="button"
                             onClick={() => handleFollowUpAnswer(q.id, choice.value)}
-                            className={`p-3.5 rounded-xl border text-start text-xs sm:text-sm font-medium transition ${
-                              isSelected
-                                ? 'bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-500/25'
-                                : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                            }`}
+                            className={`p-3.5 rounded-xl border text-start text-xs sm:text-sm font-medium transition ${isSelected
+                              ? 'bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-500/25'
+                              : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <span>{isRtl ? choice.labelAr : choice.labelEn}</span>
@@ -857,11 +854,10 @@ export default function JourneySetupModal() {
                   <div
                     key={plan.id}
                     onClick={() => setSelectedPlanId(plan.id)}
-                    className={`rounded-3xl p-6 border cursor-pointer transition-all duration-300 flex flex-col justify-between space-y-4 relative ${
-                      isSelected
-                        ? 'bg-gradient-to-b from-pink-500/15 via-[#161B2E] to-[#121728] border-pink-500 shadow-xl shadow-pink-500/15 scale-[1.02]'
-                        : 'bg-[#121728]/90 border-white/10 hover:border-white/20'
-                    }`}
+                    className={`rounded-3xl p-6 border cursor-pointer transition-all duration-300 flex flex-col justify-between space-y-4 relative ${isSelected
+                      ? 'bg-gradient-to-b from-pink-500/15 via-[#161B2E] to-[#121728] border-pink-500 shadow-xl shadow-pink-500/15 scale-[1.02]'
+                      : 'bg-[#121728]/90 border-white/10 hover:border-white/20'
+                      }`}
                   >
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -909,11 +905,10 @@ export default function JourneySetupModal() {
                         e.stopPropagation();
                         handleAdoptPlan(plan);
                       }}
-                      className={`w-full py-3 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg shadow-pink-500/30'
-                          : 'bg-white/10 hover:bg-white/20 text-gray-200'
-                      }`}
+                      className={`w-full py-3 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 ${isSelected
+                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-lg shadow-pink-500/30'
+                        : 'bg-white/10 hover:bg-white/20 text-gray-200'
+                        }`}
                     >
                       <span>{isRtl ? 'اعتماد هذه الخطة وبدء الرحلة' : 'Adopt Plan & Launch Journey'}</span>
                       {isRtl ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
@@ -953,11 +948,10 @@ export default function JourneySetupModal() {
                 <button
                   type="button"
                   onClick={() => setDestinationChoice('specific')}
-                  className={`p-4 rounded-2xl border text-start transition-all ${
-                    destinationChoice === 'specific'
-                      ? 'bg-pink-500/20 border-pink-500 text-white shadow-lg shadow-pink-500/15'
-                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                  }`}
+                  className={`p-4 rounded-2xl border text-start transition-all ${destinationChoice === 'specific'
+                    ? 'bg-pink-500/20 border-pink-500 text-white shadow-lg shadow-pink-500/15'
+                    : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                    }`}
                 >
                   <div className="flex items-center gap-2.5 font-bold text-sm text-pink-300">
                     <MapPin className="w-4 h-4 text-pink-400" />
@@ -971,11 +965,10 @@ export default function JourneySetupModal() {
                 <button
                   type="button"
                   onClick={() => setDestinationChoice('plan_for_me')}
-                  className={`p-4 rounded-2xl border text-start transition-all ${
-                    destinationChoice === 'plan_for_me'
-                      ? 'bg-gradient-to-r from-purple-500/25 to-pink-500/20 border-purple-400 text-white shadow-lg shadow-purple-500/15'
-                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                  }`}
+                  className={`p-4 rounded-2xl border text-start transition-all ${destinationChoice === 'plan_for_me'
+                    ? 'bg-gradient-to-r from-purple-500/25 to-pink-500/20 border-purple-400 text-white shadow-lg shadow-purple-500/15'
+                    : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                    }`}
                 >
                   <div className="flex items-center gap-2.5 font-bold text-sm text-purple-300">
                     <Sparkles className="w-4 h-4 text-purple-400" />
@@ -1006,11 +999,10 @@ export default function JourneySetupModal() {
                       <button
                         type="button"
                         onClick={() => setNoPlanHasCity('yes')}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold transition ${
-                          noPlanHasCity === 'yes'
-                            ? 'bg-purple-500/30 border-purple-400 text-white shadow-md'
-                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                        }`}
+                        className={`p-2.5 rounded-xl border text-xs font-semibold transition ${noPlanHasCity === 'yes'
+                          ? 'bg-purple-500/30 border-purple-400 text-white shadow-md'
+                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                          }`}
                       >
                         {isRtl ? 'نعم (أود تحديدها)' : 'Yes (I have preferences)'}
                       </button>
@@ -1020,11 +1012,10 @@ export default function JourneySetupModal() {
                           setNoPlanHasCity('no');
                           setNoPlanCityText('');
                         }}
-                        className={`p-2.5 rounded-xl border text-xs font-semibold transition ${
-                          noPlanHasCity === 'no'
-                            ? 'bg-purple-500/30 border-purple-400 text-white shadow-md'
-                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                        }`}
+                        className={`p-2.5 rounded-xl border text-xs font-semibold transition ${noPlanHasCity === 'no'
+                          ? 'bg-purple-500/30 border-purple-400 text-white shadow-md'
+                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                          }`}
                       >
                         {isRtl ? 'لا (اقترح لي ذكياً بالكامل)' : 'No (AI Autonomous Routing)'}
                       </button>
@@ -1057,11 +1048,10 @@ export default function JourneySetupModal() {
                           key={vibe.id}
                           type="button"
                           onClick={() => setNoPlanPreferredVibe(vibe.id)}
-                          className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition ${
-                            noPlanPreferredVibe === vibe.id
-                              ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-pink-400 text-white shadow-md'
-                              : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                          }`}
+                          className={`p-2.5 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition ${noPlanPreferredVibe === vibe.id
+                            ? 'bg-gradient-to-r from-purple-500/30 to-pink-500/30 border-pink-400 text-white shadow-md'
+                            : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                            }`}
                         >
                           <span className="text-base">{vibe.icon}</span>
                           <span>{isRtl ? vibe.labelAr : vibe.labelEn}</span>
@@ -1261,11 +1251,10 @@ export default function JourneySetupModal() {
                       key={item.id}
                       type="button"
                       onClick={() => setPurpose(item.id as JourneyPurpose)}
-                      className={`p-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5 ${
-                        purpose === item.id
-                          ? 'bg-pink-500/25 border-pink-500 text-white shadow-md shadow-pink-500/20'
-                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                      }`}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5 ${purpose === item.id
+                        ? 'bg-pink-500/25 border-pink-500 text-white shadow-md shadow-pink-500/20'
+                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                        }`}
                     >
                       <span>{item.icon}</span>
                       <span>{isRtl ? item.labelAr : item.labelEn}</span>
@@ -1291,11 +1280,10 @@ export default function JourneySetupModal() {
                       key={item.id}
                       type="button"
                       onClick={() => setTravelParty(item.id as any)}
-                      className={`p-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5 ${
-                        travelParty === item.id
-                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 border-pink-500 text-white shadow-md shadow-pink-500/25'
-                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                      }`}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-center gap-1.5 ${travelParty === item.id
+                        ? 'bg-gradient-to-r from-pink-500 to-rose-500 border-pink-500 text-white shadow-md shadow-pink-500/25'
+                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                        }`}
                     >
                       <span>{item.icon}</span>
                       <span>{isRtl ? item.labelAr : item.labelEn}</span>
@@ -1428,18 +1416,16 @@ export default function JourneySetupModal() {
                     <button
                       type="button"
                       onClick={() => setRelocationType('individual')}
-                      className={`p-2 rounded-xl border text-xs ${
-                        relocationType === 'individual' ? 'bg-pink-500/20 border-pink-500 text-white' : 'bg-white/5 border-white/10 text-gray-300'
-                      }`}
+                      className={`p-2 rounded-xl border text-xs ${relocationType === 'individual' ? 'bg-pink-500/20 border-pink-500 text-white' : 'bg-white/5 border-white/10 text-gray-300'
+                        }`}
                     >
                       {isRtl ? 'انتقال فردي' : 'Individual Relocation'}
                     </button>
                     <button
                       type="button"
                       onClick={() => setRelocationType('family')}
-                      className={`p-2 rounded-xl border text-xs ${
-                        relocationType === 'family' ? 'bg-pink-500/20 border-pink-500 text-white' : 'bg-white/5 border-white/10 text-gray-300'
-                      }`}
+                      className={`p-2 rounded-xl border text-xs ${relocationType === 'family' ? 'bg-pink-500/20 border-pink-500 text-white' : 'bg-white/5 border-white/10 text-gray-300'
+                        }`}
                     >
                       {isRtl ? 'انتقال عائلي شامل' : 'Family Relocation with Dependents'}
                     </button>
@@ -1462,11 +1448,10 @@ export default function JourneySetupModal() {
                       key={item.id}
                       type="button"
                       onClick={() => setBudget(item.id as any)}
-                      className={`p-2 rounded-xl border text-xs font-medium transition ${
-                        budget === item.id
-                          ? 'bg-pink-500/20 border-pink-500 text-pink-300'
-                          : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                      }`}
+                      className={`p-2 rounded-xl border text-xs font-medium transition ${budget === item.id
+                        ? 'bg-pink-500/20 border-pink-500 text-pink-300'
+                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                        }`}
                     >
                       {isRtl ? item.labelAr : item.labelEn}
                     </button>
@@ -1486,10 +1471,10 @@ export default function JourneySetupModal() {
                   {duration === 'days'
                     ? `${customDurationDays} ${isRtl ? 'أيام' : 'Days'}`
                     : duration === 'weeks'
-                    ? `${Math.round(customDurationDays / 7) || 2} ${isRtl ? 'أسابيع' : 'Weeks'} (${customDurationDays} days)`
-                    : duration === 'months'
-                    ? `${Math.round(customDurationDays / 30) || 1} ${isRtl ? 'أشهر' : 'Months'}`
-                    : isRtl ? 'سنة أو أكثر' : '1+ Year'}
+                      ? `${Math.round(customDurationDays / 7) || 2} ${isRtl ? 'أسابيع' : 'Weeks'} (${customDurationDays} days)`
+                      : duration === 'months'
+                        ? `${Math.round(customDurationDays / 30) || 1} ${isRtl ? 'أشهر' : 'Months'}`
+                        : isRtl ? 'سنة أو أكثر' : '1+ Year'}
                 </span>
               </div>
 
@@ -1510,11 +1495,10 @@ export default function JourneySetupModal() {
                       if (item.id === 'weeks' && customDurationDays < 7) setCustomDurationDays(14);
                       if (item.id === 'months') setCustomDurationDays(30);
                     }}
-                    className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
-                      duration === item.id
-                        ? 'bg-pink-500/25 border-pink-500 text-white shadow-md'
-                        : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
-                    }`}
+                    className={`py-2 rounded-xl text-xs font-semibold transition-all border ${duration === item.id
+                      ? 'bg-pink-500/25 border-pink-500 text-white shadow-md'
+                      : 'bg-white/5 border-white/10 text-gray-300 hover:bg-white/10'
+                      }`}
                   >
                     {isRtl ? item.labelAr : item.labelEn}
                   </button>
@@ -1529,11 +1513,10 @@ export default function JourneySetupModal() {
                       key={d}
                       type="button"
                       onClick={() => setCustomDurationDays(d)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
-                        customDurationDays === d
-                          ? 'bg-pink-500/30 border-pink-500 text-white'
-                          : 'bg-white/5 border-white/10 text-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${customDurationDays === d
+                        ? 'bg-pink-500/30 border-pink-500 text-white'
+                        : 'bg-white/5 border-white/10 text-gray-300'
+                        }`}
                     >
                       {d} {isRtl ? 'أيام' : 'Days'}
                     </button>
@@ -1567,11 +1550,10 @@ export default function JourneySetupModal() {
                         setDurationPreset(w.key);
                         setCustomDurationDays(w.days);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
-                        customDurationDays === w.days
-                          ? 'bg-pink-500/30 border-pink-500 text-white'
-                          : 'bg-white/5 border-white/10 text-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${customDurationDays === w.days
+                        ? 'bg-pink-500/30 border-pink-500 text-white'
+                        : 'bg-white/5 border-white/10 text-gray-300'
+                        }`}
                     >
                       {isRtl ? w.labelAr : w.labelEn}
                     </button>
@@ -1594,11 +1576,10 @@ export default function JourneySetupModal() {
                         setDurationPreset(m.key);
                         setCustomDurationDays(m.days);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
-                        durationPreset === m.key
-                          ? 'bg-pink-500/30 border-pink-500 text-white'
-                          : 'bg-white/5 border-white/10 text-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${durationPreset === m.key
+                        ? 'bg-pink-500/30 border-pink-500 text-white'
+                        : 'bg-white/5 border-white/10 text-gray-300'
+                        }`}
                     >
                       {isRtl ? m.labelAr : m.labelEn}
                     </button>
@@ -1621,11 +1602,10 @@ export default function JourneySetupModal() {
                         setDurationPreset(yr.key);
                         setCustomDurationDays(yr.days);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
-                        durationPreset === yr.key
-                          ? 'bg-pink-500/30 border-pink-500 text-white'
-                          : 'bg-white/5 border-white/10 text-gray-300'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${durationPreset === yr.key
+                        ? 'bg-pink-500/30 border-pink-500 text-white'
+                        : 'bg-white/5 border-white/10 text-gray-300'
+                        }`}
                     >
                       {isRtl ? yr.labelAr : yr.labelEn}
                     </button>
@@ -1652,11 +1632,10 @@ export default function JourneySetupModal() {
                       ? (isRtl ? 'مثال: 2026-09-01 أو 15 سبتمبر' : 'e.g. 2026-09-01, Sept 15')
                       : (isRtl ? 'مثال: أكتوبر القادم، موسم الخريف' : 'e.g. Next month, Autumn, Summer vacation')
                   }
-                  className={`w-full bg-white/5 border rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none transition ${
-                    purpose === 'study' || purpose === 'work' || purpose === 'relocation'
-                      ? 'border-pink-500/40 focus:border-pink-500'
-                      : 'border-white/15 focus:border-pink-500'
-                  }`}
+                  className={`w-full bg-white/5 border rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none transition ${purpose === 'study' || purpose === 'work' || purpose === 'relocation'
+                    ? 'border-pink-500/40 focus:border-pink-500'
+                    : 'border-white/15 focus:border-pink-500'
+                    }`}
                 />
               </div>
             </div>
@@ -1671,11 +1650,10 @@ export default function JourneySetupModal() {
                 <button
                   type="button"
                   onClick={() => setAccommodationStatus('booked')}
-                  className={`p-3 rounded-xl border text-start text-xs font-medium transition ${
-                    accommodationStatus === 'booked'
-                      ? 'bg-pink-500/20 border-pink-500 text-white'
-                      : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                  }`}
+                  className={`p-3 rounded-xl border text-start text-xs font-medium transition ${accommodationStatus === 'booked'
+                    ? 'bg-pink-500/20 border-pink-500 text-white'
+                    : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
                 >
                   <span className="font-bold block text-sm mb-0.5">{isRtl ? '✓ حجزت مكان الإقامة' : '✓ Already booked'}</span>
                   <span className="text-[11px] text-gray-400 block">{isRtl ? 'لدي فندق أو شقة محددة' : 'I have a hotel/apartment confirmed'}</span>
@@ -1683,11 +1661,10 @@ export default function JourneySetupModal() {
                 <button
                   type="button"
                   onClick={() => setAccommodationStatus('not_booked')}
-                  className={`p-3 rounded-xl border text-start text-xs font-medium transition ${
-                    accommodationStatus === 'not_booked'
-                      ? 'bg-pink-500/20 border-pink-500 text-white'
-                      : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                  }`}
+                  className={`p-3 rounded-xl border text-start text-xs font-medium transition ${accommodationStatus === 'not_booked'
+                    ? 'bg-pink-500/20 border-pink-500 text-white'
+                    : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                    }`}
                 >
                   <span className="font-bold block text-sm mb-0.5">{isRtl ? '🔍 أبحث عن توصيات سكن' : '🔍 Need recommendations'}</span>
                   <span className="text-[11px] text-gray-400 block">{isRtl ? 'اقترح علي أفضل الخيارات بروابط حجز مباشرة' : 'Provide curated lodging with direct booking links'}</span>
@@ -1732,11 +1709,10 @@ export default function JourneySetupModal() {
                       key={item.id}
                       type="button"
                       onClick={() => toggleInterest(item.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${
-                        isChecked
-                          ? 'bg-pink-500/25 border-pink-500 text-pink-200'
-                          : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition ${isChecked
+                        ? 'bg-pink-500/25 border-pink-500 text-pink-200'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                        }`}
                     >
                       {isChecked ? '✓ ' : '+ '}
                       {item.label}
@@ -1817,11 +1793,10 @@ export default function JourneySetupModal() {
                 <button
                   type="button"
                   onClick={toggleManualSpeechRecognition}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
-                    isListeningManual
-                      ? 'bg-rose-500 text-white animate-pulse border-rose-400'
-                      : 'bg-white/5 hover:bg-white/10 text-pink-300 border-pink-500/30'
-                  }`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${isListeningManual
+                    ? 'bg-rose-500 text-white animate-pulse border-rose-400'
+                    : 'bg-white/5 hover:bg-white/10 text-pink-300 border-pink-500/30'
+                    }`}
                 >
                   {isListeningManual ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                   <span>{isListeningManual ? (isRtl ? 'جاري الاستماع...' : 'Listening...') : (isRtl ? 'إدخال صوتي 🎙️' : 'Voice Input 🎙️')}</span>

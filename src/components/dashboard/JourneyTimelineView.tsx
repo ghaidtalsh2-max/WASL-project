@@ -454,6 +454,33 @@ export default function JourneyTimelineView() {
             </div>
           </div>
 
+          {/* Top Quick Search Bar for Booking.com & Trip.com */}
+          <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl bg-white/[0.04] border border-white/10">
+            <span className="text-xs font-bold text-gray-300">
+              {isRtl ? '🔍 بحث شامل ومباشر عن جميع الفنادق والشقق المتاحة في' : '🔍 Live search all hotels & apartments in'} <span className="text-indigo-300 font-extrabold">{journey.destinationCity || journey.destination.name}</span>:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={`https://www.booking.com/searchresults.html?ss=${encodeURIComponent((journey.destinationCity || journey.destination.name) + ' ' + (journey.destination.name || ''))}&aid=2311236&lang=ar`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#003580] hover:bg-[#00224f] text-white text-xs font-bold transition shadow-md"
+              >
+                <span>Booking.com</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <a
+                href={`https://sa.trip.com/hotels/list?keyword=${encodeURIComponent(journey.destinationCity || journey.destination.name)}&locale=ar-sa`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#2681ff] hover:bg-[#1a66cc] text-white text-xs font-bold transition shadow-md"
+              >
+                <span>Trip.com</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {getDynamicAccommodations(
               journey.destination.name,
@@ -464,7 +491,8 @@ export default function JourneyTimelineView() {
               journey.medicalDetails?.medicalSubCategory
             ).map((hotel: any, hIdx: number) => {
               const destQuery = encodeURIComponent(`${hotel.name || 'hotel'} ${journey.destinationCity || journey.destination.name}`);
-              const bookingLink = hotel.directUrl || hotel.direct_booking_url || hotel.bookingUrl || `https://www.booking.com/searchresults.html?ss=${destQuery}`;
+              const bookingLink = hotel.directUrl || `https://www.booking.com/searchresults.html?ss=${destQuery}&aid=2311236&lang=ar`;
+              const tripLink = hotel.tripComUrl || `https://sa.trip.com/hotels/list?keyword=${destQuery}&locale=ar-sa`;
 
               return (
                 <div key={hIdx} className="p-6 rounded-3xl bg-white/5 border border-white/10 hover:border-indigo-500/40 transition flex flex-col justify-between space-y-5 shadow-lg">
@@ -501,15 +529,26 @@ export default function JourneyTimelineView() {
                     )}
                   </div>
 
-                  <a
-                    href={bookingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-                  >
-                    <span>{isRtl ? 'حجز مباشر ومؤكد (Direct Booking)' : 'Direct Booking URL'}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+                    <a
+                      href={bookingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-xl bg-[#003580] hover:bg-[#00255c] text-white text-[11px] font-bold transition flex items-center justify-center gap-1.5 shadow-md text-center"
+                    >
+                      <span>Booking.com</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </a>
+                    <a
+                      href={tripLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-2.5 px-3 rounded-xl bg-[#2681ff] hover:bg-[#1566d8] text-white text-[11px] font-bold transition flex items-center justify-center gap-1.5 shadow-md text-center"
+                    >
+                      <span>Trip.com</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </a>
+                  </div>
                 </div>
               );
             })}

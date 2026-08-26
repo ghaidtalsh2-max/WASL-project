@@ -10,6 +10,7 @@
 ---
 
 ## 🚀 Live Demo & Deployment
+- **Live Application:** [https://wasl-ghaidaa-taleen.vercel.app](https://wasl-ghaidaa-taleen.vercel.app)
 - **GitHub Repository:** [https://github.com/ghaidtalsh2-max/WASL-project](https://github.com/ghaidtalsh2-max/WASL-project)
 - **Deploy to Vercel:** Click the Deploy button above or import the repository directly on [Vercel Dashboard](https://vercel.com/new).
 

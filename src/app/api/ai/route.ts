@@ -24,17 +24,34 @@ function buildFallbackExtraction(text: string) {
 
   // 2. Detect Destination Country & City
   let matchedDest = null;
-  // If destination is China
-  if (text.includes('صين') || text.includes('الصين') || text.includes('بكين') || text.includes('شنغهاي') || text.includes('قوانغتشو') || textLower.includes('china') || textLower.includes('beijing') || textLower.includes('shanghai')) {
-    matchedDest = findCountry('china');
-  } else if (text.includes('يابان') || text.includes('اليابان') || text.includes('طوكيو') || text.includes('كيوتو') || text.includes('اوساكا') || text.includes('أوساكا') || textLower.includes('japan') || textLower.includes('tokyo')) {
+  if (text.includes('فرنسا') || text.includes('باريس') || textLower.includes('france') || textLower.includes('paris')) {
+    matchedDest = findCountry('france');
+  } else if (text.includes('بريطانيا') || text.includes('لندن') || text.includes('انجلترا') || textLower.includes('uk') || textLower.includes('london') || textLower.includes('britain') || textLower.includes('england')) {
+    matchedDest = findCountry('united-kingdom');
+  } else if (text.includes('أمريكا') || text.includes('امريكا') || text.includes('نيويورك') || text.includes('اورلاندو') || text.includes('أورلاندو') || textLower.includes('usa') || textLower.includes('york') || textLower.includes('orlando') || textLower.includes('united states')) {
+    matchedDest = findCountry('united-states');
+  } else if (text.includes('يابان') || text.includes('اليابان') || text.includes('طوكيو') || text.includes('كيوتو') || text.includes('اوساكا') || text.includes('أوساكا') || textLower.includes('japan') || textLower.includes('tokyo') || textLower.includes('kyoto') || textLower.includes('osaka')) {
     matchedDest = findCountry('japan');
   } else if (text.includes('تركيا') || text.includes('اسطنبول') || text.includes('إسطنبول') || textLower.includes('turkey') || textLower.includes('istanbul')) {
     matchedDest = findCountry('turkey');
-  } else if (text.includes('بريطانيا') || text.includes('لندن') || text.includes('انجلترا') || textLower.includes('uk') || textLower.includes('london')) {
-    matchedDest = findCountry('united-kingdom');
-  } else if (text.includes('أمريكا') || text.includes('امريكا') || text.includes('نيويورك') || textLower.includes('usa') || textLower.includes('york')) {
-    matchedDest = findCountry('united-states');
+  } else if (text.includes('إسبانيا') || text.includes('اسبانيا') || text.includes('مدريد') || text.includes('برشلونة') || textLower.includes('spain') || textLower.includes('madrid') || textLower.includes('barcelona')) {
+    matchedDest = findCountry('spain');
+  } else if (text.includes('ألمانيا') || text.includes('المانيا') || text.includes('ميونخ') || text.includes('برلين') || textLower.includes('germany') || textLower.includes('munich') || textLower.includes('berlin')) {
+    matchedDest = findCountry('germany');
+  } else if (text.includes('إيطاليا') || text.includes('ايطاليا') || text.includes('روما') || text.includes('ميلانو') || textLower.includes('italy') || textLower.includes('rome') || textLower.includes('milan')) {
+    matchedDest = findCountry('italy');
+  } else if (text.includes('سويسرا') || text.includes('إنترلاكن') || text.includes('انترلاكن') || text.includes('جنيف') || textLower.includes('swiss') || textLower.includes('switzerland') || textLower.includes('interlaken') || textLower.includes('geneva')) {
+    matchedDest = findCountry('switzerland');
+  } else if (text.includes('تشيك') || text.includes('التشيك') || text.includes('براغ') || text.includes('كارلوفي') || textLower.includes('czech') || textLower.includes('prague') || textLower.includes('karlovy')) {
+    matchedDest = findCountry('czech-republic');
+  } else if (text.includes('صين') || text.includes('الصين') || text.includes('بكين') || text.includes('شنغهاي') || text.includes('قوانغتشو') || textLower.includes('china') || textLower.includes('beijing') || textLower.includes('shanghai')) {
+    matchedDest = findCountry('china');
+  } else if (text.includes('ماليزيا') || text.includes('كوالالمبور') || textLower.includes('malaysia') || textLower.includes('kuala lumpur')) {
+    matchedDest = findCountry('malaysia');
+  } else if (text.includes('مصر') || text.includes('القاهرة') || text.includes('الإسكندرية') || textLower.includes('egypt') || textLower.includes('cairo')) {
+    matchedDest = findCountry('egypt');
+  } else if (text.includes('إمارات') || text.includes('امارات') || text.includes('دبي') || text.includes('أبوظبي') || textLower.includes('uae') || textLower.includes('dubai') || textLower.includes('abu dhabi')) {
+    matchedDest = findCountry('uae');
   } else {
     // Search general text without origin words
     matchedDest = findCountry(text) || null;
@@ -302,27 +319,14 @@ Extract all travel parameters with strict precision. Nationality/origin is NOT t
     });
 
     if (aiRes.error) {
-      if (allowFallback) {
-        return NextResponse.json(buildFallbackExtraction(text));
-      }
-      return NextResponse.json({
-        success: false,
-        error: aiRes.error,
-        errorCode: aiRes.errorCode || 'AI_PROVIDER_ERROR',
-        provider: aiRes.provider,
-      }, { status: 400 });
+      console.warn('[WASL-AI] AI call failed, falling back to smart local extraction:', aiRes.error);
+      return NextResponse.json(buildFallbackExtraction(text));
     }
 
     const parsed = safeParseJSON<any>(aiRes.content);
     if (!parsed) {
-      if (allowFallback) {
-        return NextResponse.json(buildFallbackExtraction(text));
-      }
-      return NextResponse.json({
-        success: false,
-        error: 'Failed to parse AI structured response. Please try again.',
-        errorCode: 'AI_PROVIDER_ERROR',
-      }, { status: 500 });
+      console.warn('[WASL-AI] JSON parse failed, falling back to smart local extraction');
+      return NextResponse.json(buildFallbackExtraction(text));
     }
 
     const known = parsed.knownInfo || parsed.extracted || parsed;

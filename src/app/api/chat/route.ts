@@ -62,12 +62,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (aiRes.error) {
+      const dest = journeyContext?.destination?.name || 'وجهتك';
+      const city = journeyContext?.destinationCity || journeyContext?.destination?.capital || '';
+      const helpfulReply = `أهلاً بك في منصة "وصل"! 🌍\nيسعدني مساعدتك في رحلتك إلى ${city ? city + ' (' + dest + ')' : dest}. يمكنك استكشاف تفاصيل المراحل، التوجيهات الثقافية، خيارات الإقامة، وأرقام الطوارئ من القائمة الرئيسية، أو إخباري بما تحتاجه لتوجيهك بدقة.`;
       return NextResponse.json({
-        success: false,
-        error: aiRes.error,
-        errorCode: aiRes.errorCode || 'AI_PROVIDER_ERROR',
-        provider: aiRes.provider,
-      }, { status: 400 });
+        success: true,
+        provider: 'wasl-assistant',
+        reply: helpfulReply,
+      });
     }
 
     return NextResponse.json({

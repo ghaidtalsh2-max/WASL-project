@@ -1386,74 +1386,105 @@ export default function JourneyTimelineView() {
                   )}
 
                   {/* Week Selector (For stays > 7 days) */}
-                  {selectedOption.days.length > 7 && (
-                    <div className="flex items-center gap-2 border-b border-white/10 pb-3">
-                      <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{isRtl ? 'الأسبوع:' : 'Week:'}</span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedWeek(1)}
-                        className={`px-3 py-1 rounded-xl text-xs font-bold transition ${
-                          selectedWeek === 1 ? 'bg-pink-500 text-white' : 'bg-white/5 text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        {isRtl ? 'الأسبوع 1 (الأيام 1-7)' : 'Week 1 (Days 1-7)'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedWeek(2)}
-                        className={`px-3 py-1 rounded-xl text-xs font-bold transition ${
-                          selectedWeek === 2 ? 'bg-pink-500 text-white' : 'bg-white/5 text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        {isRtl ? 'الأسبوع 2 (الأيام 8-14)' : 'Week 2 (Days 8-14)'}
-                      </button>
-                    </div>
-                  )}
+                  {selectedOption.days.length > 7 && (() => {
+                    const totalWeeks = Math.ceil(selectedOption.days.length / 7);
+                    return (
+                      <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
+                        <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{isRtl ? 'الأسبوع:' : 'Week:'}</span>
+                        {Array.from({ length: totalWeeks }, (_, wIdx) => {
+                          const wNum = wIdx + 1;
+                          const wStart = (wNum - 1) * 7 + 1;
+                          const wEnd = Math.min(wNum * 7, selectedOption.days.length);
+                          const isWeekSelected = selectedWeek === wNum;
+                          return (
+                            <button
+                              key={wNum}
+                              type="button"
+                              onClick={() => {
+                                setSelectedWeek(wNum);
+                                if (selectedDayIndex !== 'all') {
+                                  setSelectedDayIndex(wStart - 1);
+                                }
+                              }}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                                isWeekSelected
+                                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25'
+                                  : 'bg-white/5 text-gray-400 hover:text-white hover:bg-white/10'
+                              }`}
+                            >
+                              {isRtl ? `الأسبوع ${wNum} (الأيام ${wStart}-${wEnd})` : `Week ${wNum} (Days ${wStart}-${wEnd})`}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
 
-                  {/* Day Buttons (D1, D2, D3...) */}
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <span className="text-xs text-gray-400 font-bold">{isRtl ? 'اختر اليوم:' : 'Select Day:'}</span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedDayIndex('all')}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
-                        selectedDayIndex === 'all'
-                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25'
-                          : 'bg-white/5 text-gray-300 hover:bg-white/10'
-                      }`}
-                    >
-                      {isRtl ? 'جميع الأيام' : 'All Days'}
-                    </button>
-                    {selectedOption.days.map((day, idx) => {
-                      const dayNum = day.dayNumber || idx + 1;
-                      const isSelected = selectedDayIndex === idx;
+                  {/* Day Buttons (D1, D2, D3...) Filtered by Active Week */}
+                  {(() => {
+                    const startDayIdx = selectedOption.days.length > 7 ? (selectedWeek - 1) * 7 : 0;
+                    const endDayIdx = selectedOption.days.length > 7 ? Math.min(selectedWeek * 7, selectedOption.days.length) : selectedOption.days.length;
+                    const visibleDays = selectedOption.days.slice(startDayIdx, endDayIdx);
 
-                      return (
+                    return (
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <span className="text-xs text-gray-400 font-bold">{isRtl ? 'اختر اليوم:' : 'Select Day:'}</span>
                         <button
-                          key={dayNum}
                           type="button"
-                          onClick={() => setSelectedDayIndex(idx)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
-                            isSelected
-                              ? 'bg-pink-500 text-white shadow-md shadow-pink-500/30 scale-105'
+                          onClick={() => setSelectedDayIndex('all')}
+                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                            selectedDayIndex === 'all'
+                              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25'
                               : 'bg-white/5 text-gray-300 hover:bg-white/10'
                           }`}
                         >
-                          <span>D{dayNum}</span>
+                          {isRtl ? (selectedOption.days.length > 7 ? `أيام الأسبوع ${selectedWeek}` : 'جميع الأيام') : (selectedOption.days.length > 7 ? `Week ${selectedWeek} Days` : 'All Days')}
                         </button>
-                      );
-                    })}
-                  </div>
+                        {visibleDays.map((day, offsetIdx) => {
+                          const actualIdx = startDayIdx + offsetIdx;
+                          const dayNum = day.dayNumber || actualIdx + 1;
+                          const isSelected = selectedDayIndex === actualIdx;
+
+                          return (
+                            <button
+                              key={dayNum}
+                              type="button"
+                              onClick={() => setSelectedDayIndex(actualIdx)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 ${
+                                isSelected
+                                  ? 'bg-pink-500 text-white shadow-md shadow-pink-500/30 scale-105'
+                                  : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                              }`}
+                            >
+                              <span>D{dayNum}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* SPLIT SCREEN LAYOUT: Day Schedule (Right) & Live Map Pins (Left) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                   {/* Main Day Cards Column (7 Cols) */}
                   <div className="lg:col-span-7 space-y-4">
-                    {(selectedOption.days || [])
-                      .filter((_, idx) => selectedDayIndex === 'all' || selectedDayIndex === idx)
-                      .map((day, dIdx) => {
-                        const actualDayNumber = day.dayNumber || (selectedDayIndex === 'all' ? dIdx + 1 : (selectedDayIndex as number) + 1);
+                    {(() => {
+                      const startDayIdx = selectedOption.days.length > 7 ? (selectedWeek - 1) * 7 : 0;
+                      const endDayIdx = selectedOption.days.length > 7 ? Math.min(selectedWeek * 7, selectedOption.days.length) : selectedOption.days.length;
+
+                      const displayedDays = (selectedOption.days || []).filter((_, idx) => {
+                        if (selectedDayIndex === 'all') {
+                          if (selectedOption.days.length > 7) {
+                            return idx >= startDayIdx && idx < endDayIdx;
+                          }
+                          return true;
+                        }
+                        return selectedDayIndex === idx;
+                      });
+
+                      return displayedDays.map((day, dIdx) => {
+                        const actualDayNumber = day.dayNumber || (selectedDayIndex === 'all' ? startDayIdx + dIdx + 1 : (selectedDayIndex as number) + 1);
 
                         return (
                           <div
@@ -1559,7 +1590,8 @@ export default function JourneyTimelineView() {
                             </div>
                           </div>
                         );
-                      })}
+                      });
+                    })()}
                   </div>
 
                   {/* Left Split Screen Column: Interactive Live Map View & GEO JSON Pin Overlay */}

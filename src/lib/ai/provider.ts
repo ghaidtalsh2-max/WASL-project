@@ -38,16 +38,6 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
   const rawKey = options.apiKey || process.env.LLM_API_KEY || '';
   const apiKey = rawKey.replace(/[^\x00-\x7F]/g, '').trim();
 
-  if (!apiKey) {
-    return {
-      content: '',
-      error: 'AI API key is not configured. Please set your API key in Settings (⚙️) or .env.local',
-      errorCode: 'AI_KEY_MISSING',
-      provider,
-      latencyMs: Date.now() - startTime,
-    };
-  }
-
   // Check cache
   const cacheKey = `${provider}:${options.jsonMode ? 'json' : 'text'}:${options.systemPrompt || ''}:${options.prompt}`;
   const cached = responseCache.get(cacheKey);
@@ -86,7 +76,7 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
     }
 
     // Zero-downtime fallback to open AI models if primary key is expired or missing
-    if (!result || !result.content) {
+    if (!result || !result.content || result.error) {
       result = await callPollinationsAI(options);
     }
 
@@ -341,7 +331,6 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
  * Provides dynamic, free, high-performance multilingual completions
  */
 async function callPollinationsAI(options: AICompletionOptions): Promise<AIResponse> {
-  const url = 'https://text.pollinations.ai/';
   const messages: any[] = [];
 
   if (options.systemPrompt) {
@@ -349,41 +338,63 @@ async function callPollinationsAI(options: AICompletionOptions): Promise<AIRespo
   }
   messages.push({ role: 'user', content: options.prompt });
 
-  const candidateModels = ['openai', 'mistral', 'searchgpt'];
+  const candidateModels = ['openai', 'mistral', 'searchgpt', 'deepseek'];
   let lastError: any = null;
 
   for (const model of candidateModels) {
     try {
-      const res = await fetch(url, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 9000);
+
+      const res = await fetch('https://text.pollinations.ai/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           messages,
           model,
           temperature: options.temperature ?? 0.3,
           jsonMode: options.jsonMode || false,
+          seed: Math.floor(Math.random() * 100000),
         }),
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Public AI (${model}) error (${res.status}): ${errorText}`);
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim() && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+          return {
+            content: text.trim(),
+            provider: `wasl-ai (${model})`,
+            modelUsed: model,
+          };
+        }
       }
 
-      const text = await res.text();
-      if (text && text.trim()) {
-        return {
-          content: text.trim(),
-          provider: `wasl-ai (${model})`,
-          modelUsed: model,
-        };
+      // Fallback to GET endpoint
+      const getUrl = `https://text.pollinations.ai/${encodeURIComponent(options.prompt)}?system=${encodeURIComponent(options.systemPrompt || '')}&model=${model}`;
+      const getController = new AbortController();
+      const getTimeoutId = setTimeout(() => getController.abort(), 8000);
+      const getRes = await fetch(getUrl, { signal: getController.signal });
+      clearTimeout(getTimeoutId);
+
+      if (getRes.ok) {
+        const getText = await getRes.text();
+        if (getText && getText.trim() && !getText.includes('<!DOCTYPE') && !getText.includes('<html')) {
+          return {
+            content: getText.trim(),
+            provider: `wasl-ai (${model})`,
+            modelUsed: model,
+          };
+        }
       }
     } catch (err: any) {
       lastError = err;
     }
   }
 
-  throw lastError || new Error('All public AI models failed.');
+  throw lastError || new Error('Public AI cascade exhausted.');
 }
 
 

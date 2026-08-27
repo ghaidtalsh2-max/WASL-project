@@ -1883,86 +1883,83 @@ export function getDefaultEmergency(
   originName: string = 'Saudi Arabia'
 ): EmergencyContactInfo {
   const normDest = (destinationName || '').toLowerCase();
+  const normOrigin = (originName || '').toLowerCase();
 
-  // 1. Turkey (تركيا)
-  if (normDest.includes('turkey') || normDest.includes('تركيا') || normDest.includes('istanbul') || normDest.includes('ankara')) {
+  // Helper to determine origin emergency hotline and embassy details
+  const getOriginDetails = () => {
+    if (normOrigin.includes('uae') || normOrigin.includes('إمارات') || normOrigin.includes('امارات')) {
+      return {
+        countryAr: 'دولة الإمارات العربية المتحدة',
+        countryEn: 'United Arab Emirates',
+        mfaEmergency: '00971 800 44444 (طوارئ مواطني الإمارات 24/7)',
+        mfaPhone: '+971 800 44444',
+      };
+    }
+    if (normOrigin.includes('qatar') || normOrigin.includes('قطر')) {
+      return {
+        countryAr: 'دولة قطر',
+        countryEn: 'State of Qatar',
+        mfaEmergency: '+974 4011 1140 (طوارئ مواطني قطر 24/7)',
+        mfaPhone: '+974 4011 1104',
+      };
+    }
+    if (normOrigin.includes('kuwait') || normOrigin.includes('كويت')) {
+      return {
+        countryAr: 'دولة الكويت',
+        countryEn: 'State of Kuwait',
+        mfaEmergency: '+965 159 / +965 2222 5555 (طوارئ مواطني الكويت)',
+        mfaPhone: '+965 2222 5555',
+      };
+    }
+    if (normOrigin.includes('bahrain') || normOrigin.includes('بحرين')) {
+      return {
+        countryAr: 'مملكة البحرين',
+        countryEn: 'Kingdom of Bahrain',
+        mfaEmergency: '+973 1722 7555 (طوارئ مواطني البحرين 24/7)',
+        mfaPhone: '+973 1722 7555',
+      };
+    }
+    if (normOrigin.includes('oman') || normOrigin.includes('عمان') || normOrigin.includes('عُمان')) {
+      return {
+        countryAr: 'سلطنة عُمان',
+        countryEn: 'Sultanate of Oman',
+        mfaEmergency: '+968 2463 6363 (مركز عمليات الخارجية العمانية)',
+        mfaPhone: '+968 2463 6363',
+      };
+    }
+    // Default Saudi Arabia
     return {
-      police: '155 (Polis) / 112',
-      ambulance: '112 (Ambulans)',
-      fire: '110 (İtfaiye)',
-      touristPolice: '157 (YİMER) / +90 212 527 4503',
-      touristHelpline: '157 (Foreigners & Tourist Support in 6 Languages)',
-      medicalHotline: '112 / +90 212 368 2900',
-      generalEmergency: '112',
-      embassyPhone: '+90 312 468 5599',
-      embassyEmergencyLine: '+90 530 955 5555',
-      embassyAddress: 'Turan Emeksiz Sokak No:6, Gaziosmanpaşa, Ankara / Konaklar Mah, Levent, Istanbul',
-      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Care)',
-      embassy: {
-        name: `Embassy of ${originName} in Ankara & Consulate in Istanbul`,
-        nameAr: `سفارة ${originName} في أنقرة والقنصلية العامة في إسطنبول`,
-        address: 'Ankara: Gaziosmanpaşa / Istanbul: Levent',
-        phone: '+90 312 468 5599',
-        emergencyHotline: '+90 530 955 5555',
-        workingHours: '09:00 - 16:00 (طوارئ الرعايا 24/7)',
-        website: 'https://www.turkiye.gov.tr',
-      },
-      emergencyPhrases: [
-        {
-          phrase: 'I need an ambulance immediately!',
-          native: 'Lütfen acil ambulans çağırın!',
-          phonetic: 'Lewt-fen ah-jeel ahm-boo-lahns chah-er-un!',
-          textEn: 'Please call an ambulance immediately!',
-          textAr: 'أحتاج سيارة إسعاف فوراً من فضلكم!',
-          meaningEn: 'Please call an ambulance immediately!',
-          meaningAr: 'أحتاج سيارة إسعاف فوراً من فضلكم!',
-        },
-        {
-          phrase: 'Help me please! Call the police!',
-          native: 'İmdat! Lütfen polis çağırın!',
-          phonetic: 'Eem-daht! Lewt-fen poh-lees chah-er-un!',
-          textEn: 'Help! Please call the police!',
-          textAr: 'النجدة! اتصلوا بالشرطة من فضلكم!',
-          meaningEn: 'Help! Please call the police!',
-          meaningAr: 'النجدة! اتصلوا بالشرطة من فضلكم!',
-        },
-        {
-          phrase: 'Where is the nearest hospital?',
-          native: 'En yakın hastane nerede?',
-          phonetic: 'En yah-kuhn hahs-tah-neh neh-reh-deh?',
-          textEn: 'Where is the nearest hospital?',
-          textAr: 'أين يقع أقرب مستشفى؟',
-          meaningEn: 'Where is the nearest hospital?',
-          meaningAr: 'أين يقع أقرب مستشفى؟',
-        },
-      ],
-      emergencyClinicsNote: 'Dial 112 for acute emergency or 157 for multilingual foreign traveler assistance.',
-      emergencyClinicsNoteAr: 'اتصل برقم 112 للإسعاف والطوارئ أو 157 لمركز مساعدة المسافرين الأجانب باللغة العربية والإنجليزية.',
+      countryAr: 'المملكة العربية السعودية',
+      countryEn: 'Kingdom of Saudi Arabia',
+      mfaEmergency: '199099 / +966 9200 11114 (مركز رعاية المواطنين بالخارج 24/7)',
+      mfaPhone: '199099',
     };
-  }
+  };
 
-  // 2. Egypt (مصر)
-  if (normDest.includes('egypt') || normDest.includes('مصر') || normDest.includes('cairo') || normDest.includes('القاهرة')) {
+  const originInfo = getOriginDetails();
+
+  // 1. Qatar (قطر / الدوحة)
+  if (normDest.includes('qatar') || normDest.includes('قطر') || normDest.includes('doha') || normDest.includes('الدوحة')) {
     return {
-      police: '122 (شرطة النجدة)',
-      ambulance: '123 (الإسعاف المصري)',
-      fire: '180 (المطافئ والدفاع المدني)',
-      touristPolice: '126 (شرطة السياحة والآثار)',
-      touristHelpline: '19654 (الخط الساخن لوزارة السياحة)',
-      medicalHotline: '137 (طوارئ الرعاية المركزة)',
-      generalEmergency: '122 / 123',
-      embassyPhone: '+20 2 3762 5000',
-      embassyEmergencyLine: '+20 114 555 5555',
-      embassyAddress: 'حي الدقي / الجيزة، القاهرة',
-      embassyHours: 'الأحد - الخميس: 09:00 - 15:30 (طوارئ 24 ساعة)',
+      police: '999',
+      ambulance: '999',
+      fire: '999',
+      touristPolice: '999 / +974 4452 1111',
+      touristHelpline: '106 (استعلامات وخدمة الزوار)',
+      medicalHotline: '16000 (مؤسسة حمد الطبية)',
+      generalEmergency: '999',
+      embassyPhone: '+974 4483 2211',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'المنطقة الدبلوماسية، الخليج الغربي، الدوحة، قطر',
+      embassyHours: 'الأحد - الخميس: 08:30 - 15:30 (طوارئ 24/7)',
       embassy: {
-        name: `سفارة ${originName} في القاهرة`,
-        nameAr: `سفارة ${originName} بالقاهرة`,
-        address: 'حي الدقي، الجيزة، القاهرة',
-        phone: '+20 2 3762 5000',
-        emergencyHotline: '+20 114 555 5555',
-        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
-        website: 'https://www.mofa.gov.sa',
+        name: `Embassy of ${originInfo.countryEn} in Doha`,
+        nameAr: `سفارة ${originInfo.countryAr} في الدوحة`,
+        address: 'المنطقة الدبلوماسية، الخليج الغربي، الدوحة',
+        phone: '+974 4483 2211',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: 'الأحد - الخميس: 08:30 - 15:30 (طوارئ 24/7)',
+        website: 'https://www.mofa.gov.qa',
       },
       emergencyPhrases: [
         {
@@ -1975,77 +1972,455 @@ export function getDefaultEmergency(
           meaningAr: 'أحتاج إلى سيارة إسعاف فوراً',
         },
         {
-          phrase: 'لو سمحت اتصل بشرطة السياحة أو النجدة',
-          native: 'لو سمحت اتصل بشرطة السياحة أو النجدة',
-          phonetic: 'Law samaht ettesel bi shortet el seyyaha',
-          textEn: 'Please contact tourist police or emergency line!',
-          textAr: 'لو سمحت اتصل بشرطة السياحة أو النجدة',
-          meaningEn: 'Please contact tourist police or emergency line!',
-          meaningAr: 'لو سمحت اتصل بشرطة السياحة أو النجدة',
+          phrase: 'اتصل بشرطة النجدة 999 من فضلك',
+          native: 'اتصل بشرطة النجدة 999 من فضلك',
+          phonetic: 'Ettasel bi shortet el-najda 999',
+          textEn: 'Please call police emergency 999',
+          textAr: 'اتصل بشرطة النجدة 999 من فضلك',
+          meaningEn: 'Please call police emergency 999',
+          meaningAr: 'اتصل بشرطة النجدة 999 من فضلك',
         },
       ],
-      emergencyClinicsNote: 'اتصل برقم 123 للإسعاف أو 126 لشرطة السياحة المخصصة لحماية وإرشاد الزوار.',
-      emergencyClinicsNoteAr: 'اتصل برقم 123 للإسعاف أو 126 لشرطة السياحة المخصصة لحماية وإرشاد الزوار.',
+      emergencyClinicsNote: 'الرقم الموحد للطوارئ في قطر هو 999 (شرطة، إسعاف، إطفاء). وللاستشارات الطبية السريعة اتصل بـ 16000.',
+      emergencyClinicsNoteAr: 'الرقم الموحد للطوارئ في قطر هو 999 (شرطة، إسعاف، إطفاء). وللاستشارات الطبية السريعة اتصل بـ 16000.',
     };
   }
 
-  // 3. Morocco (المغرب)
-  if (normDest.includes('morocco') || normDest.includes('المغرب') || normDest.includes('marrakech') || normDest.includes('مراكش') || normDest.includes('casablanca') || normDest.includes('الدار البيضاء')) {
+  // 2. Canada (كندا / أوتاوا / تورونتو / مونتريال / فانكوفر)
+  if (normDest.includes('canada') || normDest.includes('كندا') || normDest.includes('ottawa') || normDest.includes('أوتاوا') || normDest.includes('اوتاوا') || normDest.includes('toronto') || normDest.includes('montreal') || normDest.includes('vancouver')) {
     return {
-      police: '19 (الشرطة الحضرية)',
-      ambulance: '15 (الإسعاف والوقاية المدنية)',
-      fire: '15 (الوقاية المدنية)',
-      touristPolice: '177 (الدرك الملكي) / +212 524 38 46 01',
-      touristHelpline: '0522 20 20 20',
-      medicalHotline: '141 (المساعدة الطبية المستعجلة SAMU)',
-      generalEmergency: '19 / 15',
-      embassyPhone: '+212 537 63 30 00',
-      embassyEmergencyLine: '+212 661 12 34 56',
-      embassyAddress: 'شارع الإمام مالك، حي السويسي، الرباط',
-      embassyHours: 'Mon - Fri: 09:00 - 15:30 (طوارئ 24/7)',
+      police: '911',
+      ambulance: '911',
+      fire: '911',
+      touristPolice: '311 (Non-Emergency City Help)',
+      touristHelpline: '811 (Telehealth Nurse Advisory)',
+      medicalHotline: '811 / 1-800-268-9017 (Poison Control)',
+      generalEmergency: '911',
+      embassyPhone: '+1 (613) 237-4100',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '99 Bank St, Suite 900, Ottawa, ON K1P 6B9, Canada',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Consular Emergency)',
       embassy: {
-        name: `سفارة ${originName} بالرباط`,
-        nameAr: `سفارة ${originName} بالرباط`,
-        address: 'حي السويسي، الرباط',
-        phone: '+212 537 63 30 00',
-        emergencyHotline: '+212 661 12 34 56',
-        workingHours: '09:00 - 15:30',
-        website: 'https://diplomatie.ma',
+        name: `Embassy of ${originInfo.countryEn} in Ottawa`,
+        nameAr: `سفارة ${originInfo.countryAr} في أوتاوا`,
+        address: '99 Bank St, Suite 900, Ottawa, ON K1P 6B9',
+        phone: '+1 (613) 237-4100',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Emergency)',
+        website: 'https://travel.gc.ca',
       },
       emergencyPhrases: [
         {
-          phrase: 'أحتاج إلى إسعاف عاجل',
-          native: 'خصني الإسعاف دابا عفاك',
-          phonetic: 'Khasni l-is-aaf daba aafak',
+          phrase: 'I need an ambulance immediately!',
+          native: 'I need an ambulance immediately!',
+          phonetic: 'I need an ambulance immediately!',
           textEn: 'I need an ambulance immediately!',
-          textAr: 'أحتاج إلى سيارة إسعاف فوراً',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
           meaningEn: 'I need an ambulance immediately!',
-          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+        {
+          phrase: 'Please call 911 right now!',
+          native: 'Please call 911 right now!',
+          phonetic: 'Please call 911 right now!',
+          textEn: 'Please call 911 right now!',
+          textAr: 'اتصل بالطوارئ 911 حالاً من فضلك!',
+          meaningEn: 'Please call 911 right now!',
+          meaningAr: 'اتصل بالطوارئ 911 حالاً من فضلك!',
         },
       ],
-      emergencyClinicsNote: 'اتصل بـ 19 للشرطة في المدن أو 177 للدرك الملكي خارجها و15 لسيارات الإسعاف.',
-      emergencyClinicsNoteAr: 'اتصل بـ 19 للشرطة في المدن أو 177 للدرك الملكي خارجها و15 لسيارات الإسعاف.',
+      emergencyClinicsNote: 'In Canada dial 911 for all immediate life emergencies, 811 for free 24/7 medical nurse guidance, or 311 for non-emergency city services.',
+      emergencyClinicsNoteAr: 'في كندا اتصل بـ 911 لجميع حالات الطوارئ العاجلة، أو 811 للاستشارات التمريضية المجانية، أو 311 للخدمات غير الطارئة.',
     };
   }
 
-  // 4. Saudi Arabia (المملكة العربية السعودية)
-  if (normDest.includes('saudi') || normDest.includes('السعودية') || normDest.includes('riyadh') || normDest.includes('الرياض')) {
+  // 3. United States (الولايات المتحدة الأمريكية / واشنطن / نيويورك / كاليفورنيا / فلوريدا)
+  if (normDest.includes('united-states') || normDest.includes('usa') || normDest.includes('america') || normDest.includes('أمريكا') || normDest.includes('امريكا') || normDest.includes('washington') || normDest.includes('new york') || normDest.includes('orlando') || normDest.includes('los angeles')) {
     return {
-      police: '911 (العمليات الأمنية الموحدة) / 999',
+      police: '911',
+      ambulance: '911',
+      fire: '911',
+      touristPolice: '311 (Non-Emergency Municipal Help)',
+      touristHelpline: '1-800-222-1222 (Poison Control Center)',
+      medicalHotline: '911 / 311',
+      generalEmergency: '911',
+      embassyPhone: '+1 (202) 342-3800',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '601 New Hampshire Ave NW, Washington, DC 20037, USA',
+      embassyHours: 'Mon - Fri: 09:00 - 17:00 (24/7 Consular Emergency)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Washington, DC`,
+        nameAr: `سفارة ${originInfo.countryAr} في واشنطن العاصمة`,
+        address: '601 New Hampshire Ave NW, Washington, DC 20037',
+        phone: '+1 (202) 342-3800',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: 'Mon - Fri: 09:00 - 17:00 (24/7 Citizen Emergency)',
+        website: 'https://www.usa.gov',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need immediate medical attention!',
+          native: 'I need immediate medical attention!',
+          phonetic: 'I need immediate medical attention!',
+          textEn: 'I need immediate medical attention!',
+          textAr: 'أحتاج إلى رعاية طبية عاجلة!',
+          meaningEn: 'I need immediate medical attention!',
+          meaningAr: 'أحتاج إلى رعاية طبية عاجلة!',
+        },
+        {
+          phrase: 'Please call the police (911)!',
+          native: 'Please call the police (911)!',
+          phonetic: 'Please call the police',
+          textEn: 'Please call the police (911)!',
+          textAr: 'اتصل بالشرطة (911) من فضلك!',
+          meaningEn: 'Please call the police (911)!',
+          meaningAr: 'اتصل بالشرطة (911) من فضلك!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 911 for all life-threatening emergencies or 311 for non-emergency city municipal assistance.',
+      emergencyClinicsNoteAr: 'اتصل برقم 911 لجميع حالات الطوارئ الحرجة أو 311 للمساعدة المدنية غير الطارئة.',
+    };
+  }
+
+  // 4. United Kingdom (المملكة المتحدة / لندن / بريطانيا)
+  if (normDest.includes('united-kingdom') || normDest.includes('uk') || normDest.includes('london') || normDest.includes('لندن') || normDest.includes('بريطانيا') || normDest.includes('انجلترا') || normDest.includes('england')) {
+    return {
+      police: '999',
+      ambulance: '999',
+      fire: '999',
+      touristPolice: '101 (Non-Emergency Police)',
+      touristHelpline: '111 (NHS Medical Advice 24/7)',
+      medicalHotline: '111 (NHS Non-Emergency Health)',
+      generalEmergency: '999 / 112',
+      embassyPhone: '+44 20 7917 3000',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '30 Charles St, Mayfair, London W1J 5DZ, UK',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Emergency)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in London`,
+        nameAr: `سفارة ${originInfo.countryAr} في لندن`,
+        address: '30 Charles St, Mayfair, London W1J 5DZ',
+        phone: '+44 20 7917 3000',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://www.gov.uk',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: 'I need an ambulance immediately!',
+          phonetic: 'I need an ambulance immediately!',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 999 for acute emergencies or 111 for free NHS 24/7 non-emergency medical advice.',
+      emergencyClinicsNoteAr: 'اتصل برقم 999 للطوارئ الحرجة أو 111 للاستشارات الطبية المجانية للخدمات الصحية الوطنية البريطانية.',
+    };
+  }
+
+  // 5. United Arab Emirates (الإمارات / دبي / أبوظبي / الشارقة)
+  if (normDest.includes('uae') || normDest.includes('emirates') || normDest.includes('dubai') || normDest.includes('abu dhabi') || normDest.includes('الإمارات') || normDest.includes('دبي') || normDest.includes('ابوظبي') || normDest.includes('أبوظبي')) {
+    return {
+      police: '999',
+      ambulance: '998',
+      fire: '997',
+      touristPolice: '901 / 800 4888 (شرطة دبي السياحية)',
+      touristHelpline: '800 555 (مركز اتصال حكومة أبوظبي)',
+      medicalHotline: '800 342 (هيئة الصحة بدبي)',
+      generalEmergency: '999',
+      embassyPhone: '+971 2 444 5700',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'الحي الدبلوماسي، أبوظبي / القنصلية العامة: شارع السيف، بر دبي',
+      embassyHours: 'الإثنين - الجمعة: 09:00 - 15:30 (طوارئ 24/7)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Abu Dhabi`,
+        nameAr: `سفارة ${originInfo.countryAr} في أبوظبي والقنصلية بدبي`,
+        address: 'الحي الدبلوماسي، أبوظبي / بر دبي',
+        phone: '+971 2 444 5700',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
+        website: 'https://u.ae',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'أحتاج إسعاف فوراً',
+          native: 'أحتاج إسعاف فوراً',
+          phonetic: 'Ahtaaj is-aaf fawran',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إسعاف فوراً',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إسعاف فوراً',
+        },
+      ],
+      emergencyClinicsNote: 'الشرطة: 999، الإسعاف: 998، الدفاع المدني: 997، وخدمة أمان وشرطة السياحة: 901.',
+      emergencyClinicsNoteAr: 'الشرطة: 999، الإسعاف: 998، الدفاع المدني: 997، وخدمة أمان وشرطة السياحة: 901.',
+    };
+  }
+
+  // 6. Italy (إيطاليا / روما / ميلانو / فلورنسا)
+  if (normDest.includes('italy') || normDest.includes('rome') || normDest.includes('milan') || normDest.includes('إيطاليا') || normDest.includes('ايطاليا') || normDest.includes('روما') || normDest.includes('ميلانو')) {
+    return {
+      police: '113 (Polizia di Stato)',
+      ambulance: '118 (Pronto Soccorso)',
+      fire: '115 (Vigili del Fuoco)',
+      touristPolice: '112 (Carabinieri & Universal Line)',
+      touristHelpline: '060606 (Rome Tourist Information 24/7)',
+      medicalHotline: '118 / 112',
+      generalEmergency: '112',
+      embassyPhone: '+39 06 884 0807',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Via Archimede 124, 00197 Roma, Italy',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Care)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Rome`,
+        nameAr: `سفارة ${originInfo.countryAr} في روما`,
+        address: 'Via Archimede 124, 00197 Roma',
+        phone: '+39 06 884 0807',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Hotline)',
+        website: 'https://www.italia.it',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: 'Ho bisogno di un’ambulanza subito!',
+          phonetic: 'Oh bee-zohn-yoh dee oon ahm-boo-lahn-tsah soo-bee-toh!',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+        {
+          phrase: 'Help! Please call the police!',
+          native: 'Aiuto! Chiamate la polizia!',
+          phonetic: 'Ah-yoo-toh! Kee-ah-mah-teh lah poh-lee-tsee-ah!',
+          textEn: 'Help! Please call the police!',
+          textAr: 'النجدة! اتصلوا بالشرطة من فضلكم!',
+          meaningEn: 'Help! Please call the police!',
+          meaningAr: 'النجدة! اتصلوا بالشرطة من فضلكم!',
+        },
+      ],
+      emergencyClinicsNote: 'In Italy dial 118 for Ambulance, 113 for Police, 115 for Fire, or 112 for the Single European Emergency Operator.',
+      emergencyClinicsNoteAr: 'في إيطاليا اتصل بـ 118 للإسعاف الطبي، 113 للشرطة، 115 للإطفاء، أو 112 للرقم الأوروبي الموحد.',
+    };
+  }
+
+  // 7. France (فرنسا / باريس / نيس / ليون)
+  if (normDest.includes('france') || normDest.includes('paris') || normDest.includes('فرنسا') || normDest.includes('باريس') || normDest.includes('nice') || normDest.includes('lyon')) {
+    return {
+      police: '17 (Police Nationale)',
+      ambulance: '15 (SAMU Medical Emergency)',
+      fire: '18 (Sapeurs-Pompiers)',
+      touristPolice: '112 (European Emergency Line)',
+      touristHelpline: '3975 (Paris City Info in Multiple Languages)',
+      medicalHotline: '15 / 112',
+      generalEmergency: '112',
+      embassyPhone: '+33 1 56 79 40 00',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '5 Avenue Hoche, 75008 Paris, France',
+      embassyHours: 'Mon - Fri: 09:00 - 16:30 (24/7 Citizen Care)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Paris`,
+        nameAr: `سفارة ${originInfo.countryAr} في باريس`,
+        address: '5 Avenue Hoche, 75008 Paris',
+        phone: '+33 1 56 79 40 00',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: 'Mon - Fri: 09:00 - 16:30 (24/7 Hotline)',
+        website: 'https://www.service-public.fr',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: 'J’ai besoin d’une ambulance tout de suite!',
+          phonetic: 'Zhay buh-zwan doon ahm-byoo-lahns too duh sweet!',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'In France dial 15 for Medical Emergencies (SAMU), 17 for Police, 18 for Fire, or 112 for the European Emergency Number.',
+      emergencyClinicsNoteAr: 'في فرنسا اتصل بـ 15 للإسعاف الطبي SAMU، 17 للشرطة، 18 للإطفاء، أو 112 لرقم الطوارئ الأوروبي الموحد.',
+    };
+  }
+
+  // 8. Germany (ألمانيا / برلين / ميونخ / فرانكفورت)
+  if (normDest.includes('germany') || normDest.includes('ألمانيا') || normDest.includes('المانيا') || normDest.includes('berlin') || normDest.includes('munich') || normDest.includes('frankfurt')) {
+    return {
+      police: '110 (Polizei)',
+      ambulance: '112 (Rettungsdienst)',
+      fire: '112 (Feuerwehr)',
+      touristPolice: '110',
+      touristHelpline: '116 117 (On-Call Medical Doctor 24/7)',
+      medicalHotline: '116 117',
+      generalEmergency: '112',
+      embassyPhone: '+49 30 8892 50',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Tiergartenstr. 33-34, 10785 Berlin, Germany',
+      embassyHours: 'Mon - Fri: 09:00 - 15:30 (24/7 Citizen Emergency)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Berlin`,
+        nameAr: `سفارة ${originInfo.countryAr} في برلين`,
+        address: 'Tiergartenstr. 33-34, 10785 Berlin',
+        phone: '+49 30 8892 50',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
+        website: 'https://berlin.diplo.de',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance!',
+          native: 'Ich brauche dringend einen Krankenwagen!',
+          phonetic: 'Ikh brow-khe drin-gend eye-nen kran-ken-vah-gen!',
+          textEn: 'I need an ambulance urgently!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance urgently!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 112 for acute emergency or 116 117 for on-call English-speaking medical doctors.',
+      emergencyClinicsNoteAr: 'اتصل برقم 112 للطوارئ الحرجة أو 116 117 لخدمة الطبيب المناوب على مدار الساعة.',
+    };
+  }
+
+  // 9. Turkey (تركيا / إسطنبول / أنقرة / طرابزون / أنطاليا)
+  if (normDest.includes('turkey') || normDest.includes('تركيا') || normDest.includes('istanbul') || normDest.includes('ankara') || normDest.includes('trabzon') || normDest.includes('antalya')) {
+    return {
+      police: '155 (Polis) / 112',
+      ambulance: '112 (Ambulans)',
+      fire: '110 (İtfaiye)',
+      touristPolice: '157 (YİMER - Multi-language Foreign Support)',
+      touristHelpline: '157 (Foreigners Support in Arabic & English)',
+      medicalHotline: '112 / +90 212 368 2900',
+      generalEmergency: '112',
+      embassyPhone: '+90 312 468 5599',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Turan Emeksiz Sokak No:6, Gaziosmanpaşa, Ankara / Levent, Istanbul',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Care)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Ankara & Consulate in Istanbul`,
+        nameAr: `سفارة ${originInfo.countryAr} في أنقرة والقنصلية في إسطنبول`,
+        address: 'Ankara: Gaziosmanpaşa / Istanbul: Levent',
+        phone: '+90 312 468 5599',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://www.turkiye.gov.tr',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: 'Lütfen acil ambulans çağırın!',
+          phonetic: 'Lewt-fen ah-jeel ahm-boo-lahns chah-er-un!',
+          textEn: 'Please call an ambulance immediately!',
+          textAr: 'أحتاج سيارة إسعاف فوراً من فضلكم!',
+          meaningEn: 'Please call an ambulance immediately!',
+          meaningAr: 'أحتاج سيارة إسعاف فوراً من فضلكم!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 112 for acute emergency or 157 for multilingual foreign traveler assistance.',
+      emergencyClinicsNoteAr: 'اتصل برقم 112 للإسعاف والطوارئ أو 157 لمركز مساعدة المسافرين الأجانب باللغة العربية والإنجليزية.',
+    };
+  }
+
+  // 10. Japan (اليابان / طوكيو / أوساكا / كيوتو)
+  if (normDest.includes('japan') || normDest.includes('tokyo') || normDest.includes('osaka') || normDest.includes('kyoto') || normDest.includes('اليابان') || normDest.includes('طوكيو') || normDest.includes('اوساكا') || normDest.includes('أوساكا')) {
+    return {
+      police: '110',
+      ambulance: '119',
+      fire: '119',
+      touristPolice: '050-3816-2787 (JNTO Tourist Hotline 24/7)',
+      touristHelpline: '#7119 (Emergency Medical Consultation)',
+      medicalHotline: '03-5285-8181 (Tokyo Multilingual Health Info)',
+      generalEmergency: '110 / 119',
+      embassyPhone: '+81 3 3589 5241',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '1-8-4 Roppongi, Minato-ku, Tokyo 106-0032, Japan',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Hotline)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Tokyo`,
+        nameAr: `سفارة ${originInfo.countryAr} في طوكيو`,
+        address: '1-8-4 Roppongi, Minato-ku, Tokyo 106-0032',
+        phone: '+81 3 3589 5241',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://www.japan.travel',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: 'Kyūkyūsha o yonde kudasai! (救急車を呼んでください)',
+          phonetic: 'Kyoo-kyoo-sha oh yon-deh koo-dah-sai!',
+          textEn: 'Please call an ambulance!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'Please call an ambulance!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'In Japan dial 110 for Police, 119 for Ambulance & Fire, or 050-3816-2787 for 24/7 English/Multilingual Tourist Assistance.',
+      emergencyClinicsNoteAr: 'في اليابان اتصل بـ 110 للشرطة، 119 للإسعاف والمطافئ، أو 050-3816-2787 لمركز مساعدة السياح على مدار الساعة.',
+    };
+  }
+
+  // 11. Spain (إسبانيا / مدريد / برشلونة / مالقة)
+  if (normDest.includes('spain') || normDest.includes('madrid') || normDest.includes('barcelona') || normDest.includes('إسبانيا') || normDest.includes('اسبانيا') || normDest.includes('مدريد') || normDest.includes('برشلونة')) {
+    return {
+      police: '091 (Policía Nacional)',
+      ambulance: '061 (Urgencias Médicas)',
+      fire: '080 (Bomberos)',
+      touristPolice: '092 (Policía Local) / 112',
+      touristHelpline: '902 102 112 (Foreign Tourist Attention in English/French)',
+      medicalHotline: '061 / 112',
+      generalEmergency: '112',
+      embassyPhone: '+34 91 376 9500',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Calle de Alcalá 484, 28027 Madrid, Spain',
+      embassyHours: 'Mon - Fri: 09:00 - 15:30 (24/7 Emergency)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Madrid`,
+        nameAr: `سفارة ${originInfo.countryAr} في مدريد`,
+        address: 'Calle de Alcalá 484, 28027 Madrid',
+        phone: '+34 91 376 9500',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
+        website: 'https://spain.info',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: '¡Necesito una ambulancia de inmediato!',
+          phonetic: 'Neh-seh-see-toh oo-nah ahm-boo-lahn-syah deh een-meh-dyah-toh!',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'In Spain dial 091 for National Police, 061 for Medical Ambulance, 080 for Fire, or 112 for Central Emergency.',
+      emergencyClinicsNoteAr: 'في إسبانيا اتصل بـ 091 للشرطة الوطنية، 061 للإسعاف الطبي، 080 للإطفاء، أو 112 للطوارئ المركزية.',
+    };
+  }
+
+  // 12. Saudi Arabia (المملكة العربية السعودية / الرياض / جدة / مكة)
+  if (normDest.includes('saudi') || normDest.includes('السعودية') || normDest.includes('riyadh') || normDest.includes('الرياض') || normDest.includes('jeddah') || normDest.includes('جدة')) {
+    return {
+      police: '911 / 999',
       ambulance: '997 (الهلال الأحمر السعودي)',
       fire: '998 (الدفاع المدني)',
       touristPolice: '930 (مركز العناية بالزوار والسياح)',
       touristHelpline: '930 / +966 920000890',
       medicalHotline: '937 (استشارات وزارة الصحة 24/7)',
       generalEmergency: '911',
-      embassyPhone: '199099 (خدمة رعاية المواطنين الموحدة)',
-      embassyEmergencyLine: '199099 / 911',
-      embassyAddress: 'الحي الدبلوماسي، الرياض',
-      embassyHours: '24/7 National Emergency Services',
+      embassyPhone: '199099 (خدمة رعاية المواطنين والزوار الموحدة)',
+      embassyEmergencyLine: '199099 / +966 9200 11114',
+      embassyAddress: 'الحي الدبلوماسي، الرياض، المملكة العربية السعودية',
+      embassyHours: '24/7 National Emergency & Visitor Care',
       embassy: {
-        name: 'Ministry of Foreign Affairs Citizen Care',
+        name: 'Ministry of Foreign Affairs Citizen & Visitor Care',
         nameAr: 'مركز رعاية المواطنين والزوار الموحد',
-        address: 'الرياض، المملكة العربية السعودية',
+        address: 'الحي الدبلوماسي، الرياض',
         phone: '199099',
         emergencyHotline: '911',
         workingHours: '24/7',
@@ -2067,143 +2442,455 @@ export function getDefaultEmergency(
     };
   }
 
-  // 5. Mauritius (موريشيوس)
-  if (normDest.includes('mauritius') || normDest.includes('موريشيوس')) {
+  // 13. Egypt (مصر / القاهرة / الإسكندرية / شرم الشيخ)
+  if (normDest.includes('egypt') || normDest.includes('مصر') || normDest.includes('cairo') || normDest.includes('القاهرة') || normDest.includes('alexandria')) {
     return {
-      police: '999 / 112',
-      ambulance: '114 / 999',
-      fire: '115 / 999',
-      touristPolice: '+230 213 1584',
-      touristHelpline: '+230 203 1000',
-      medicalHotline: '114',
-      generalEmergency: '999 / 112',
-      embassyPhone: '+230 208 0000',
-      embassyEmergencyLine: '+230 5250 0000',
-      embassyAddress: 'Port Louis Diplomatic Quarter / Regional Mission',
-      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Emergency Hotline)',
+      police: '122 (شرطة النجدة)',
+      ambulance: '123 (الإسعاف المصري)',
+      fire: '180 (المطافئ والدفاع المدني)',
+      touristPolice: '126 (شرطة السياحة والآثار)',
+      touristHelpline: '19654 (الخط الساخن لوزارة السياحة)',
+      medicalHotline: '137 (طوارئ الرعاية المركزة)',
+      generalEmergency: '122 / 123',
+      embassyPhone: '+20 2 3762 5000',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'حي الدقي، الجيزة، القاهرة، جمهورية مصر العربية',
+      embassyHours: 'الأحد - الخميس: 09:00 - 15:30 (طوارئ 24/7)',
       embassy: {
-        name: 'Embassy / Regional Diplomatic Representation',
-        nameAr: 'السفارة والتمثيل الدبلوماسي في موريشيوس',
-        address: 'Port Louis / Regional Consulate',
-        phone: '+230 208 0000',
-        emergencyHotline: '+230 5250 0000',
-        workingHours: '09:00 - 16:00',
-        website: 'https://foreignaffairs.govmu.org',
+        name: `Embassy of ${originInfo.countryEn} in Cairo`,
+        nameAr: `سفارة ${originInfo.countryAr} بالقاهرة`,
+        address: 'حي الدقي، الجيزة، القاهرة',
+        phone: '+20 2 3762 5000',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
+        website: 'https://www.egypt.travel',
       },
       emergencyPhrases: [
         {
-          phrase: 'I need an ambulance immediately!',
-          native: 'Mo bizin enn lanbilans vit vit!',
-          phonetic: 'Mo bizin enn lanbilans vit vit!',
+          phrase: 'أحتاج إلى سيارة إسعاف فوراً',
+          native: 'أحتاج إلى سيارة إسعاف فوراً',
+          phonetic: 'Ah-taaj ela sayyarat is-aaf fawran',
           textEn: 'I need an ambulance immediately!',
-          textAr: 'أحتاج سيارة إسعاف فوراً!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً',
           meaningEn: 'I need an ambulance immediately!',
-          meaningAr: 'أحتاج سيارة إسعاف فوراً!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً',
         },
       ],
-      emergencyClinicsNote: 'Wellkin Hospital (Moka) and Dr. A. G. Jeetoo Hospital (Port Louis) offer 24/7 emergency care.',
-      emergencyClinicsNoteAr: 'يقدم مستشفى ويلكين الدولي (موكا) ومستشفى جيتو (بورت لويس) خدمات طوارئ على مدار 24 ساعة.',
+      emergencyClinicsNote: 'اتصل برقم 123 للإسعاف، 122 للشرطة، أو 126 لشرطة السياحة المخصصة لحماية وإرشاد الزوار.',
+      emergencyClinicsNoteAr: 'اتصل برقم 123 للإسعاف، 122 للشرطة، أو 126 لشرطة السياحة المخصصة لحماية وإرشاد الزوار.',
     };
   }
 
-  // 6. Germany (ألمانيا)
-  if (normDest.includes('germany') || normDest.includes('ألمانيا') || normDest.includes('المانيا') || normDest.includes('berlin') || normDest.includes('munich')) {
+  // 14. Morocco (المغرب / مراكش / الدار البيضاء / الرباط)
+  if (normDest.includes('morocco') || normDest.includes('المغرب') || normDest.includes('marrakech') || normDest.includes('casablanca') || normDest.includes('rabat')) {
     return {
-      police: '110 (Polizei)',
-      ambulance: '112 (Rettungsdienst)',
-      fire: '112 (Feuerwehr)',
-      touristPolice: '110',
-      touristHelpline: '116 117 (On-Call Medical Doctor)',
-      medicalHotline: '116 117',
-      generalEmergency: '112',
-      embassyPhone: '+49 30 8892 50',
-      embassyEmergencyLine: '+49 170 1234567',
-      embassyAddress: 'Tiergarten / Mitte, Berlin',
-      embassyHours: 'Mon - Fri: 09:00 - 15:30 (24/7 Citizen Emergency)',
+      police: '19 (الشرطة الحضرية)',
+      ambulance: '15 (الإسعاف والوقاية المدنية)',
+      fire: '15 (الوقاية المدنية)',
+      touristPolice: '177 (الدرك الملكي) / +212 524 38 46 01',
+      touristHelpline: '0522 20 20 20',
+      medicalHotline: '141 (المساعدة الطبية المستعجلة SAMU)',
+      generalEmergency: '19 / 15',
+      embassyPhone: '+212 537 63 30 00',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'شارع الإمام مالك، حي السويسي، الرباط، المغرب',
+      embassyHours: 'الإثنين - الجمعة: 09:00 - 15:30 (طوارئ 24/7)',
       embassy: {
-        name: 'Embassy in Berlin',
-        nameAr: 'السفارة في برلين',
-        address: 'Berlin Diplomatic District',
-        phone: '+49 30 8892 50',
-        emergencyHotline: '+49 170 1234567',
-        workingHours: '09:00 - 15:30',
-        website: 'https://berlin.diplo.de',
+        name: `Embassy of ${originInfo.countryEn} in Rabat`,
+        nameAr: `سفارة ${originInfo.countryAr} بالرباط`,
+        address: 'حي السويسي، الرباط',
+        phone: '+212 537 63 30 00',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
+        website: 'https://diplomatie.ma',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'أحتاج إلى إسعاف عاجل',
+          native: 'خصني الإسعاف دابا عفاك',
+          phonetic: 'Khasni l-is-aaf daba aafak',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً',
+        },
+      ],
+      emergencyClinicsNote: 'اتصل بـ 19 للشرطة في المدن أو 177 للدرك الملكي خارجها و15 لسيارات الإسعاف.',
+      emergencyClinicsNoteAr: 'اتصل بـ 19 للشرطة في المدن أو 177 للدرك الملكي خارجها و15 لسيارات الإسعاف.',
+    };
+  }
+
+  // 15. Switzerland (سويسرا / جنيف / زيورخ / برن)
+  if (normDest.includes('switzerland') || normDest.includes('سويسرا') || normDest.includes('geneva') || normDest.includes('zurich') || normDest.includes('جنيف') || normDest.includes('زيورخ')) {
+    return {
+      police: '117 (Police)',
+      ambulance: '144 (Ambulance)',
+      fire: '118 (Fire)',
+      touristPolice: '117',
+      touristHelpline: '140 (Road Assistance) / 145 (Tox Info)',
+      medicalHotline: '144 / 0800 33 66 55',
+      generalEmergency: '112',
+      embassyPhone: '+41 31 352 8833',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Kirchenfeldstrasse 64, 3005 Bern, Switzerland',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Hotline)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Bern`,
+        nameAr: `سفارة ${originInfo.countryAr} في برن`,
+        address: 'Kirchenfeldstrasse 64, 3005 Bern',
+        phone: '+41 31 352 8833',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://www.eda.admin.ch',
       },
       emergencyPhrases: [
         {
           phrase: 'I need an ambulance!',
-          native: 'Ich brauche dringend einen Krankenwagen!',
-          phonetic: 'Ikh brow-khe drin-gend eye-nen kran-ken-vah-gen!',
-          textEn: 'I need an ambulance urgently!',
-          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
-          meaningEn: 'I need an ambulance urgently!',
-          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          native: 'Ich brauche dringend eine Ambulanz!',
+          phonetic: 'Ikh brow-khe drin-gend eye-neh ahm-boo-lahnts!',
+          textEn: 'I need an ambulance!',
+          textAr: 'أحتاج سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance!',
+          meaningAr: 'أحتاج سيارة إسعاف فوراً!',
         },
       ],
-      emergencyClinicsNote: 'Dial 112 for acute emergency or 116 117 for on-call English-speaking medical doctors.',
-      emergencyClinicsNoteAr: 'اتصل برقم 112 للطوارئ الحرجة أو 116 117 لخدمة الطبيب المناوب على مدار الساعة.',
+      emergencyClinicsNote: 'In Switzerland dial 144 for Ambulance, 117 for Police, 118 for Fire, or 112 for Central Emergency.',
+      emergencyClinicsNoteAr: 'في سويسرا اتصل بـ 144 للإسعاف الطبي، 117 للشرطة، 118 للإطفاء، أو 112 للرقم العام الموحد.',
     };
   }
 
-  // 7. United States & Canada (أمريكا وكندا)
-  if (normDest.includes('united-states') || normDest.includes('usa') || normDest.includes('أمريكا') || normDest.includes('امريكا') || normDest.includes('canada') || normDest.includes('كندا')) {
+  // 16. Austria (النمسا / فيينا / زيلامسي / سالزبورغ)
+  if (normDest.includes('austria') || normDest.includes('النمسا') || normDest.includes('vienna') || normDest.includes('فيينا') || normDest.includes('zell am see') || normDest.includes('salzburg')) {
     return {
-      police: '911 (Police Emergency)',
-      ambulance: '911 (Paramedics & EMS)',
-      fire: '911 (Fire Department)',
-      touristPolice: '311 (Non-Emergency Municipal Help)',
-      touristHelpline: '1-800-222-1222 (Poison & Urgent Control)',
-      medicalHotline: '911 / 311',
-      generalEmergency: '911',
-      embassyPhone: '+1 202 342 3800',
-      embassyEmergencyLine: '+1 202 746 0666',
-      embassyAddress: '601 New Hampshire Ave NW, Washington, DC',
-      embassyHours: 'Mon - Fri: 09:00 - 17:00 (24/7 Emergency Line)',
+      police: '133 (Polizei)',
+      ambulance: '144 (Rettung)',
+      fire: '122 (Feuerwehr)',
+      touristPolice: '133',
+      touristHelpline: '141 (Doctor On-Call) / 1450 (Health Advisory)',
+      medicalHotline: '1450 / 144',
+      generalEmergency: '112',
+      embassyPhone: '+43 1 367 2531',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Formanekgasse 38, 1190 Wien, Austria',
+      embassyHours: 'Mon - Fri: 09:00 - 15:30 (24/7 Citizen Line)',
       embassy: {
-        name: `Embassy in Washington, DC`,
-        nameAr: `السفارة في واشنطن العاصمة`,
-        address: '601 New Hampshire Ave NW, Washington, DC',
-        phone: '+1 202 342 3800',
-        emergencyHotline: '+1 202 746 0666',
-        workingHours: '09:00 - 17:00',
-        website: 'https://embassies.gov',
+        name: `Embassy of ${originInfo.countryEn} in Vienna`,
+        nameAr: `سفارة ${originInfo.countryAr} في فيينا`,
+        address: 'Formanekgasse 38, 1190 Wien',
+        phone: '+43 1 367 2531',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 15:30 (طوارئ 24/7)',
+        website: 'https://austria.info',
       },
       emergencyPhrases: [
         {
-          phrase: 'I need immediate medical attention!',
-          native: 'I need immediate medical attention!',
-          phonetic: 'I need immediate medical attention!',
-          textEn: 'I need immediate medical attention!',
-          textAr: 'أحتاج إلى رعاية طبية عاجلة!',
-          meaningEn: 'I need immediate medical attention!',
-          meaningAr: 'أحتاج إلى رعاية طبية عاجلة!',
+          phrase: 'I need an ambulance!',
+          native: 'Ich brauche die Rettung!',
+          phonetic: 'Ikh brow-khe dee ret-toong!',
+          textEn: 'I need an ambulance!',
+          textAr: 'أحتاج إلى الإسعاف فوراً!',
+          meaningEn: 'I need an ambulance!',
+          meaningAr: 'أحتاج إلى الإسعاف فوراً!',
         },
       ],
-      emergencyClinicsNote: 'Dial 911 for all life-threatening emergencies or 311 for non-emergency municipal city assistance.',
-      emergencyClinicsNoteAr: 'اتصل برقم 911 لجميع حالات الطوارئ الحرجة أو 311 للمساعدة المدنية غير الطارئة.',
+      emergencyClinicsNote: 'In Austria dial 144 for Ambulance, 133 for Police, 122 for Fire, or 112 for Central Emergency.',
+      emergencyClinicsNoteAr: 'في النمسا اتصل بـ 144 للإسعاف، 133 للشرطة، 122 للإطفاء، أو 112 للرقم الأوروبي الموحد.',
     };
   }
 
-  // 8. Universal Worldwide Fallback
+  // 17. Thailand (تايلاند / بانكوك / بوكيت / باتايا)
+  if (normDest.includes('thailand') || normDest.includes('تايلاند') || normDest.includes('bangkok') || normDest.includes('phuket') || normDest.includes('بانكوك') || normDest.includes('بوكيت')) {
+    return {
+      police: '191 (Police)',
+      ambulance: '1669 (Medical Emergency)',
+      fire: '199 (Fire)',
+      touristPolice: '1155 (Tourist Police 24/7 English/Arabic)',
+      touristHelpline: '1672 (Tourism Authority of Thailand)',
+      medicalHotline: '1669',
+      generalEmergency: '191 / 1155',
+      embassyPhone: '+66 2 639 2999',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '82 North Sathorn Rd, Silom, Bang Rak, Bangkok 10500, Thailand',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Emergency)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Bangkok`,
+        nameAr: `سفارة ${originInfo.countryAr} في بانكوك`,
+        address: '82 North Sathorn Rd, Bangkok',
+        phone: '+66 2 639 2999',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://www.tourismthailand.org',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance!',
+          native: 'Chwy riak rot phyahban hı hnoy! (ช่วยเรียกรถพยาบาลให้หน่อย)',
+          phonetic: 'Chuay riak rot paya-bahn hai noi!',
+          textEn: 'Please call an ambulance!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'Please call an ambulance!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 1155 for Tourist Police with English support or 1669 for direct medical ambulance.',
+      emergencyClinicsNoteAr: 'اتصل برقم 1155 لشرطة السياحة باللغة الإنجليزية أو 1669 لسيارات الإسعاف الطبي المباشر.',
+    };
+  }
+
+  // 18. Malaysia (ماليزيا / كوالالمبور / بينانج)
+  if (normDest.includes('malaysia') || normDest.includes('ماليزيا') || normDest.includes('kuala lumpur') || normDest.includes('كوالالمبور') || normDest.includes('penang')) {
+    return {
+      police: '999',
+      ambulance: '999',
+      fire: '994 (Bomba)',
+      touristPolice: '03-2149 6590 (KL Tourist Police)',
+      touristHelpline: '1-300-88-5050 (Tourism Malaysia Info)',
+      medicalHotline: '999',
+      generalEmergency: '999 / 112',
+      embassyPhone: '+60 3 2163 9444',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Menara Tan & Tan, 207 Jalan Tun Razak, 50400 Kuala Lumpur, Malaysia',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Line)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Kuala Lumpur`,
+        nameAr: `سفارة ${originInfo.countryAr} في كوالالمبور`,
+        address: 'Level 4, Menara Tan & Tan, 207 Jalan Tun Razak, KL',
+        phone: '+60 3 2163 9444',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://malaysia.travel',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance!',
+          native: 'Tolong panggilkan ambulans segera!',
+          phonetic: 'Toh-long pang-gil-kan ahm-boo-lahns seh-guh-rah!',
+          textEn: 'Please call an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'Please call an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 999 for Police & Ambulance, 994 for Fire, or 03-2149 6590 for Kuala Lumpur Tourist Police.',
+      emergencyClinicsNoteAr: 'اتصل بـ 999 للشرطة والإسعاف، 994 للإطفاء، أو 03-2149 6590 لشرطة السياحة في كوالالمبور.',
+    };
+  }
+
+  // 19. Indonesia (إندونيسيا / جاكرتا / بالي)
+  if (normDest.includes('indonesia') || normDest.includes('إندونيسيا') || normDest.includes('اندونيسيا') || normDest.includes('bali') || normDest.includes('بالي') || normDest.includes('jakarta') || normDest.includes('جاكرتا')) {
+    return {
+      police: '110',
+      ambulance: '118 / 119',
+      fire: '113',
+      touristPolice: '112 / +62 361 754599 (Bali Tourist Police)',
+      touristHelpline: '112',
+      medicalHotline: '119',
+      generalEmergency: '110 / 112',
+      embassyPhone: '+62 21 2809 4000',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'Jl. H. R. Rasuna Said Kav. B-3, Kuningan, Jakarta Selatan 12920',
+      embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Citizen Care)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Jakarta`,
+        nameAr: `سفارة ${originInfo.countryAr} في جاكرتا`,
+        address: 'Jl. H. R. Rasuna Said Kav. B-3, Kuningan, Jakarta',
+        phone: '+62 21 2809 4000',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:00 (طوارئ 24/7)',
+        website: 'https://indonesia.travel',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance!',
+          native: 'Tolong panggil ambulans sekarang!',
+          phonetic: 'Toh-long pang-geel ahm-boo-lahns seh-kah-rahng!',
+          textEn: 'Please call an ambulance now!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'Please call an ambulance now!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'Dial 110 for Police, 118/119 for Ambulance, 113 for Fire, or 112 for Central Emergency in Bali & Jakarta.',
+      emergencyClinicsNoteAr: 'اتصل بـ 110 للشرطة، 118/119 للإسعاف، 113 للإطفاء، أو 112 لمركز الطوارئ الموحد في بالي وجاكرتا.',
+    };
+  }
+
+  // 20. Australia (أستراليا / سيدني / ملبورن / كانبرا)
+  if (normDest.includes('australia') || normDest.includes('أستراليا') || normDest.includes('استراليا') || normDest.includes('sydney') || normDest.includes('melbourne') || normDest.includes('canberra')) {
+    return {
+      police: '000 (Triple Zero)',
+      ambulance: '000 (Triple Zero)',
+      fire: '000 (Triple Zero)',
+      touristPolice: '131 444 (Police Assistance Line)',
+      touristHelpline: '1800 022 222 (Healthdirect Medical Hotline 24/7)',
+      medicalHotline: '1800 022 222',
+      generalEmergency: '000',
+      embassyPhone: '+61 2 6250 7000',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: '38 Guilfoyle St, Yarralumla ACT 2600, Canberra / Sydney Consulate',
+      embassyHours: 'Mon - Fri: 09:00 - 16:30 (24/7 Citizen Emergency)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Canberra`,
+        nameAr: `سفارة ${originInfo.countryAr} في كانبرا والقنصلية بسيدني`,
+        address: '38 Guilfoyle St, Yarralumla ACT 2600',
+        phone: '+61 2 6250 7000',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '09:00 - 16:30 (طوارئ 24/7)',
+        website: 'https://australia.com',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'I need an ambulance immediately!',
+          native: 'I need an ambulance immediately!',
+          phonetic: 'I need an ambulance immediately!',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج إلى سيارة إسعاف فوراً!',
+        },
+      ],
+      emergencyClinicsNote: 'In Australia dial Triple Zero (000) for all immediate emergencies, or 131 444 for non-emergency police assistance.',
+      emergencyClinicsNoteAr: 'في أستراليا اتصل بالرقم الثلاثي (000) لجميع حالات الطوارئ العاجلة، أو 131 444 للشرطة غير الطارئة.',
+    };
+  }
+
+  // 21. Kuwait (الكويت / مدينة الكويت)
+  if (normDest.includes('kuwait') || normDest.includes('الكويت') || normDest.includes('كويت')) {
+    return {
+      police: '112',
+      ambulance: '112',
+      fire: '112',
+      touristPolice: '112',
+      touristHelpline: '151 (وزارة الصحة)',
+      medicalHotline: '112 / 151',
+      generalEmergency: '112',
+      embassyPhone: '+965 2255 0021',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'المنطقة الدبلوماسية، الدعية، ق5، مدينة الكويت',
+      embassyHours: 'الأحد - الخميس: 08:30 - 15:00 (طوارئ 24/7)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Kuwait`,
+        nameAr: `سفارة ${originInfo.countryAr} في الكويت`,
+        address: 'المنطقة الدبلوماسية، الدعية، ق5، مدينة الكويت',
+        phone: '+965 2255 0021',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '08:30 - 15:00 (طوارئ 24/7)',
+        website: 'https://www.e.gov.kw',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'أحتاج سيارة إسعاف فوراً',
+          native: 'أحتاج سيارة إسعاف فوراً',
+          phonetic: 'Ahtaaj sayyarat is-aaf fawran',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج سيارة إسعاف فوراً',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج سيارة إسعاف فوراً',
+        },
+      ],
+      emergencyClinicsNote: 'الرقم الموحد للطوارئ في دولة الكويت هو 112 (شرطة، إسعاف، إطفاء).',
+      emergencyClinicsNoteAr: 'الرقم الموحد للطوارئ في دولة الكويت هو 112 (شرطة، إسعاف، إطفاء).',
+    };
+  }
+
+  // 22. Bahrain (مملكة البحرين / المنامة)
+  if (normDest.includes('bahrain') || normDest.includes('البحرين') || normDest.includes('بحرين') || normDest.includes('manama') || normDest.includes('المنامة')) {
+    return {
+      police: '999',
+      ambulance: '999',
+      fire: '999',
+      touristPolice: '199 (شرطة المرور والنجدة)',
+      touristHelpline: '8000 8088',
+      medicalHotline: '999 / 444',
+      generalEmergency: '999',
+      embassyPhone: '+973 1753 7777',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'المنطقة الدبلوماسية، المنامة، مملكة البحرين',
+      embassyHours: 'الأحد - الخميس: 08:30 - 15:00 (طوارئ 24/7)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Manama`,
+        nameAr: `سفارة ${originInfo.countryAr} في المنامة`,
+        address: 'المنطقة الدبلوماسية، المنامة',
+        phone: '+973 1753 7777',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '08:30 - 15:00 (طوارئ 24/7)',
+        website: 'https://bahrain.bh',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'أحتاج سيارة إسعاف فوراً',
+          native: 'أحتاج سيارة إسعاف فوراً',
+          phonetic: 'Ahtaaj sayyarat is-aaf fawran',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج سيارة إسعاف فوراً',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج سيارة إسعاف فوراً',
+        },
+      ],
+      emergencyClinicsNote: 'الرقم الموحد لجميع طوارئ الشرطة والإسعاف والإطفاء في البحرين هو 999.',
+      emergencyClinicsNoteAr: 'الرقم الموحد لجميع طوارئ الشرطة والإسعاف والإطفاء في البحرين هو 999.',
+    };
+  }
+
+  // 23. Oman (سلطنة عمان / مسقط / صلالة)
+  if (normDest.includes('oman') || normDest.includes('عمان') || normDest.includes('عُمان') || normDest.includes('muscat') || normDest.includes('مسقط') || normDest.includes('salalah') || normDest.includes('صلالة')) {
+    return {
+      police: '9999',
+      ambulance: '9999',
+      fire: '9999',
+      touristPolice: '9999 / +968 2456 0099',
+      touristHelpline: '80077799 (مركز اتصالات وزارة التراث والسياحة)',
+      medicalHotline: '9999 / +968 2444 1999',
+      generalEmergency: '9999 / 112',
+      embassyPhone: '+968 2469 9880',
+      embassyEmergencyLine: originInfo.mfaEmergency,
+      embassyAddress: 'الحي الدبلوماسي، الخوير، مسقط، سلطنة عمان',
+      embassyHours: 'الأحد - الخميس: 08:30 - 15:00 (طوارئ 24/7)',
+      embassy: {
+        name: `Embassy of ${originInfo.countryEn} in Muscat`,
+        nameAr: `سفارة ${originInfo.countryAr} في مسقط`,
+        address: 'الحي الدبلوماسي، الخوير، مسقط',
+        phone: '+968 2469 9880',
+        emergencyHotline: originInfo.mfaEmergency,
+        workingHours: '08:30 - 15:00 (طوارئ 24/7)',
+        website: 'https://experienceoman.om',
+      },
+      emergencyPhrases: [
+        {
+          phrase: 'أحتاج سيارة إسعاف فوراً',
+          native: 'أحتاج سيارة إسعاف فوراً',
+          phonetic: 'Ahtaaj sayyarat is-aaf fawran',
+          textEn: 'I need an ambulance immediately!',
+          textAr: 'أحتاج سيارة إسعاف فوراً',
+          meaningEn: 'I need an ambulance immediately!',
+          meaningAr: 'أحتاج سيارة إسعاف فوراً',
+        },
+      ],
+      emergencyClinicsNote: 'الرقم الموحد لعمليات شرطة عمان السلطانية والإسعاف والدفاع المدني هو 9999.',
+      emergencyClinicsNoteAr: 'الرقم الموحد لعمليات شرطة عمان السلطانية والإسعاف والدفاع المدني هو 9999.',
+    };
+  }
+
+  // 24. Universal Fallback (Any other country)
   return {
     police: '112 / 999',
-    ambulance: '112 / 120',
-    fire: '112 / 119',
+    ambulance: '112 / 911',
+    fire: '112 / 998',
     touristPolice: '112',
-    touristHelpline: '112 (Universal Emergency Operator)',
+    touristHelpline: originInfo.mfaEmergency,
     medicalHotline: '112',
     generalEmergency: '112',
-    embassyPhone: '+966 11 406 7777',
-    embassyEmergencyLine: '+966 920000890',
-    embassyAddress: 'Diplomatic Enclave, Capital City',
-    embassyHours: 'Mon - Fri: 09:00 - 16:00 (24/7 Hotline)',
+    embassyPhone: originInfo.mfaPhone,
+    embassyEmergencyLine: originInfo.mfaEmergency,
+    embassyAddress: `البعثة الدبلوماسية ورعاية المواطنين في ${destinationName || 'العاصمة'}`,
+    embassyHours: 'الإثنين - الجمعة: 09:00 - 16:00 (طوارئ الرعايا 24/7)',
     embassy: {
-      name: 'Diplomatic Mission',
-      nameAr: 'البعثة الدبلوماسية والسفارة',
-      address: 'Diplomatic Enclave',
-      phone: '+966 11 406 7777',
-      emergencyHotline: '+966 920000890',
-      workingHours: '09:00 - 16:00',
+      name: `Embassy of ${originInfo.countryEn} in ${destinationName || 'Destination'}`,
+      nameAr: `سفارة ${originInfo.countryAr} في ${destinationName || 'بلد الوجهة'}`,
+      address: `المنطقة الدبلوماسية في ${cityName || 'العاصمة'}`,
+      phone: originInfo.mfaPhone,
+      emergencyHotline: originInfo.mfaEmergency,
+      workingHours: '09:00 - 16:00 (طوارئ 24/7)',
     },
     emergencyPhrases: [
       {
@@ -2216,7 +2903,7 @@ export function getDefaultEmergency(
         meaningAr: 'أحتاج إلى رعاية طبية طارئة فوراً!',
       },
     ],
-    emergencyClinicsNote: 'Contact local emergency services via 112 or visit the nearest central public hospital.',
-    emergencyClinicsNoteAr: 'اتصل برقم الطوارئ 112 أو توجه لأقرب مستشفى عام في المدينة.',
+    emergencyClinicsNote: `اتصل برقم الطوارئ المعتمد في ${destinationName} أو خط رعاية المواطنين ${originInfo.mfaEmergency}.`,
+    emergencyClinicsNoteAr: `اتصل برقم الطوارئ المعتمد في ${destinationName} أو خط رعاية المواطنين ${originInfo.mfaEmergency}.`,
   };
 }

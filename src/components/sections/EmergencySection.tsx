@@ -164,10 +164,10 @@ export default function EmergencySection() {
                 </div>
 
                 <div>
-                  <span className="text-xs font-bold text-gray-300 block">
+                  <span className="text-xs font-bold text-gray-300 block mb-1">
                     {isRtl ? contact.labelAr : contact.labelEn}
                   </span>
-                  <span className="text-3xl font-black text-white tracking-wider font-mono">
+                  <span className="text-2xl sm:text-3xl font-black text-white tracking-wider font-mono select-all block text-left" dir="ltr">
                     {contact.number}
                   </span>
                 </div>

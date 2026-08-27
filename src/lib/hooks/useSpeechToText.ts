@@ -70,7 +70,7 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
           window.speechSynthesis.cancel();
           setIsSpeaking(false);
           setSpeakingMessageId(null);
-        } catch (e) {}
+        } catch (e) { }
       }
 
       // 2. Request mic permission explicitly if available
@@ -89,7 +89,7 @@ export function useSpeechToText(options?: UseSpeechToTextOptions) {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch (e) {}
+        } catch (e) { }
       }
 
       try {

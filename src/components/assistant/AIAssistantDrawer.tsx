@@ -43,20 +43,30 @@ export default function AIAssistantDrawer() {
     setActiveTab,
   } = useJourney();
 
+  const getInitialGreeting = () => ({
+    id: 'm1',
+    sender: 'assistant' as const,
+    text: isRtl
+      ? `مرحباً بك! أنا مساعد وصل الذكي، جاهز للإجابة عن أي استفسار يخص رحلتك من ${journey.origin.nameAr || journey.origin.name} إلى ${journey.destination.nameAr || journey.destination.name} (${journey.destinationCity || journey.destination.capital}). كيف يمكنني مساعدتك اليوم؟`
+      : `Hello! I’m WASL AI Companion, ready to assist with your trip from ${journey.origin.name} to ${journey.destination.name} (${journey.destinationCity || journey.destination.capital}). How can I help you today?`,
+    timestamp: 'Now',
+  });
+
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
   const [inputMessage, setInputMessage] = useState<string>('');
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: 'm1',
-      sender: 'assistant',
-      text: isRtl
-        ? `مرحباً بك! أنا مساعد وصل الذكي، جاهز للإجابة عن أي استفسار يخص رحلتك من ${journey.origin.nameAr} إلى ${journey.destination.nameAr} (${journey.destinationCity}). كيف يمكنني مساعدتك اليوم؟`
-        : `Hello! I’m WASL AI Assistant, ready to help with your journey from ${journey.origin.name} to ${journey.destination.name} (${journey.destinationCity}). What would you like to know?`,
-      timestamp: 'Now',
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([getInitialGreeting()]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Sync greeting when language changes if only the initial greeting is present
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length <= 1 && prev[0]?.id === 'm1') {
+        return [getInitialGreeting()];
+      }
+      return prev;
+    });
+  }, [isRtl, journey.destination.name, journey.destinationCity]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -73,15 +83,15 @@ export default function AIAssistantDrawer() {
   const suggestedQuestions = isRtl
     ? [
         `ما هي أفضل الأماكن للتسوق في ${journey.destinationCity || journey.destination.nameAr}؟`,
-        `كيف أطلب تاكسي باللغة المحلية في حالة الطوارئ؟`,
-        `ما هي العادات الاجتماعية المهمة التي يجب معرفتها في ${journey.destination.nameAr}؟`,
-        `هل تتوفر مطاعم حلال قريبة في ${journey.destinationCity}؟`,
+        `أقترح لي مطاعم عربية وحلال مميزة في ${journey.destinationCity || journey.destination.nameAr}`,
+        `ما هي أفضل الفنادق ومناطق السكن في ${journey.destinationCity || journey.destination.nameAr}؟`,
+        `عطني اقتراح جدول مميز لليوم في ${journey.destinationCity || journey.destination.nameAr}`,
       ]
     : [
         `What are the top shopping spots in ${journey.destinationCity || journey.destination.name}?`,
-        `How do I hail an emergency taxi in the local language?`,
-        `What key cultural etiquette should I know in ${journey.destination.name}?`,
-        `Where can I find halal food in ${journey.destinationCity}?`,
+        `Suggest top authentic Arabic & Halal dining in ${journey.destinationCity || journey.destination.name}`,
+        `What are the best hotels and areas to stay in ${journey.destinationCity || journey.destination.name}?`,
+        `Give me a curated daily highlights itinerary for ${journey.destinationCity || journey.destination.name}`,
       ];
 
   const [autoSpeak, setAutoSpeak] = useState<boolean>(false);
@@ -144,6 +154,7 @@ export default function AIAssistantDrawer() {
         body: JSON.stringify({
           message: text,
           journeyContext: journey,
+          locale: isRtl ? 'ar' : 'en',
         }),
       });
 

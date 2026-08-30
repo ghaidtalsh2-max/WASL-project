@@ -71,7 +71,7 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
           result = await callGeminiWithFallbacks(apiKey, options);
         }
       } catch (keyErr: any) {
-        console.warn(`[WASL-AI] Provider [${effectiveProvider}] key issue: ${keyErr.message}. Cascading to resilient AI engine...`);
+        // Fast failover to local intelligent engine
       }
     }
 
@@ -296,6 +296,9 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
         body.response_format = { type: 'json_object' };
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
       const res = await fetch(url, {
         method: 'POST',
         headers: {
@@ -304,8 +307,11 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
           'HTTP-Referer': 'https://wasl-journey.vercel.app',
           'X-Title': 'WASL Cultural Journey',
         },
+        signal: controller.signal,
         body: JSON.stringify(body),
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         const errorText = await res.text();

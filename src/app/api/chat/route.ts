@@ -128,6 +128,15 @@ function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): s
 
   // Helper to fetch emergency info from database
   const getEmergencyData = () => {
+    const destId = ctx?.destination?.id?.toLowerCase();
+    if (destId && EMERGENCY_DATABASE[destId]) {
+      return EMERGENCY_DATABASE[destId];
+    }
+    for (const key of Object.keys(EMERGENCY_DATABASE)) {
+      if (normDest.includes(key) || (destId && destId.includes(key))) {
+        return EMERGENCY_DATABASE[key];
+      }
+    }
     if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('واشنطن') || normDest.includes('washington') || normDest.includes('أمريكا')) {
       return EMERGENCY_DATABASE['united-states'];
     }
@@ -175,6 +184,12 @@ function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): s
     }
     if (normDest.includes('switzerland') || normDest.includes('سويسرا') || normDest.includes('zurich') || normDest.includes('زيورخ')) {
       return EMERGENCY_DATABASE['switzerland'];
+    }
+    if (normDest.includes('czech') || normDest.includes('التشيك') || normDest.includes('prague') || normDest.includes('براغ')) {
+      return EMERGENCY_DATABASE['czech-republic'];
+    }
+    if (normDest.includes('azerbaijan') || normDest.includes('أذربيجان') || normDest.includes('baku') || normDest.includes('باكو')) {
+      return EMERGENCY_DATABASE['azerbaijan'];
     }
     if (normDest.includes('uae') || normDest.includes('الإمارات') || normDest.includes('dubai') || normDest.includes('دبي')) {
       return EMERGENCY_DATABASE['uae'];

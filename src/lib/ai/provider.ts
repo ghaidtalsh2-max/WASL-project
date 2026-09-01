@@ -35,7 +35,7 @@ const GEMINI_FALLBACK_MODELS = [
 export async function callAI(options: AICompletionOptions): Promise<AIResponse> {
   const startTime = Date.now();
   const provider = (options.provider || process.env.LLM_PROVIDER || 'gemini').toLowerCase().trim();
-  const DEFAULT_KEY_B64 = 'QVEuQWI4Uk42SjI3TVlWbXJVSUVXMHhqR1RhZzZfVkJ0VnNXbU5OZUMwZWpkV2NCXzlpMHc=';
+  const DEFAULT_KEY_B64 = 'c2stb3ItdjEtODMzMDgxMTMzZTk0M2VkM2YwNmM2NjVkNTdlNWJiYTU1YTlhZjc5MmU4MjM5MWMzZTBjOTU3ODAzY2RmOTdlZQ==';
   const defaultKey = Buffer.from(DEFAULT_KEY_B64, 'base64').toString('utf-8');
   const rawKey = options.apiKey || process.env.LLM_API_KEY || defaultKey;
   const apiKey = rawKey.replace(/[^\x00-\x7F]/g, '').trim();
@@ -291,9 +291,9 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
   messages.push({ role: 'user', content: options.prompt });
 
   const candidateModels = [
-    'openai/gpt-4o-mini',
-    'google/gemini-2.5-flash',
     'meta-llama/llama-3.3-70b-instruct',
+    'openai/gpt-4o-mini',
+    'google/gemini-2.0-flash-001',
   ];
 
   let lastError: any = null;

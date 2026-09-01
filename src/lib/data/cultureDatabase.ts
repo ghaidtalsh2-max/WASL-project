@@ -1,6 +1,129 @@
 import { CultureGuidance } from './defaultJourneys';
 
 export const CULTURE_DATABASE: Record<string, CultureGuidance> = {
+  'singapore': {
+    knowTheCulture: {
+      history: {
+        title: 'From Ancient Fishing Port to Global Lion City',
+        titleAr: 'من مرفأ تراثي عريق إلى "مدينة الأسد" العالمية',
+        content: 'From ancient Temasek and Sir Stamford Raffles (1819) to modern independence under Lee Kuan Yew, Singapore achieved a meteoric transformation from third-world port to world-leading smart metropolis.',
+        contentAr: 'من ميناء تيماسيك التاريخي ومحطة رافلز التجارية عام 1819 إلى الاستقلال والنهضة الكبرى بقيادة لي كوان يو، تحولت سنغافورة إلى واحدة من أذكى وأرقى دول العالم.',
+      },
+      clothing: {
+        title: 'Tropical Smart Casual & Cultural Traditional Wear',
+        titleAr: 'الأناقة الاستوائية المريحة والأزياء التراثية',
+        content: 'Lightweight, breathable fabrics (cotton and linen) suitable for year-round tropical warmth. Traditional Baju Kurung (Malay), Cheongsam (Chinese), and Saree (Indian) are proudly worn during cultural holidays.',
+        contentAr: 'تسود الملابس القطنية والكتانية الخفيفة المريحة طوال العام نظراً للمناخ الاستوائي، مع ارتداء الأزياء التراثية الملاوية والصينية والهندية في المناسبات والأعياد.',
+      },
+      foodCulture: {
+        title: 'UNESCO Hawker Centre Culture & Culinary Harmony',
+        titleAr: 'ثقافة مراكز الهوكر التراثية (UNESCO) وتناغم النكهات',
+        content: 'Hawker centres are the heartbeat of Singaporean social life, bringing together Malay, Chinese, Indian, and Peranakan gastronomy under one roof with world-renowned food safety.',
+        contentAr: 'مراكز الهوكر الشعبية المدرجة في قائمة اليونسكو للتراث هي ملتقى المجتمع السنغافوري، حيث تجتمع الأكلات الملاوية والصينية والهندية بأعلى معايير النظافة واللذة.',
+      },
+      familySocial: {
+        title: 'Multiracial Harmony & Respect for Elders',
+        titleAr: 'التناغم بين الأعراق وبر الوالدين واحترام الكبار',
+        content: 'Deep respect for multicultural harmony and elders (termed "Uncle" and "Aunty" warmly by locals as a sign of affectionate community respect).',
+        contentAr: 'احترام فائق لكبار السن وتكريمهم بمناداتهم بـ "Uncle" أو "Aunty" كتقليد سنغافوري يعكس المحبة والترابط المجتمعي.',
+      },
+      dailyLifestyle: {
+        title: 'Punctual, Spotless & Highly Connected Urban Rhythm',
+        titleAr: 'انضباط المواعيد، النظافة الفائقة، والتحول الرقمي',
+        content: 'A high-efficiency society where public transport runs to the second, contactless payments are ubiquitous, and city streets are among the cleanest on Earth.',
+        contentAr: 'مجتمع منظم وعالي الكفاءة يتميز بالدقة المتناهية لشبكات المترو، الدفع الرقمي اللاتلامسي الشامل، والشوارع التي تُعد من الأنظف عالمياً.',
+      },
+      greetings: {
+        title: 'Warm Smiles, Polite Handshakes & "Hello / Selamat"',
+        titleAr: 'الابتسامة الودودة والمصافحة اللطيفة',
+        content: 'English is universal. A polite nod, gentle handshake, or warm smile is standard in business and social interactions.',
+        contentAr: 'التحية بالإنجليزية شائعة في كل مكان، والمصافحة اللطيفة أو إيماءة الرأس بابتسامة هي العرف المعتمد في اللقاءات.',
+      },
+      communication: {
+        title: 'Singlish Expressions & Direct Polite Clarity',
+        titleAr: 'تعبيرات اللهجة السنغافورية (Singlish) والوضوح المهذب',
+        content: 'Conversations are polite and efficient, with Singlish particles (Lah, Leh, Chope) adding informal warmth among friends.',
+        contentAr: 'يتميز أسلوب الحوار بالتهذيب والوضوح، مع استخدام تعبيرات دارجة لطيفة تضفي طابع الألفة في المحادثات الودية.',
+      },
+      traditions: {
+        title: 'Kampung Spirit (Community Solidarity)',
+        titleAr: 'روح القرية والتعاون المجتمعي (Kampung Spirit)',
+        content: 'The traditional value of mutual neighborly care, helping strangers, and living in communal peace across high-rise residential estates.',
+        contentAr: 'قيمة تراثية تعبر عن التضامن والتعاون التلقائي بين الجيران ومساعدة عابر السبيل في السراء والضراء.',
+      },
+      celebrations: {
+        title: 'National Day, Lunar New Year & Hari Raya Festivals',
+        titleAr: 'اليوم الوطني، رأس السنة الصينية، وأعياد هاري رايا',
+        content: 'Spectacular city-wide celebrations with Marina Bay fireworks, street carnivals, and cultural feasts shared across all ethnic groups.',
+        contentAr: 'احتفالات وطنية كبرى بألعاب نارية مبهرة في مارينا باي وبازارات ملونة في شارع العرب والحي الصيني.',
+      },
+      socialValues: {
+        title: 'Integrity, Meritocracy & Strict Rule of Law',
+        titleAr: 'النزاهة، الكفاءة، والسيادة الصارمة للقانون',
+        content: 'Singaporeans deeply value civic honesty, safety, and strict environmental laws preserving public order and green spaces.',
+        contentAr: 'يُقدر المجتمع السنغافوري الأمانة والنظام والأمان والالتزام التام بالقوانين البيئية والحفاظ على المساحات الخضراء.',
+      },
+      modernVsTraditional: {
+        title: 'Supertrees of Gardens by the Bay Beside Heritage Shophouses',
+        titleAr: 'أشجار حدائق الخليج المستقبلية إلى جانب المباني التراثية',
+        content: 'Futuristic architectural wonders like Marina Bay Sands and Gardens by the Bay harmoniously coexist with 19th-century shophouses in Chinatown and Kampong Glam.',
+        contentAr: 'تتعانق الأيقونات المستقبلية مثل مارينا باي ساندز مع المباني والأسواق التراثية التاريخية في شارع العرب والحي الصيني.',
+      },
+    },
+    howToBehave: {
+      dos: [
+        {
+          title: 'Clear Your Own Tray at Hawker Centres and Food Courts',
+          titleAr: 'إرجاع صواني الطعام في محطات التجميع بعد الانتهاء',
+          desc: 'Returning trays and used crockery to designated tray-return stations is socially expected and legally mandated.',
+          descAr: 'إرجاع صواني الطعام والأطباق المستخدمة إلى الأماكن المخصصة في مراكز الهوكر والمطاعم سلوك حضاري إلزامي.',
+        },
+        {
+          title: 'Stand on the Left Side of Escalators',
+          titleAr: 'التزم الجانب الأيسر عند ركوب السلالم الكهربائية',
+          desc: 'Stand on the left to allow commuters walking or in a hurry to pass on the right side.',
+          descAr: 'قف على الجانب الأيسر من السلالم الكهربائية واترك الجانب الأيمن للمستعجلين والمارة.',
+        },
+        {
+          title: 'Respect the "Chope" Table Custom at Hawker Centres',
+          titleAr: 'احترم حجز الطاولات بالمناديل (Chope)',
+          desc: 'A packet of tissues or umbrella placed on a hawker table indicates it is occupied while the diner orders.',
+          descAr: 'وجود علبة مناديل على الطاولة في مجمعات الطعام يعني أنها محجوزة لصاحبها أثناء شراء الوجبة.',
+        },
+      ],
+      donts: [
+        {
+          title: 'Do Not Chew Gum or Litter Anywhere',
+          titleAr: 'تجنب مضغ العلكة أو إلقاء المخلفات',
+          desc: 'The sale and import of chewing gum is prohibited, and littering carries heavy strict municipal fines.',
+          descAr: 'يُمنع بيع واستيراد العلكة في سنغافورة، وإلقاء المخلفات في الشوارع تترتب عليه غرامات مالية فورية.',
+        },
+        {
+          title: 'Do Not Eat or Drink on MRT Trains and Stations',
+          titleAr: 'يُمنع الأكل أو الشرب داخل قطارات ومحطات المترو',
+          desc: 'Consuming food, beverages (even plain water), and smoking in MRT stations incurs fines up to 500 SGD.',
+          descAr: 'يُحظر تناول الأطعمة والمشروبات داخل محطات وعربات المترو للحفاظ على النظافة التامة.',
+        },
+      ],
+      goodToKnow: [
+        {
+          title: 'Tipping is NOT Expected in Singapore',
+          titleAr: 'البقشيش غير متوقع ومشمول في الفاتورة',
+          desc: 'Restaurants automatically add a 10% service charge and 9% GST tax to bills; additional tipping is not necessary.',
+          descAr: 'تضيف المطاعم تلقائياً 10% رسوم خدمة و 9% ضريبة في الفاتورة، لذا لا يُطلب دفع بقشيش إضافي.',
+        },
+        {
+          title: 'Tap In & Out with Contactless Bank Cards',
+          titleAr: 'الدفع المباشر بالبطاقة البنكية في المواصلات',
+          desc: 'You can tap any Visa, Mastercard, or Apple Pay directly at MRT gantries and public buses without buying tickets.',
+          descAr: 'يمكنك استخدام بطاقتك البنكية أو جوالك مباشرة عند بوابات المترو والحافلات للدفع الفوري.',
+        },
+      ],
+    },
+    disclaimer: 'Social etiquette in Singapore emphasizes mutual consideration, cleanliness, and multicultural respect.',
+    disclaimerAr: 'تقوم الأعراف في سنغافورة على الاحترام والهدوء والنظافة الفائقة لضمان راحة الجميع.',
+  },
+
   'south-korea': {
     knowTheCulture: {
       history: {

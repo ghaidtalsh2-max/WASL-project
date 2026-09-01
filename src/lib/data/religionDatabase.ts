@@ -1,6 +1,128 @@
 import { ReligionContextData } from './defaultJourneys';
 
 export const RELIGION_DATABASE: Record<string, ReligionContextData> = {
+  'singapore': {
+    overview: 'Singapore is one of the most religiously diverse, harmonious nations globally. The population comprises Buddhism (31%), Christianity (19%), Islam (15.6% - predominantly Malay and Indian Muslims), Taoism & Chinese folk religion (8.8%), Hinduism (5%), and Non-religious/Secular citizens (20%). The state strictly upholds racial and religious harmony (Maintenance of Religious Harmony Act) with shared cultural celebrations.',
+    overviewAr: 'تعد سنغافورة واحدة من أكثر دول العالم تنوعاً وتناغماً دينياً وثقافياً في ظل تعايش سلمي نموذجي. يتوزع السكان بين البوذية (31%)، المسيحية (19%)، الإسلام (15.6% - يشمل المجتمع الملاوي والهندي المسلم)، الطاوية والديانات الشعبية (8.8%)، الهندوسية (5%)، والمواطنين العلمانيين (20%). وتضمن القوانين الصارمة حرية العبادة والاحترام المتبادل بين كافة الأطياف.',
+    religiousLandscape: [
+      {
+        tradition: 'Buddhism & Taoism (39.8%)',
+        traditionAr: 'البوذية والطاوية (39.8%)',
+        percentageEstimate: '39.8%',
+        description: 'Prominent Mahayana Buddhist and Taoist heritage with magnificent historic temples like Buddha Tooth Relic Temple in Chinatown and Thian Hock Keng Temple.',
+        descriptionAr: 'تراث بوذي وطاوي عريق يتجلى في معابد تاريخية بديعة مثل معبد بقايا سن بوذا في الحي الصيني ومعبد ثيان هوك كينغ العريق.',
+      },
+      {
+        tradition: 'Christianity (Catholic & Protestant - 19%)',
+        traditionAr: 'المسيحية (الكاثوليكية والبروتستانتية - 19%)',
+        percentageEstimate: '19%',
+        description: 'Active diverse community with historic colonial cathedrals (St. Andrew’s Cathedral, Cathedral of the Good Shepherd) and modern community churches.',
+        descriptionAr: 'مجتمع ديني نشط يضم كاتدرائيات تاريخية شهيرة تعود للحقبة الاستعمارية مثل كاتدرائية القديس أندرو في قلب المدينة.',
+      },
+      {
+        tradition: 'Islam & Muslim Community (15.6%)',
+        traditionAr: 'الإسلام والمجتمع المسلم (15.6%)',
+        percentageEstimate: '15.6%',
+        description: 'An integral part of Singaporean identity administered by the Islamic Religious Council of Singapore (MUIS), featuring over 70 grand mosques including Sultan Mosque in Kampong Glam.',
+        descriptionAr: 'ركيزة أساسية في الهوية الوطنية السنغافورية بإشراف مجلس الشؤون الإسلامية (MUIS)، مع أكثر من 70 جامعاً تاريخياً وحديثاً أبرزها مسجد السلطان المهيب في حي كامبونج جلام.',
+      },
+      {
+        tradition: 'Hinduism & Other Traditions (5.6%)',
+        traditionAr: 'الهندوسية والسيخية (5.6%)',
+        percentageEstimate: '5.6%',
+        description: 'Vibrant traditions reflected in the iconic Sri Veeramakaliamman Temple in Little India and the Central Sikh Gurdwara.',
+        descriptionAr: 'تقاليد ثقافية ملونة في منطقة ليتل إنديا (الهند الصغيرة) مع معابد أثرية بارزة مثل معبد سري فيراماكاليامان.',
+      },
+      {
+        tradition: 'Secular & Non-Religious (20%)',
+        traditionAr: 'المشهد المدني والعلماني (20%)',
+        percentageEstimate: '20%',
+        description: 'A growing demographic of professionals who prioritize shared civic unity while respecting multicultural festivals.',
+        descriptionAr: 'نسبة من المواطنين يتبنون نمط حياة علماني مع الاحتفاء بكافة الأعياد الوطنية والمناسبات الدينية المشتركة.',
+      },
+    ],
+    practicesAndHolidays: [
+      {
+        name: 'Hari Raya Aidilfitri (Eid al-Fitr) & Hari Raya Haji',
+        nameAr: 'عيد الفطر المبارك وعيد الأضحى (هاري رايا)',
+        timing: 'Islamic Lunar Calendar',
+        timingAr: 'التقويم الهجري',
+        impact: 'National gazetted public holidays; dazzling street light-ups throughout Geylang Serai and Kampong Glam with bazaar night markets.',
+        impactAr: 'عطلات رسمية عامة في الدولة؛ تتزين منطقة غيلانغ سيراي وشارع العرب بالأضواء والأسواق الليلية المبهجة وتفتح البيوت للتهاني.',
+      },
+      {
+        name: 'Vesak Day (Buddha Day)',
+        nameAr: 'يوم فيساك (يوم بوذا)',
+        timing: 'May (Full Moon)',
+        timingAr: 'مايو',
+        impact: 'Public holiday honoring peace and charity; temples release sky lanterns and distribute free vegetarian meals.',
+        impactAr: 'عطلة رسمية عامة يزور خلالها المصلون المعابد وتوزع الوجبات النباتية المجانية كعمل خيري.',
+      },
+      {
+        name: 'Deepavali (Festival of Lights)',
+        nameAr: 'مهرجان الأضواء (ديبافالي)',
+        timing: 'October / November',
+        timingAr: 'أكتوبر / نوفمبر',
+        impact: 'Little India is illuminated with monumental decorative arches, night bazaars, and sweets.',
+        impactAr: 'تضاء شوارع ليتل إنديا بالأقواس الزخرفية والمصابيح الذهبية والاحتفالات الفنية.',
+      },
+    ],
+    placesOfWorship: [
+      {
+        type: 'Historic Mosques (Sultan Mosque / Masjid Sultan)',
+        typeAr: 'المساجد التاريخية (مسجد السلطان في كامبونج جلام)',
+        guidance: 'Inaugurated in 1824 and rebuilt in 1928 with massive golden domes and minarets. Welcoming visitors outside prayer times.',
+        guidanceAr: 'تأسس عام 1824 ويتميز بقبابه الذهبية الضخمة في قلب شارع العرب (Arab Street)، ويرحب بالزوار خارج أوقات الصلاة مع توفير أردية ساترة.',
+        etiquette: ['Remove footwear before entering marble prayer courtyard', 'Dress modestly (robes provided at entrance)', 'Quiet respectful observation'],
+        etiquetteAr: ['خلع الأحذية عند العتبة الرخامية', 'اللباس المحتشم (تتوفر عباءات وأردية ساترة عند المدخل)', 'الحفاظ على السكينة والهدوء'],
+      },
+    ],
+    dietaryAndPublicBehavior: {
+      dietaryOverview: 'Singapore is a global culinary capital with the strictest hygiene rating standards (Grade A) and an exceptionally comprehensive Halal ecosystem verified by MUIS.',
+      dietaryOverviewAr: 'تعتبر سنغافورة عاصمة طهي عالمية بأعلى معايير النظافة والرقابة الغذائية الصارمة، مع انتشار واسع للمطاعم الحلال المعتمدة رسمياً من مجلس MUIS.',
+      dressExpectations: 'Smart, comfortable tropical clothing is standard. Temples and mosques require covered shoulders and knees.',
+      dressExpectationsAr: 'الملابس الصيفية الأنيقة والمحتشمة هي السائدة، مع اشتراط تغطية الكتفين والركبتين داخل المعابد والمساجد.',
+      publicEtiquette: 'Racial and religious harmony is sacred in Singapore. Chewing gum is banned, littering carries hefty fines, and public transit is spotlessly quiet.',
+      publicEtiquetteAr: 'الاحترام المتبادل بين الأعراق والديانات ركيزة مقدسة، ويُمنع إلقاء المخلفات مع الحفاظ على الهدوء والنظافة التامة في المترو.',
+    },
+    muslimTravelerGuide: {
+      halalOverview: 'Finding delicious Halal food in Singapore is effortless. The Majlis Ugama Islam Singapura (MUIS) is one of the world’s most respected Halal certification bodies. Halal dining ranges from Michelin-starred fine dining and international chains (McDonalds, KFC, Subway, The Halal Guys) to authentic Malay, Indian-Muslim, and Chinese-Muslim food stalls in Arab Street, Kampong Glam, Marina Bay, and Jewel Changi.',
+      halalOverviewAr: 'العثور على الطعام الحلال في سنغافورة سهل ومضمون للغاية؛ حيث يمنح مجلس MUIS شهادات الحلال المعتمدة عالمياً. تتوفر آلاف الخيارات الحلال بدءاً من المطاعم العالمية والمحلية في مارينا باي وشارع أورشارد ومطار شانغي، وصولاً إلى أكلات الشارع الملاوية والسنغافورية في شارع العرب (Arab Street).',
+      halalVerificationTips: [
+        'Look for the official round green/black MUIS Halal Certification certificate displayed at cashier counters.',
+        'Use the "HalalTrip" app or the official MUIS Halal directory online to find verified stalls near any MRT station.',
+        'All major fast food chains in Singapore (KFC, McDonald\'s, Burger King, Pizza Hut, Subway, Texas Chicken) are 100% MUIS Halal Certified.',
+      ],
+      halalVerificationTipsAr: [
+        'ابحث عن شهادة MUIS الدائرية الرسمية المعلقة بوضوح عند شباك المحاسبة.',
+        'استخدم دليل MUIS الإلكتروني أو تطبيق "HalalTrip" للوصول لأقرب مطعم حلال معتمد حولك.',
+        'كافة سلاسل المطاعم الشهيرة في سنغافورة (ماكدونالدز، كنتاكي، صب واي، برجر كينج) حاصلة على شهادة حلال رسمية 100%.',
+      ],
+      mosquesAndPrayer: 'Singapore has over 70 purpose-built mosques. Iconic Sultan Mosque (Kampong Glam), Masjid Omar Kampong Melaka (Singapore’s oldest, founded 1820), and Masjid Al-Falah (right on Orchard Road shopping belt). In addition, Singapore Changi Airport (Terminals 1, 2, 3, 4) features dedicated multi-faith and Muslim prayer rooms complete with ablution (Wudhu) facilities.',
+      mosquesAndPrayerAr: 'تضم سنغافورة أكثر من 70 مسجداً مجهزاً بالكامل. من أبرزها: مسجد السلطان (شارع العرب)، مسجد الفلاح (في قلب شارع التسوق أورشارد Orchard Road)، ومسجد عمر كامبونج ملقا. كما يوفر مطار شانغي الدولي (مباني 1، 2، 3، 4) مصليات مجهزة بأماكن وضوء وسجاد صلاة وتحديد القبلة على مدار 24 ساعة.',
+      publicPrayerEtiquette: 'Discreet prayer is fully accommodated in airport prayer rooms, hotel rooms, and quiet corners. Mosques are welcoming to international travelers.',
+      publicPrayerEtiquetteAr: 'المصليات متوفرة في المطار والمراكز الكبرى، والمساجد تفتح أبوابها للمسافرين وتوفر مصليات مخصصة للرجال والنساء.',
+      ramadanConsiderations: 'During Ramadan, the massive Geylang Serai and Kampong Glam Ramadan Bazaars come alive with over 500 food stalls, festive decorations, and communal Iftar dinners at mosques.',
+      ramadanConsiderationsAr: 'في شهر رمضان، تشهد سنغافورة بازارات رمضانية كبرى في غيلانغ سيراي وشارع العرب بأكثر من 500 كشك للأطعمة الحلال والحلويات، وتقام موائد إفطار جماعية وصلاة التراويح.',
+      localInquiryPhrases: [
+        {
+          phrase: 'Is this food stall MUIS Halal certified?',
+          pronunciation: 'Is this stall MUIS Halal certified?',
+          meaningEn: 'Inquiring about official Singapore Halal certification.',
+          meaningAr: 'هل هذا المطعم معتمد حلال من مجلس الشؤون الإسلامية بسنغافورة؟',
+        },
+        {
+          phrase: 'Where is the nearest prayer room / Musalla?',
+          pronunciation: 'Where is the nearest prayer room or mosque?',
+          meaningEn: 'Asking for the nearest prayer space or mosque.',
+          meaningAr: 'أين يقع أقرب مصلى أو مسجد؟',
+        },
+      ],
+    },
+    disclaimer: 'Singapore strictly protects racial and religious harmony under national law. Mutual courtesy and respect ensure a wonderful experience.',
+    disclaimerAr: 'تكفل قوانين سنغافورة الاحترام المتبادل بين كافة الأديان والأعراق، والتعامل الودود يضمن إقامة استثنائية.',
+  },
+
   'south-korea': {
     overview: 'South Korea is characterized by a secular, pluralistic spiritual landscape with complete constitutional freedom of religion. A slight majority (~50%) identify as non-religious, while Christianity (~28%, Protestantism 19% & Catholicism 9%) and Korean Buddhism (~16%) represent the largest organized faith traditions. Traditional Confucian ethics (respect for elders, filial piety, social harmony) deeply influence everyday life.',
     overviewAr: 'تتميز كوريا الجنوبية بمشهد روحي علماني تعددي مع حرية دينية كاملة يكفلها الدستور. نحو 50% من السكان لا ينتمون إلى ديانة محددة (علمانيون/لادينيون)، بينما تشكل المسيحية نحو 28% (19% بروتستانت، 9% كاثوليك) والبوذية الكورية نحو 16%. وتؤثر القيم الكونفوشيوسية التقليدية (احترام كبار السن، بر الوالدين، التناغم الاجتماعي) بشكل عميق في الأخلاقيات اليومية وآداب التعامل.',

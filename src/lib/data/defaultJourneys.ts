@@ -614,6 +614,9 @@ export function generateDefaultStages(
 export function getDefaultCulture(destinationName: string, cityName: string = 'Tokyo'): CultureGuidance {
   const norm = (destinationName || '').toLowerCase();
 
+  if (norm.includes('singapore') || norm.includes('سنغافورة')) {
+    return CULTURE_DATABASE['singapore'];
+  }
   if (norm.includes('korea') || norm.includes('كوريا') || norm.includes('seoul') || norm.includes('سيول')) {
     return CULTURE_DATABASE['south-korea'];
   }
@@ -904,6 +907,9 @@ export function getDefaultCulture(destinationName: string, cityName: string = 'T
 export function getDefaultPhrases(destinationName: string, cityName: string = 'Tokyo'): LocalLanguageData {
   const norm = (destinationName || '').toLowerCase();
 
+  if (norm.includes('singapore') || norm.includes('سنغافورة')) {
+    return LANGUAGE_DATABASE['singapore'];
+  }
   if (norm.includes('korea') || norm.includes('كوريا') || norm.includes('seoul') || norm.includes('سيول')) {
     return LANGUAGE_DATABASE['south-korea'];
   }
@@ -1276,6 +1282,9 @@ export function getDefaultPhrases(destinationName: string, cityName: string = 'T
 export function getDefaultReligion(destinationName: string, cityName: string = 'Tokyo'): ReligionContextData {
   const norm = (destinationName || '').toLowerCase();
 
+  if (norm.includes('singapore') || norm.includes('سنغافورة')) {
+    return RELIGION_DATABASE['singapore'];
+  }
   if (norm.includes('korea') || norm.includes('كوريا') || norm.includes('seoul') || norm.includes('سيول')) {
     return RELIGION_DATABASE['south-korea'];
   }

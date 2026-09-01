@@ -58,6 +58,7 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
   try {
     let result: AIResponse | null = null;
     const effectiveProvider = apiKey.startsWith('sk-or-v1-') ? 'openrouter' : provider;
+    const debugErrors: string[] = [];
 
     if (apiKey) {
       try {
@@ -67,7 +68,7 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
           result = await callGeminiWithFallbacks(apiKey, options);
         }
       } catch (keyErr: any) {
-        console.error('[PRIMARY_AI_ERROR]', keyErr?.message || keyErr);
+        debugErrors.push(`Primary (${effectiveProvider}): ${keyErr?.message || keyErr}`);
       }
     }
 
@@ -78,14 +79,14 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
         const geminiFallbackKey = Buffer.from(GEMINI_B64, 'base64').toString('utf-8');
         result = await callGeminiWithFallbacks(geminiFallbackKey, options);
       } catch (geminiErr: any) {
-        console.error('[GEMINI_FAILOVER_ERROR]', geminiErr?.message || geminiErr);
+        debugErrors.push(`Failover (gemini): ${geminiErr?.message || geminiErr}`);
       }
     }
 
     if (!result || !result.content || result.error) {
       return {
         content: '',
-        error: result?.error || 'Live AI request timed out. Using high-precision local knowledge engine.',
+        error: debugErrors.join(' | ') || result?.error || 'Live AI request timed out.',
         provider: effectiveProvider,
         latencyMs: Date.now() - startTime,
       };

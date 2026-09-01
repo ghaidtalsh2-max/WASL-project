@@ -70,18 +70,18 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
         } else if (effectiveProvider === 'anthropic') {
           result = await callAnthropic(apiKey, options);
         } else {
-          result = await callGeminiWithFallbacks(apiKey, options);
+          result = await callOpenRouter(apiKey, options);
         }
       } catch (keyErr: any) {
-        // Fast failover
+        console.error('[AI_PROVIDER_KEY_ERROR]', keyErr?.message || keyErr);
       }
     }
 
     if (!result || !result.content || result.error) {
       return {
         content: '',
-        error: 'Live AI request timed out. Using high-precision local knowledge engine.',
-        provider: 'wasl-instant-engine',
+        error: result?.error || 'Live AI request timed out. Using high-precision local knowledge engine.',
+        provider: effectiveProvider,
         latencyMs: Date.now() - startTime,
       };
     }
@@ -291,9 +291,8 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
   messages.push({ role: 'user', content: options.prompt });
 
   const candidateModels = [
-    'meta-llama/llama-3.3-70b-instruct',
     'openai/gpt-4o-mini',
-    'google/gemini-2.0-flash-001',
+    'meta-llama/llama-3.3-70b-instruct',
   ];
 
   let lastError: any = null;

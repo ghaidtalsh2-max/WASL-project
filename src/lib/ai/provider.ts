@@ -312,7 +312,7 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
       }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const res = await fetch(url, {
         method: 'POST',

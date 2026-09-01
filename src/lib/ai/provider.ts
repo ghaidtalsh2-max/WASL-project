@@ -24,11 +24,8 @@ const CACHE_TTL_MS = 1000 * 60 * 15; // 15 minutes cache
 // Candidate Gemini models to cascade through
 const GEMINI_FALLBACK_MODELS = [
   'gemini-3.6-flash',
-  'gemini-3.7-flash',
   'gemini-3.5-flash',
   'gemini-3.1-flash-lite',
-  'gemini-flash-latest',
-  'gemini-2.5-flash',
 ];
 
 
@@ -76,13 +73,17 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
           result = await callGeminiWithFallbacks(apiKey, options);
         }
       } catch (keyErr: any) {
-        // Fast failover to local intelligent engine
+        // Fast failover
       }
     }
 
-    // Zero-downtime fallback to open AI models if primary key is expired or missing
     if (!result || !result.content || result.error) {
-      result = await callPollinationsAI(options);
+      return {
+        content: '',
+        error: 'Live AI request timed out. Using high-precision local knowledge engine.',
+        provider: 'wasl-instant-engine',
+        latencyMs: Date.now() - startTime,
+      };
     }
 
     result.latencyMs = Date.now() - startTime;
@@ -161,11 +162,20 @@ async function callGeminiWithFallbacks(apiKey: string, options: AICompletionOpti
         body.generationConfig.responseMimeType = 'application/json';
       }
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      let res: Response;
+      try {
+        res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
+          body: JSON.stringify(body),
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!res.ok) {
         const errorText = await res.text();

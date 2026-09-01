@@ -56,9 +56,10 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = `${AI_SYSTEM_PROMPTS.chatAssistant}\n\n${contextStr}`;
 
-    // 1. Always attempt live AI with server/user Gemini key
+    // 1. Always attempt live AI with server/user Gemini/OpenRouter key
+    let aiRes: any = null;
     try {
-      const aiRes = await callAI({
+      aiRes = await callAI({
         systemPrompt,
         prompt: userMessage,
         apiKey: apiKey || process.env.LLM_API_KEY,
@@ -86,6 +87,8 @@ export async function POST(req: NextRequest) {
       success: true,
       provider: 'wasl-smart-assistant',
       reply,
+      debugAiError: (aiRes as any)?.error || null,
+      debugKeyPrefix: (apiKey || process.env.LLM_API_KEY || '').slice(0, 10),
     });
   } catch (error: any) {
     const isEn = isEnglishText(userMessage) || locale === 'en';

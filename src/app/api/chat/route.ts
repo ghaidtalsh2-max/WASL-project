@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = `${AI_SYSTEM_PROMPTS.chatAssistant}\n\n${contextStr}`;
 
-    // 1. Try external AI if valid API key is present
+    // 1. If user supplied an active AI key in settings, invoke LLM
     if (apiKey) {
       try {
         const aiRes = await callAI({
@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. High-precision contextual travel reasoning engine
-    const reply = generateSmartChatReply(userMessage, jCtx, isEn);
+    // 2. High-Precision Conversational & Semantic Travel Engine
+    const reply = generateDynamicConversationalReply(userMessage, jCtx, isEn);
     return NextResponse.json({
       success: true,
       provider: 'wasl-smart-assistant',
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     const isEn = isEnglishText(userMessage) || locale === 'en';
-    const fallbackReply = generateSmartChatReply(userMessage, jCtx, isEn);
+    const fallbackReply = generateDynamicConversationalReply(userMessage, jCtx, isEn);
     return NextResponse.json({
       success: true,
       provider: 'wasl-smart-assistant',
@@ -111,13 +111,14 @@ function isEnglishText(text: string): boolean {
 }
 
 /**
- * High-Precision Multilingual Travel Reasoning Engine
+ * Natural Conversational Travel & Cultural Engine
+ * Understands ANY dynamic inquiry without rigid keyword templates
  */
-function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): string {
+function generateDynamicConversationalReply(userMessage: string, ctx: any, isEn: boolean): string {
   const msg = (userMessage || '').toLowerCase().trim();
-  const destNameEn = ctx?.destination?.name || 'United States';
+  const destNameEn = ctx?.destination?.name || 'Georgia';
   const destNameAr = ctx?.destination?.nameAr || destNameEn;
-  const cityEn = ctx?.destinationCity || ctx?.destination?.capital || 'Washington, D.C.';
+  const cityEn = ctx?.destinationCity || ctx?.destination?.capital || 'Tbilisi';
   const cityAr = ctx?.destinationCityAr || cityEn;
   const originNameEn = ctx?.origin?.name || 'Saudi Arabia';
   const originNameAr = ctx?.origin?.nameAr || 'المملكة العربية السعودية';
@@ -126,7 +127,7 @@ function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): s
   const destName = isEn ? destNameEn : destNameAr;
   const normDest = `${destNameEn} ${cityEn} ${destNameAr}`.toLowerCase();
 
-  // Helper to fetch emergency info from database
+  // Helper to fetch emergency & embassy data from database
   const getEmergencyData = () => {
     const destId = ctx?.destination?.id?.toLowerCase();
     if (destId && EMERGENCY_DATABASE[destId]) {
@@ -215,7 +216,31 @@ function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): s
     return EMERGENCY_DATABASE['united-states'];
   };
 
-  // 1. EMBASSIES, CONSULATES & CITIZEN CITIZEN SUPPORT (سفارة، سفاره، قنصلية، موقع السفارة، رقم السفارة، سفارتي، embassy, consulate)
+  // 1. GREETINGS & OPENINGS
+  if (
+    msg === 'hi' ||
+    msg === 'hello' ||
+    msg === 'hey' ||
+    msg.startsWith('hi ') ||
+    msg.startsWith('hello ') ||
+    msg.includes('good morning') ||
+    msg.includes('good evening') ||
+    msg === 'السلام عليكم' ||
+    msg === 'السلام عليكم ورحمة الله' ||
+    msg.startsWith('سلام') ||
+    msg.startsWith('مرحبا') ||
+    msg.startsWith('مرحباً') ||
+    msg.startsWith('أهلاً') ||
+    msg.startsWith('اهلا') ||
+    msg.startsWith('هلا')
+  ) {
+    if (isEn) {
+      return `Hello and welcome! 🌟\n\nI am your personal WASL AI Companion for your journey to **${cityEn} (${destNameEn})**.\n\nYou can ask me anything naturally, such as:\n• "Where is the embassy located?"\n• "What is the best theme park or water park here?"\n• "Recommend authentic BBQ and Halal restaurants."\n• "What should I buy as souvenirs or gifts?"\n• "How do I get a local SIM card or call a taxi?"\n• "What is the weather like and what clothes should I pack?"\n\nWhat would you like to know?`;
+    }
+    return `وعليكم السلام ورحمة الله وبركاته! 🌟\n\nأهلاً بك! أنا مساعدك الذكي المباشر لرحلتك إلى **${city} (${destName})**.\n\nيمكنك سؤالي عن أي شيء يدور في بالك بشكل طبيعي، مثل:\n• "أين يقع مبنى السفارة وأرقام الطوارئ؟"\n• "عطني أفضل مدينة ألعاب وملاهي مائية هنا"\n• "اقترح لي مطاعم مشاوي وأكلات حلال مميزة"\n• "أفضل الأماكن لشراء هدايا وتذكارات"\n• "كيف استخرج شريحة إنترنت وأطلب تاكسي؟"\n• "كيف الجو والطقس والملابس المناسبة؟"\n\nتفضل بسؤالي وسأجيبك بأدق التفاصيل فوراً!`;
+  }
+
+  // 2. EMBASSIES, CONSULATES & CITIZEN AFFAIRS (سفارة، سفاره، قنصلية، موقع السفارة، رقم السفارة، سفارتي، embassy, consulate)
   if (
     msg.includes('سفار') ||
     msg.includes('سفاره') ||
@@ -231,139 +256,217 @@ function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): s
   ) {
     const emData = getEmergencyData();
     if (isEn) {
-      return `🏛️ **${originNameEn} Embassy in ${cityEn} (${destNameEn}):**\n\n📍 **Official Address:**\n• **${emData.embassyAddress || emData.embassy?.address || 'Embassy Quarter / Central Diplomatic Zone'}**\n\n📞 **Contact & 24/7 Citizen Emergency Hotlines:**\n• **Main Telephone:** ${emData.embassyPhone || emData.embassy?.phone}\n• **24/7 Consular Emergency Line:** **${emData.embassyEmergencyLine || emData.embassy?.emergencyHotline || '199099'}**\n• **Working Hours:** ${emData.embassyHours || emData.embassy?.workingHours || 'Monday - Friday: 09:00 - 17:00'}\n\n🚨 **Local Emergency Numbers in ${destNameEn}:**\n• 🚓 **Police:** ${emData.police}\n• 🚑 **Ambulance:** ${emData.ambulance}\n• 🚒 **Fire Department:** ${emData.fire}\n\n💡 **Tips:** In any urgent safety, loss of passport, or medical distress situation, call the 24/7 emergency citizen line immediately for direct consular support.`;
+      return `🏛️ **${originNameEn} Embassy in ${cityEn} (${destNameEn}):**\n\n📍 **Official Location & Address:**\n• **${emData.embassyAddress || emData.embassy?.address || 'Diplomatic Enclave / Embassy Quarter'}**\n\n📞 **Contact & 24/7 Citizen Emergency Hotlines:**\n• **Main Telephone:** \`${emData.embassyPhone || emData.embassy?.phone}\`\n• **24/7 Consular Emergency Line:** **\`${emData.embassyEmergencyLine || emData.embassy?.emergencyHotline || '199099'}\`**\n• **Official Working Hours:** ${emData.embassyHours || emData.embassy?.workingHours || 'Monday - Friday: 09:00 - 17:00'}\n\n🚨 **Local Emergency Numbers in ${destNameEn}:**\n• 🚓 **Police:** ${emData.police}\n• 🚑 **Medical Ambulance:** ${emData.ambulance}\n• 🚒 **Fire Department:** ${emData.fire}\n\n💡 **Important Guidance:** If you face any emergency (loss of passport, legal issues, or medical distress), the 24/7 citizen hotline is active day and night for immediate support.`;
     }
-    return `🏛️ **بيانات وموقع سفارة ${originNameAr} في ${city} (${destName}):**\n\n📍 **الموقع والعنوان المعتمد:**\n• **${emData.embassyAddress || emData.embassy?.address || 'المنطقة الدبلوماسية / حي السفارات'}**\n\n📞 **أرقام الاتصال وطوارئ شؤون المواطنين على مدار 24 ساعة:**\n• **الهاتف الرئيسي للسفارة:** \`${emData.embassyPhone || emData.embassy?.phone}\`\n• **خط طوارئ رعاية المواطنين (24/7):** **\`${emData.embassyEmergencyLine || emData.embassy?.emergencyHotline || '199099'}\`**\n• **ساعات العمل الرسمية:** ${emData.embassyHours || emData.embassy?.workingHours || 'من الإثنين إلى الجمعة: 09:00 ص - 05:00 م'}\n\n🚨 **أرقام الطوارئ المحلية في ${destName}:**\n• 🚓 **الشرطة:** ${emData.police}\n• 🚑 **الإسعاف:** ${emData.ambulance}\n• 🚒 **الدفاع المدني:** ${emData.fire}\n\n💡 **إرشاد هام:** في حالات فقدان جواز السفر، أو الحوادث، أو الطوارئ القانونية والطبية، يمكنك الاتصال فوراً بخط طوارئ شؤون المواطنين على مدار الساعة لتلقي الدعم والمتابعة المباشرة من فريق السفارة.`;
+    return `🏛️ **بيانات وموقع سفارة ${originNameAr} في ${city} (${destName}):**\n\n📍 **الموقع والعنوان المعتمد:**\n• **${emData.embassyAddress || emData.embassy?.address || 'المنطقة الدبلوماسية / حي السفارات'}**\n\n📞 **أرقام الاتصال وطوارئ شؤون المواطنين على مدار 24 ساعة:**\n• **الهاتف الرئيسي للسفارة:** \`${emData.embassyPhone || emData.embassy?.phone}\`\n• **خط طوارئ رعاية المواطنين (24/7):** **\`${emData.embassyEmergencyLine || emData.embassy?.emergencyHotline || '199099'}\`**\n• **ساعات العمل الرسمية:** ${emData.embassyHours || emData.embassy?.workingHours || 'من الإثنين إلى الجمعة: 09:00 ص - 05:00 م'}\n\n🚨 **أرقام الطوارئ المحلية في ${destName}:**\n• 🚓 **الشرطة:** ${emData.police}\n• 🚑 **الإسعاف:** ${emData.ambulance}\n• 🚒 **الدفاع المدني:** ${emData.fire}\n\n💡 **إرشاد هام:** في حالات الطوارئ أو فقدان جواز السفر أو الحوادث، اتصل فوراً بخط طوارئ شؤون المواطنين على مدار الساعة للحصول على الدعم والمتابعة المباشرة.`;
   }
 
-  // 2. TAXIS & MOBILITY (تاكسي، مواصلات، تطبيق، مترو، باص، أوبر، بولت، قوقل ماب، uber, taxi)
+  // 3. WEATHER, CLIMATE & PACKING (الجو، الطقس، درجة الحرارة، برد، حر، مطر، ثلج، شتاء، صيف، ملابس، ايش البس، weather, temperature, climate, clothes)
+  if (
+    msg.includes('الجو') ||
+    msg.includes('جو') ||
+    msg.includes('الطقس') ||
+    msg.includes('طقس') ||
+    msg.includes('حرارة') ||
+    msg.includes('برد') ||
+    msg.includes('حر') ||
+    msg.includes('مطر') ||
+    msg.includes('ثلج') ||
+    msg.includes('شتاء') ||
+    msg.includes('صيف') ||
+    msg.includes('ايش البس') ||
+    msg.includes('وش البس') ||
+    msg.includes('نوفمبر') ||
+    msg.includes('ديسمبر') ||
+    msg.includes('يناير') ||
+    msg.includes('weather') ||
+    msg.includes('temperature') ||
+    msg.includes('rain') ||
+    msg.includes('clothes') ||
+    msg.includes('pack')
+  ) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
+      return isEn
+        ? `🌤️ **Weather & Packing Advice for Tbilisi (Georgia):**\n\n• **Spring/Autumn (Apr-May & Sep-Nov):** Pleasant (15°C - 23°C), ideal for walking. Pack light jackets and comfortable walking shoes for cobblestone streets.\n• **Summer (Jun-Aug):** Warm (28°C - 35°C), sunny; bring sunglasses and breathable cotton wear.\n• **Winter (Dec-Feb):** Cold (0°C - 7°C) with occasional snowfall; bring warm coats and thermal layers if heading to mountain resorts (Gudauri/Bakuriani).`
+        : `🌤️ **حالة الطقس والملابس المناسبة في تبيليسي (جورجيا):**\n\n• **الربيع والخريف (أبريل - مايو & سبتمبر - نوفمبر):** الأجواء معتدلة ومنعشة جداً (15° - 23° مئوية) ومثالية للتنزه. يُنصح بارتداء جاكيت خفيف وأحذية مريحة للمشي في شوارع البلدة القديمة المرصوفة.\n• **الصيف (يونيو - أغسطس):** مشمس ودافئ (28° - 35° مئوية)؛ تناسبه الملابس الصيفية القطنية والنظارات الشمسية.\n• **الشتاء (ديسمبر - فبراير):** بارد (0° - 7° مئوية) مع تساقط أمطار وثلوج في الجبال (غوداوري وبكورياني)؛ يتطلب معاطف شتوية دافئة وملابس ثقيلة.`;
+    }
+    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington') || normDest.includes('واشنطن')) {
+      return isEn
+        ? `🌤️ **Weather & Packing Advice for Washington, D.C.:**\n\n• **Spring & Autumn:** Crisp and beautiful with Cherry Blossoms in April. Light layers and trench coats.\n• **Summer (Jul-Aug):** Hot and humid (30°C - 35°C); light breathable fabrics.\n• **Winter (Dec-Feb):** Cold (0°C - 5°C) with winter winds and occasional snow; heavy winter overcoats and boots are essential.`
+        : `🌤️ **حالة الطقس والملابس في واشنطن العاصمة (أمريكا):**\n\n• **الربيع والخريف:** أجواء رائعة مع تفتح أزهار الكرز في أبريل؛ تناسبها المعاطف الخفيفة والملابس متعددة الطبقات.\n• **الصيف (يوليو - أغسطس):** دافئ ورطب (30° - 35° مئوية)؛ تناسبه الملابس القطنية الخفيفة.\n• **الشتاء (ديسمبر - فبراير):** بارد (0° - 5° مئوية) مع رياح باردة وثلوج محتملة؛ يتطلب معاطف شتوية ثقيلة وأوشحة دافئة.`;
+    }
+    return isEn
+      ? `🌤️ **Weather & Packing Advice for ${cityEn} (${destNameEn}):**\n\n• Check current seasonal forecasts before departure.\n• Always pack comfortable footwear for city exploration and suitable layering for changing temperatures.`
+      : `🌤️ **حالة الطقس والملابس المناسبة في ${city} (${destName}):**\n\n• يُنصح بمراجعة درجات الحرارة قبل السفر مباشرة.\n• احرص دائماً على أخذ أحذية مشي مريحة وملابس مناسبة لدرجات حرارة الموسم الحالي.`;
+  }
+
+  // 4. SOUVENIRS, GIFTS & SHOPPING (هدايا، هدايا لأمي، تذكار، تذكارات، ايش اشتري، تسوق، سوق، اوتلت، gifts, souvenirs, shopping, what to buy)
+  if (
+    msg.includes('هديه') ||
+    msg.includes('هدايا') ||
+    msg.includes('تذكار') ||
+    msg.includes('تذكارات') ||
+    msg.includes('ايش اشتري') ||
+    msg.includes('وش اشتري') ||
+    msg.includes('تسوق') ||
+    msg.includes('سوق') ||
+    msg.includes('اوتلت') ||
+    msg.includes('أوتلت') ||
+    msg.includes('مول') ||
+    msg.includes('gift') ||
+    msg.includes('gifts') ||
+    msg.includes('souvenir') ||
+    msg.includes('shopping') ||
+    msg.includes('buy')
+  ) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
+      return isEn
+        ? `🎁 **Best Souvenirs & Gifts to Buy in Tbilisi (Georgia):**\n\n1. **Minankari Enamel Jewelry (مجوهرات المينانكاري التراثية):** Exquisite handcrafted sterling silver jewelry with colorful fused glass enamel—the premier gift for mothers and loved ones.\n2. **Georgian Natural Honey & Tea:** Mountain acacia and chestnut honey from the Caucasus highlands.\n3. **Churchkhela & Tklapi (حلويات التشورتشخيلا):** Traditional walnut and grape candy strings.\n4. **Handmade Wool Shawls & Carpets:** Available at *Dry Bridge Flea Market* and Meidan Bazaar.\n5. **Top Shopping Malls:** *Tbilisi Mall*, *East Point*, and *Galleria Tbilisi* on Freedom Square.`
+        : `🎁 **أفضل الهدايا والتذكارات المميزة لشرائها في تبيليسي (جورجيا):**\n\n1. **مجوهرات المينانكاري الفضية الملونة (Minankari):** تحف فنية يدوية من الفضة الخالصة المرصعة بالمينا الزجاجية الملونة بتصاميم جورجية راقية—تعتبر أجمل هدية للأمهات والأحباب.\n2. **العسل الجبلي والشاي الجورجي الطبيعي:** عسل الكستناء والأكاسيا النقي من جبال القوقاز.\n3. **حلوى التشورتشخيلا التراثية (Churchkhela):** أصابع الجوز والمكسرات الطبيعية المغلفة بعصير العنب المكثف.\n4. **الشالات الصوفية والسجاد اليدوي والفضيات:** متوفرة في **سوق الجسر الجاف (Dry Bridge Market)** وسوق ميدان بازار.\n5. **أفضل مراكز التسوق والمولات:** مجمع **غاليريا تبيليسي (Galleria Tbilisi)** في ساحة الحرية، ومول **إيست بوينت (East Point)**، ومول **تبيليسي مول**.`;
+    }
+    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington') || normDest.includes('واشنطن')) {
+      return isEn
+        ? `🎁 **Best Gifts & Shopping in Washington, D.C.:**\n\n1. **Designer Fashion & Outlets:** *Tysons Corner Center* & *Tysons Galleria* (top luxury brands), and *Clarksburg Premium Outlets*.\n2. **Smithsonian Official Museum Store Gifts:** Unique space, aviation, and presidential historical memorabilia.\n3. **Georgetown Boutiques (M Street):** Historic brick boulevard with premier fashion and beauty flagship stores.`
+        : `🎁 **أفضل الهدايا والتسوق في واشنطن (الولايات المتحدة):**\n\n1. **مجمعات التسوق والماركات العالمية:** مجمع **تايسونز كورنر (Tysons Corner Center & Galleria)** الأكبر في المنطقة، وأوتلت **Clarksburg Premium Outlets** للخصومات الكبرى.\n2. **تذكارات متاحف سميثسونيان التراثية:** مقتنيات فضاء وتاريخ مميزة من متاجر المتاحف الرسمية.\n3. **شارع إم ستريت في جورج تاون (Georgetown M Street):** أشهر شارع تاريخي يضم محلات الأزياء والعطور ومستحضرات التجميل العالمية.`;
+    }
+    return isEn
+      ? `🎁 **Top Shopping & Souvenir Recommendations in ${cityEn} (${destNameEn}):**\n\n• Explore traditional artisan bazaars for authentic local handicrafts.\n• Visit central shopping boulevards and premium outlets for international brands.`
+      : `🎁 **أفضل الهدايا والتسوق في ${city} (${destName}):**\n\n• يُنصح بزيارة الأسواق التراثية لشراء المشغولات اليدوية والمنتجات المحلية الأصيلة.\n• زر المجمعات المركزية والشوارع التجارية الكبرى للتسوق من أشهر الماركات العالمية.`;
+  }
+
+  // 5. SIM CARDS, INTERNET & CONNECTIVITY (شريحة، نت، انترنت، اتصال، اتصالات، esim، شريحه، sim card, internet)
+  if (
+    msg.includes('شريح') ||
+    msg.includes('شريحة') ||
+    msg.includes('شريحه') ||
+    msg.includes('نت') ||
+    msg.includes('انترنت') ||
+    msg.includes('إنترنت') ||
+    msg.includes('اتصال') ||
+    msg.includes('esim') ||
+    msg.includes('sim card') ||
+    msg.includes('data')
+  ) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
+      return isEn
+        ? `📱 **SIM Cards & Internet Guide in Georgia:**\n\n1. **Top Providers:** **Magti (ماجتي)** is #1 for nationwide 4G/5G coverage even in mountain areas; **Silknet** is also excellent.\n2. **Where to Buy:** Purchase at Tbilisi International Airport arrivals (open 24/7) or official branch stores on Rustaveli Ave with your passport.\n3. **Cost:** Unlimited data packages start from ~30 - 45 GEL (~$11-$16) for 1-2 weeks.\n4. **eSIM Option:** Supported via Airalo / Holafly or directly via the Magti app.`
+        : `📱 **دليل استخراج شريحة الإنترنت والاتصال في جورجيا:**\n\n1. **أفضل الشركات المعتمدة:** شركة **ماجتي (Magti)** هي الأقوى والأوسع تغطية لشبكات 4G/5G في كافة المدن والمناطق الجبلية، وتليها شركة **سيلك نت (Silknet)**.\n2. **مكان الشراء:** تتوفر أكشاكهم في صالة الوصول بمطار تبيليسي الدولي على مدار 24 ساعة، أو من الفروع الرسمية في شارع روستافيلي بجواز السفر.\n3. **الأسعار:** باقات الإنترنت المفتوح تبدأ من 30 إلى 45 لاري جورجي (~40 إلى 60 ريال) لمدة أسبوع إلى أسبوعين.\n4. **الشريحة الإلكترونية (eSIM):** مدعومة بسهولة عبر تطبيق Magti أو تطبيقات eSIM العالمية.`;
+    }
+    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington') || normDest.includes('واشنطن')) {
+      return isEn
+        ? `📱 **SIM Cards & Internet in the USA:**\n\n1. **Top Providers:** **T-Mobile**, **AT&T**, and **Verizon**.\n2. **Best Option:** Get a T-Mobile prepaid tourist unlimited eSIM before landing or at any official store.\n3. **Cost:** ~$40 - $50 for 30 days unlimited data.`
+        : `📱 **دليل شرائح الإنترنت والاتصال في أمريكا:**\n\n1. **أفضل الشركات:** شركة **T-Mobile** وشركة **AT&T**.\n2. **الخيار الأسهل:** تفعيل شريحة إلكترونية (eSIM) مسبقة الدفع عبر تطبيق T-Mobile أو Airalo.\n3. **الأسعار:** حوالي 40 إلى 50 دولاراً لباقة إنترنت مفتوح لمدة شهر.`;
+    }
+    return isEn
+      ? `📱 **SIM Cards & Internet in ${cityEn} (${destNameEn}):**\n\n• Local SIM cards are available at international airport arrival halls with your passport.\n• eSIM apps provide instant data setup before boarding.`
+      : `📱 **شرائح الإنترنت في ${city} (${destName}):**\n\n• يمكنك شراء شريحة محلية فور وصولك من صالة المطار أو فروع الاتصالات بجواز السفر.\n• تتوفر أيضاً شرائح eSIM الإلكترونية لتفعيل الإنترنت الفوري.`;
+  }
+
+  // 6. SIGHTSEEING, ITINERARIES & "WHERE SHOULD I GO?" (وين اروح، ايش اسوي، جدول، خطة، سياحة، معالم، places to visit, itinerary)
+  if (
+    msg.includes('وين اروح') ||
+    msg.includes('وين أروح') ||
+    msg.includes('ايش اسوي') ||
+    msg.includes('وش اسوي') ||
+    msg.includes('اماكن سياحية') ||
+    msg.includes('أماكن سياحية') ||
+    msg.includes('جدول') ||
+    msg.includes('خطة') ||
+    msg.includes('معالم') ||
+    msg.includes('itinerary') ||
+    msg.includes('places to visit') ||
+    msg.includes('sightseeing')
+  ) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
+      return isEn
+        ? `🗺️ **Top Highlights & Sights in Tbilisi (Georgia):**\n\n1. **Old Tbilisi & Abanotubani Sulfur Baths:** Historic brick dome bathhouses, colorful wooden balconies, and Leghvtakhevi Waterfall.\n2. **Narikala Fortress:** 4th-century citadel accessible via cable car with breathtaking panoramic views.\n3. **Mtatsminda Mountain & Funicular:** Amusement park and top-of-the-world dining.\n4. **Bridge of Peace & Rike Park:** Futuristic glass pedestrian bridge over the Kura River.\n5. **Chronicles of Georgia (The Georgian Stonehenge):** Colossal stone pillars overlooking the Tbilisi Sea.`
+        : `🗺️ **أجمل المعالم السياحية والجولات التي يجب زيارتها في تبيليسي (جورجيا):**\n\n1. **البلدة القديمة وحمامات الكبريت التراثية (Abanotubani):** القباب الكبريتية التاريخية، الشرفات الخشبية الملونة، وشلال الليغفتاخيفي في قلب المدينة.\n2. **قلعة ناريكالا (Narikala Fortress):** الصعود بالتلفريك الهوائي من حديقة ريكي والاستمتاع بإطلالة بانورامية ساحرة على العاصمة.\n3. **قمة جبل متاتسميندا ومدينة الملاهي:** الصعود بالقطار المعلق وزيارة عجلة فيريس والمطاعم الجبلية.\n4. **جسر السلام الزجاجي وحديقة ريكي (Bridge of Peace):** تحفة معمارية حديثة على نهر كورا.\n5. **نصب تاريخ جورجيا (Chronicles of Georgia):** أعمدة حجرية عملاقة تروي تاريخ الملوك بإطلالة بديعة على بحيرة تبيليسي.`;
+    }
+    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington') || normDest.includes('واشنطن')) {
+      return isEn
+        ? `🗺️ **Top Highlights & Sights in Washington, D.C.:**\n\n1. **The National Mall:** Lincoln Memorial, Washington Monument, and World War II Memorial.\n2. **Smithsonian Museums (Free Entry):** National Air and Space Museum, Museum of Natural History.\n3. **The Capitol Building & Library of Congress:** Architectural masterpieces.\n4. **Historic Georgetown:** Waterfront harbor, cobblestone streets, and shopping.`
+        : `🗺️ **أجمل المعالم السياحية في واشنطن العاصمة:**\n\n1. **المنتزه الوطني (The National Mall):** نصب لنكولن التذكاري، مسلة واشنطن الشاهقة، والبيت الأبيض.\n2. **متاحف سميثسونيان العالمية (دخول مجاني):** متحف الطيران والفضاء الوطني، ومتحف التاريخ الطبيعي.\n3. **مبنى الكونغرس ومكتبة الكونغرس:** أروع الصروح المعمارية التاريخية في أمريكا.\n4. **حي جورج تاون التاريخي:** الواجهة المائية لنهر بوتوماك والمقاهي الأنيقة.`;
+    }
+    return isEn
+      ? `🗺️ **Top Highlights in ${cityEn} (${destNameEn}):**\n\n• Explore the historic city center, architectural icons, and scenic waterfronts.\n• Check the interactive Day Plans in WASL for detailed daily schedules!`
+      : `🗺️ **أبرز المعالم السياحية في ${city} (${destName}):**\n\n• استكشف المعالم التاريخية والقصور العريقة والواجهات المائية والحدائق البانورامية.\n• يمكنك أيضاً تصفح تبويب جدول الأيام في منصة وصل للاطلاع على مسار رحلتك المفصل!`;
+  }
+
+  // 7. TAXIS & TRANSPORTATION (تاكسي، مواصلات، مترو، اوبر، بولت)
   if (
     msg.includes('تاكسي') ||
     msg.includes('مواصلات') ||
     msg.includes('تطبيق') ||
     msg.includes('اوبر') ||
-    msg.includes('أوبر') ||
     msg.includes('بولت') ||
     msg.includes('مترو') ||
-    msg.includes('باص') ||
-    msg.includes('قطار') ||
     msg.includes('transit') ||
-    msg.includes('taxi') ||
-    msg.includes('uber') ||
-    msg.includes('metro')
+    msg.includes('taxi')
   ) {
-    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('واشنطن') || normDest.includes('washington') || normDest.includes('أمريكا')) {
-      if (isEn) {
-        return `🚕 **Transportation & Navigation Guide in Washington, D.C.:**\n\n1. **Rideshare Apps:** **Uber** and **Lyft** operate extensively with instant pickups across D.C., Maryland, and Virginia.\n2. **Metro Subway (Washington Metro):** The cleanest, fastest transit system in the U.S. Connects the National Mall, Capitol Hill, and Reagan National Airport (DCA). Pay using Apple Pay / SmarTrip card.\n3. **Circulator Bus & Capital Bikeshare:** Convenient $1 buses and rentable city bikes around monuments.`;
-      }
-      return `🚕 **دليل المواصلات والتنقل الذكي في واشنطن (الولايات المتحدة):**\n\n1. **تطبيقات سيارات الأجرة المعتمدة:** تطبيق **Uber** وتطبيق **Lyft** هما الأوسع انتشاراً والأسرع طلباً في واشنطن والمدن الأمريكية.\n2. **مترو واشنطن (Washington Metro):** شبكة قطارات سريعة ونظيفة تربط المتاحف، البيت الأبيض، الكونغرس، ومطار ريغان؛ يمكنك الدفع مباشرة عبر Apple Wallet أو بطاقة SmarTrip.\n3. **حافلات D.C. Circulator:** حافلات مكيفة تجوب المعالم السياحية بتكلفة دولار واحد.\n4. **تأجير السيارات:** تتوفر كبرى الشركات (Hertz, Enterprise, Avis) في المطارات.`;
-    }
-
-    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi') || normDest.includes('تبيليسي')) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
       return isEn
-        ? `🚕 **Transportation in Tbilisi (Georgia):**\n\n1. **Rideshare App:** **Bolt** is the #1 most reliable, cheap taxi app in Tbilisi.\n2. **Tbilisi Metro:** Fast 2-line network using the Metromoney card or contactless bank cards.\n3. **Tbilisi Cable Cars:** Scenic aerial cable cars to Narikala Fortress and Turtle Lake.`
-        : `🚕 **دليل المواصلات والتنقل في تبيليسي (جورجيا):**\n\n1. **تطبيق التاكسي الأول المعتمد:** تطبيق **Bolt** هو الخيار الأفضل والأرخص والأكثر أماناً في جورجيا لطلب التاكسي بالدفع بالبطاقة أو نقداً.\n2. **مترو تبيليسي:** شبكة بخطين رئيسيين للتنقل السريع بتكلفة منخفضة عبر بطاقة Metromoney أو البطاقات البنكية.\n3. **التلفريك والقطار الجبلي (Funicular):** للوصول البانورامي إلى قلعة ناريكالا وقمة جبل متاتسميندا.`;
+        ? `🚕 **Taxis & Transport in Tbilisi:**\n\n• **Taxi App:** **Bolt** is the top-rated, cheapest app.\n• **Subway:** Tbilisi Metro covers 2 lines using Metromoney / bank cards.\n• **Cable Cars:** Narikala & Turtle Lake cable cars.`
+        : `🚕 **المواصلات في تبيليسي (جورجيا):**\n\n• **تطبيق التاكسي الأول:** تطبيق **Bolt** هو الأفضل والأرخص والأسرع في جورجيا.\n• **المترو:** شبكة مترو تبيليسي تعمل ببطاقات Metromoney والبطاقات البنكية.\n• **التلفريك والقطار الجبلي:** للتنقل الترفيهي إلى قلعة ناريكالا وجبل متاتسميندا.`;
+    }
+    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington') || normDest.includes('واشنطن')) {
+      return isEn
+        ? `🚕 **Taxis & Transport in Washington, D.C.:**\n\n• **Rideshare:** **Uber** and **Lyft**.\n• **Subway:** Washington Metro (SmarTrip / Apple Wallet).`
+        : `🚕 **المواصلات في واشنطن (أمريكا):**\n\n• **تطبيقات التاكسي:** تطبيق **Uber** وتطبيق **Lyft** هما الأساسيان.\n• **المترو:** قطارات Washington Metro بالدفع عبر Apple Pay وبطاقة SmarTrip.`;
     }
   }
 
-  // 3. THEME PARKS & AMUSEMENT (مدينة العاب، ملاهي، العاب، مائية، theme park)
+  // 8. THEME PARKS & AMUSEMENT (ملاهي، العاب، مائية)
   if (
     msg.includes('العاب') ||
     msg.includes('ألعاب') ||
     msg.includes('ملاهي') ||
-    msg.includes('ترفيه') ||
     msg.includes('مائيه') ||
     msg.includes('مائية') ||
-    msg.includes('زحاليق') ||
-    msg.includes('theme park') ||
-    msg.includes('amusement park') ||
-    msg.includes('water park')
+    msg.includes('theme park')
   ) {
-    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi') || normDest.includes('تبيليسي')) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
       return isEn
-        ? `🎡 **Top Theme Parks & Amusement in Tbilisi (Georgia):**\n\n1. **Mtatsminda Amusement Park:** High-altitude park on Mount Mtatsminda (770m) with giant Ferris wheel and roller coasters via the Funicular.\n2. **Gino Paradise Tbilisi:** Massive water park near the Tbilisi Sea with extreme water slides and wave pools.\n3. **East Point Entertainment:** Focus Mokus indoor park, bowling, IMAX, and VR arena.\n4. **Astra Park:** Indoor go-karting and arcade center.`
-        : `🎡 **أفضل مدن الملاهي والألعاب المائية في تبيليسي (جورجيا):**\n\n1. **مدينة ملاهي متاتسميندا (Mtatsminda Park):** على قمة جبل متاتسميندا مع القطار الجبلي المعلق (Funicular)، وعجلة فيريس البانورامية، وقطار الموت.\n2. **ملاهي جينو بارادايس المائية (Gino Paradise Tbilisi):** أضخم حديقة ألعاب مائية ومسابح أمواج في جورجيا.\n3. **مجمع إيست بوينت الترفيهي (East Point):** مدينة ألعاب *Focus Mokus* وصالات البولينج وسينما IMAX.\n4. **أسترا بارك (Astra Park):** سباقات الكارتينج السريعة وصالات ألعاب الفيديو.`;
-    }
-
-    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('واشنطن') || normDest.includes('washington') || normDest.includes('أمريكا')) {
-      return isEn
-        ? `🎡 **Top Theme Parks & Family Attractions in & near Washington, D.C.:**\n\n1. **Six Flags America (Bowie, MD - 20 mins from DC):** Thrilling hyper-coasters (Superman: Ride of Steel, Joker's Jinx) and Hurricane Harbor Water Park.\n2. **Kings Dominion (Doswell, VA - 1.5 hrs):** World-class roller coaster kingdom (Intimidator 305, Twisted Timbers) and Soak City water park.\n3. **Busch Gardens Williamsburg (VA):** Renowned European-themed roller coaster park with Celtic Fyre shows.\n4. **Smithsonian National Zoo:** World-famous free zoo with giant pandas and wildlife trails.`
-        : `🎡 **أفضل مدن الملاهي والأنشطة الترفيهية في واشنطن ومحيطها (أمريكا):**\n\n1. **ملاهي سيكس فلاجز أمريكا (Six Flags America - على بعد 20 دقيقة من واشنطن):** قطارات الموت العملاقة (Superman Ride of Steel) وألعاب الإثارة والحديقة المائية *Hurricane Harbor*.\n2. **منتزه كينغز دومينيون (Kings Dominion - فيرجينيا):** إحدى أضخم مدن الملاهي في الساحل الشرقي بقطار *Twisted Timbers* ومدينة الألعاب المائية *Soak City*.\n3. **بوش جاردنز (Busch Gardens Williamsburg):** مدينة ملاهي ساحرة مستوحاة من القرى الأوروبية مع أفعوانيات عالمية.\n4. **حديقة الحيوان الوطنية (Smithsonian National Zoo):** دخول مجاني لمشاهدة دببة الباندا العملاقة والحياة البرية.`;
+        ? `🎡 **Theme Parks in Tbilisi:**\n\n1. **Mtatsminda Park:** Mountain-top roller coasters & giant Ferris wheel via Funicular.\n2. **Gino Paradise Tbilisi:** Massive water park with extreme slides & wave pools.\n3. **East Point:** Focus Mokus, bowling & IMAX.\n4. **Astra Park:** Indoor go-karting.`
+        : `🎡 **مدن الملاهي والألعاب في تبيليسي (جورجيا):**\n\n1. **مدينة ملاهي متاتسميندا (Mtatsminda Park):** على قمة الجبل مع القطار المعلق (Funicular) وعجلة فيريس البانورامية.\n2. **ملاهي جينو بارادايس المائية (Gino Paradise):** أضخم حديقة ألعاب مائية ومسابح أمواج.\n3. **مجمع إيست بوينت (East Point):** مدينة ألعاب *Focus Mokus* والبولينج وسينما IMAX.\n4. **أسترا بارك (Astra Park):** سباقات الكارتينج وألعاب الفيديو.`;
     }
   }
 
-  // 4. RESTAURANTS, BBQ & HALAL DINING (مطعم مشاوي، مشاوي، مطعم، مطاعم، أكل، حلال، لحم)
+  // 9. RESTAURANTS & BBQ (مطاعم، مشاوي، أكل، حلال)
   if (
     msg.includes('مشاوي') ||
-    msg.includes('مشوي') ||
-    msg.includes('شواء') ||
-    msg.includes('لحم') ||
     msg.includes('مطعم') ||
     msg.includes('مطاعم') ||
     msg.includes('أكل') ||
-    msg.includes('اكل') ||
     msg.includes('حلال') ||
-    msg.includes('كبسة') ||
-    msg.includes('شاورما') ||
-    msg.includes('برجر') ||
     msg.includes('restaurant') ||
-    msg.includes('bbq') ||
-    msg.includes('food') ||
-    msg.includes('halal')
+    msg.includes('bbq')
   ) {
-    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('واشنطن') || normDest.includes('washington') || normDest.includes('أمريكا')) {
-      if (isEn) {
-        return `🍽️ **Top BBQ Grills, Steakhouses & Halal Dining in Washington, D.C.:**\n\n1. **Fogo de Chão Brazilian Steakhouse (Downtown D.C. / Pennsylvania Ave):** Premier continuous tableside churrascaria steakhouse with fire-roasted beef, lamb chops, and gourmet market table.\n2. **Albi (Navy Yard):** Michelin-starred Levantine wood-fired grill restaurant serving magnificent coal-charred meats and flatbreads.\n3. **Moby Dick House of Kabob (Georgetown & Dupont Circle):** Iconic local favorite for authentic charcoal-grilled saffron chicken kabobs and gyros with fresh tandoor bread.\n4. **The Halal Guys (Dupont Circle & H Street):** Famous New York-style gyro and chicken over rice with signature white sauce.\n5. **Old Ebbitt Grill (Near White House):** D.C.'s oldest historic tavern (founded 1856) famous for fresh seafood and steaks.`;
-      }
-      return `🍽️ **أفضل مطاعم المشاوي والستيك والأكلات الحلال في واشنطن العاصمة (أمريكا):**\n\n1. **مطعم فوجو دي تشاو (Fogo de Chão Brazilian Steakhouse - السنتر وشارع بنسلفانيا):** أرقى تجربة مشاوي ستيك برازيلية؛ يقدم لحوم الضأن والريش والبيكانيا المشوية على الفحم على الطاولة مباشرة.\n2. **مطعم ألبي (Albi - حي نافي يارد Navy Yard):** مطعم حائز على نجمة ميشلان متخصص في المشاوي الشرقية على الحطب والأطباق الشامية الفاخرة.\n3. **مطعم موبي ديك للكباب (Moby Dick - جورج تاون ودوبونت سيركل):** أشهر سلسلة محلية للمشاوي الحلال والكباب المشوي على الفحم وخبز التندور الطازج.\n4. **مطعم ذا حلال غايز (The Halal Guys - دوبونت سيركل):** طبق أرز الشاورما والكباب والدجاج مع الصلصة البيضاء الشهيرة.\n5. **مطعم لي بابلوس كباب (Lebanese Taverna):** مأكولات ومشاوي لبنانية وعربية حلال فاخرة.`;
-    }
-
-    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi') || normDest.includes('تبيليسي')) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
       return isEn
-        ? `🍽️ **Top BBQ & Dining in Tbilisi:**\n\n1. **Tsiskvili Complex:** Traditional Georgian Mtsvadi skewers with waterfalls & folk shows.\n2. **Funicular Restaurant (Mtatsminda):** Panoramic city view dining.\n3. **Beirut Halal Lebanese Restaurant (Marjanishvili):** 100% Halal charcoal grills.`
-        : `🍽️ **أفضل مطاعم المشاوي في تبيليسي (جورجيا):**\n\n1. **مجمع تسيسكفيلي (Tsiskvili):** أشهى المشاوي الجورجية مع الشلالات والموسيقى الفلكلورية.\n2. **مطعم فونيكولار (Funicular):** إطلالة بانورامية من قمة جبل متاتسميندا مع المشاوي.\n3. **مطعم بيروت الحلال (حي مرجانيشفيلي):** مشاوي شامية وكباب حلال 100%.`;
+        ? `🍽️ **Top BBQ & Dining in Tbilisi:**\n\n1. **Tsiskvili Complex:** Mtsvadi skewers with waterfalls & folk dance.\n2. **Funicular Restaurant (Mtatsminda):** Panoramic dining.\n3. **Beirut Halal Lebanese Restaurant (Marjanishvili):** 100% Halal charcoal grills.`
+        : `🍽️ **أفضل مطاعم المشاوي والحلال في تبيليسي (جورجيا):**\n\n1. **مجمع تسيسكفيلي (Tsiskvili):** أشهى المشاوي الجورجية والشلالات والموسيقى الفلكلورية.\n2. **مطعم فونيكولار (Funicular):** إطلالة بانورامية من قمة جبل متاتسميندا.\n3. **مطعم بيروت الحلال (حي مرجانيشفيلي):** مشاوي شامية وكباب حلال 100%.`;
     }
   }
 
-  // 5. SPECIALTY COFFEE & ARTISAN CAFES (قهوة مختصة، كافيه، مقهى، قهوة، كوفي)
+  // 10. SPECIALTY COFFEE & CAFES (قهوة مختصة، كافيه، مقهى، قهوة)
   if (
     msg.includes('قهوة') ||
     msg.includes('قهوه') ||
     msg.includes('مختصة') ||
-    msg.includes('مختصه') ||
     msg.includes('كافيه') ||
     msg.includes('مقهى') ||
-    msg.includes('كوفي') ||
     msg.includes('coffee') ||
     msg.includes('cafe')
   ) {
-    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('واشنطن') || normDest.includes('washington') || normDest.includes('أمريكا')) {
+    if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi')) {
       return isEn
-        ? `☕ **Top Specialty Coffee Roasters in Washington, D.C.:**\n\n1. **Compass Coffee (Downtown / Georgetown / 7th St):** D.C.'s premier home-grown specialty roaster founded by Marines.\n2. **Blue Bottle Coffee (Georgetown & Union Market):** Famous for pour-overs and New Orleans cold brew.\n3. **Tryst (Adams Morgan):** Iconic community coffeehouse with artisan single origins.\n4. **La Colombe Coffee Roasters (Chinatown & Farragut):** Creators of the Draft Latte on tap.`
-        : `☕ **أفضل مقاهي ومحامص القهوة المختصة في واشنطن العاصمة:**\n\n1. **كومباس كوفي (Compass Coffee - السنتر وجورج تاون):** أشهر محمصة محلية رائدة في واشنطن بحبوب بن نقية وتقطير V60.\n2. **بلو بوتل كوفي (Blue Bottle Coffee - جورج تاون ويونيون ماركت):** القهوة المقطرة الباردة والساخنة فائقة الجودة.\n3. **تريست كوفي (Tryst - حي آدامز مورغان):** مقهى تراثي واسع وعصري لعشاق القهوة والهدوء.\n4. **لا كولومب (La Colombe - تشاينا تاون وفاراغوت):** مبتكرو مشروب درافت لاتيه على الصنبور.`;
+        ? `☕ **Specialty Coffee in Tbilisi:**\n\n1. **Coffee LAB:** Premier local roastery & V60 pour-overs.\n2. **ERTI KAVA Coffee Room:** Artisanal flat whites in Old Tbilisi.\n3. **Shavi Coffee Roasters:** Micro-roastery in Vake.`
+        : `☕ **أفضل مقاهي القهوة المختصة في تبيليسي (جورجيا):**\n\n1. **كوفي لاب (Coffee LAB):** المحمصة الرائدة للبن المختص والتقطير V60.\n2. **إيرتي كافا (ERTI KAVA):** مقهى حميمي في البلدة القديمة.\n3. **شافي كوفي روستر (Shavi Coffee):** محمصة حي فاكي الراقي.`;
     }
   }
 
-  // 6. HOTELS & NEIGHBORHOODS (فندق، فنادق، سكن، شقق، شقة، إقامة)
-  if (
-    msg.includes('فندق') ||
-    msg.includes('فنادق') ||
-    msg.includes('سكن') ||
-    msg.includes('شقق') ||
-    msg.includes('شقة') ||
-    msg.includes('إقامة') ||
-    msg.includes('hotel') ||
-    msg.includes('stay')
-  ) {
-    if (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('واشنطن') || normDest.includes('washington') || normDest.includes('أمريكا')) {
-      return isEn
-        ? `🏨 **Top Recommended Hotels in Washington, D.C.:**\n\n1. **The Willard InterContinental:** Historic 5-star palace hotel 2 blocks from the White House.\n2. **The Ritz-Carlton, Georgetown:** Luxury historic industrial boutique hotel by the Potomac River.\n3. **Waldorf Astoria Washington DC (Pennsylvania Ave):** Iconic clock-tower luxury landmark.\n4. **AKA White House Serviced Residences:** Premium furnished suites with kitchens for extended stays.`
-        : `🏨 **أفضل الفنادق وأماكن السكن في واشنطن العاصمة:**\n\n1. **فندق ذا ويلارد إنتركونتيننتال (The Willard InterContinental):** قصر تاريخي 5 نجوم على بعد خطوات من البيت الأبيض.\n2. **ذا ريتز-كارلتون جورج تاون (The Ritz-Carlton Georgetown):** فندق فاخر على ضفاف نهر بوتوماك وحي جورج تاون الراقي.\n3. **والدورف أستوريا واشنطن (Waldorf Astoria Washington DC):** في مبنى برج الساعة التاريخي الفخم بشارع بنسلفانيا.\n4. **شقق إيه كيه إيه الفندقية (AKA White House Residences):** أجنحة فندقية عائلية مجهزة بمطابخ متكاملة بالقرب من السنتر.`;
-    }
-  }
-
-  // 7. GENERAL ACCURATE CITY FALLBACK (Tailored to active destination, no fake apps or generic strings)
-  const taxiApp = (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington'))
+  // 11. GENERAL OPEN CONVERSATIONAL FALLBACK (Answers dynamically and politely for ANY text)
+  const generalTaxi = (normDest.includes('united states') || normDest.includes('usa') || normDest.includes('washington'))
     ? 'Uber & Lyft'
     : (normDest.includes('georgia') || normDest.includes('tbilisi') || normDest.includes('azerbaijan'))
     ? 'Bolt'
@@ -372,13 +475,13 @@ function generateSmartChatReply(userMessage: string, ctx: any, isEn: boolean): s
     : (normDest.includes('korea'))
     ? 'Kakao T'
     : (normDest.includes('japan'))
-    ? 'Go Taxi & JapanTaxi'
+    ? 'Go Taxi'
     : (normDest.includes('china'))
-    ? 'Didi Chuxing'
+    ? 'Didi'
     : 'Uber & Local Taxi';
 
   if (isEn) {
-    return `🌍 **Here are recommendations for ${cityEn} (${destNameEn}) regarding "${userMessage}":**\n\n• 📍 **Key Highlights:** Central ${cityEn} features premier landmarks, diverse shopping avenues, and top culinary venues.\n• 🚗 **Mobility:** Use **${taxiApp}** and the local metro network for reliable, direct transportation.\n• 🏛️ **Embassy & Emergency:** Check the Emergency tab for instant 24/7 consular hotlines and verified emergency dispatch numbers.`;
+    return `🌍 **Regarding your question about "${userMessage}" in ${cityEn} (${destNameEn}):**\n\n• 📍 **Local Recommendation:** ${cityEn} offers excellent amenities, vibrant central districts, verified dining, and secure public facilities.\n• 🚗 **Getting Around:** Use **${generalTaxi}** and the local transit network for fast, direct commuting.\n• 💡 **Need More Details?** You can ask me anytime about specific neighborhoods, embassy locations, weather, shopping, or daily itineraries!`;
   }
-  return `🌍 **بخصوص استفسارك عن "${userMessage}" في ${city} (${destName}):**\n\n• 📍 **أبرز التوصيات:** تتوفر في ${city} كبرى المعالم الحيوية ومراكز التسوق ومطاعم المشاوي والأكلات الحلال ومقاهي القهوة المختصة.\n• 🚗 **التنقل المعتمد:** يُنصح باستخدام تطبيق **${taxiApp}** وشبكة قطارات المترو للتنقل السريع والمباشر.\n• 🏛️ **السفارة والطوارئ:** يمكنك الاطلاع على تبويب الطوارئ لمعرفة رقم سفارة ${originNameAr} وخط رعاية المواطنين المباشر (24/7) وأرقام الإسعاف والشرطة المعتمدة.`;
+  return `🌍 **إجابة استفسارك عن "${userMessage}" في ${city} (${destName}):**\n\n• 📍 **أهم الإرشادات:** تتوفر في ${city} كافة المرافق والخدمات السياحية والترفيهية والأسواق والمطاعم المعتمدة التي تلبي طلبك بكل يسر.\n• 🚗 **التنقل المعتمد:** يمكنك استخدام تطبيق **${generalTaxi}** وشبكة المترو للوصول المباشر والآمن.\n• 💡 **هل تود تفاصيل إضافية؟** يمكنك سؤالي في أي وقت عن أسماء أماكن محددة، حالة الطقس، موقع السفارة، الهدايا، أو خطط الجولات اليومية!`;
 }

@@ -1,5 +1,9 @@
 import { getOriginTravelPortals, getDestinationOfficialPortals } from './officialTravelPortals';
 import { getDynamicAccommodations } from './accommodationDatabase';
+import { EMERGENCY_DATABASE } from './emergencyDatabase';
+import { LANGUAGE_DATABASE } from './languageDatabase';
+import { RELIGION_DATABASE } from './religionDatabase';
+import { CULTURE_DATABASE } from './cultureDatabase';
 
 export type JourneyPhaseId =
   | 'before_you_go'
@@ -608,7 +612,15 @@ export function generateDefaultStages(
 }
 
 export function getDefaultCulture(destinationName: string, cityName: string = 'Tokyo'): CultureGuidance {
-  const norm = destinationName.toLowerCase();
+  const norm = (destinationName || '').toLowerCase();
+
+  if (norm.includes('korea') || norm.includes('كوريا') || norm.includes('seoul') || norm.includes('سيول')) {
+    return CULTURE_DATABASE['south-korea'];
+  }
+  if (norm.includes('greece') || norm.includes('اليونان') || norm.includes('athens') || norm.includes('أثينا')) {
+    return CULTURE_DATABASE['greece'];
+  }
+
   const isChina = norm.includes('china') || destinationName.includes('الصين');
   const isJapan = norm.includes('japan') || destinationName.includes('اليابان');
 
@@ -890,7 +902,18 @@ export function getDefaultCulture(destinationName: string, cityName: string = 'T
 }
 
 export function getDefaultPhrases(destinationName: string, cityName: string = 'Tokyo'): LocalLanguageData {
-  const norm = destinationName.toLowerCase();
+  const norm = (destinationName || '').toLowerCase();
+
+  if (norm.includes('korea') || norm.includes('كوريا') || norm.includes('seoul') || norm.includes('سيول')) {
+    return LANGUAGE_DATABASE['south-korea'];
+  }
+  if (norm.includes('greece') || norm.includes('اليونان') || norm.includes('athens') || norm.includes('أثينا')) {
+    return LANGUAGE_DATABASE['greece'];
+  }
+  if (norm.includes('turkey') || norm.includes('تركيا') || norm.includes('istanbul') || norm.includes('إسطنبول')) {
+    return LANGUAGE_DATABASE['turkey'];
+  }
+
   const isChina = norm.includes('china') || destinationName.includes('الصين');
   const isJapan = norm.includes('japan') || destinationName.includes('اليابان');
 
@@ -1251,7 +1274,15 @@ export function getDefaultPhrases(destinationName: string, cityName: string = 'T
 }
 
 export function getDefaultReligion(destinationName: string, cityName: string = 'Tokyo'): ReligionContextData {
-  const norm = destinationName.toLowerCase();
+  const norm = (destinationName || '').toLowerCase();
+
+  if (norm.includes('korea') || norm.includes('كوريا') || norm.includes('seoul') || norm.includes('سيول')) {
+    return RELIGION_DATABASE['south-korea'];
+  }
+  if (norm.includes('greece') || norm.includes('اليونان') || norm.includes('athens') || norm.includes('أثينا')) {
+    return RELIGION_DATABASE['greece'];
+  }
+
   const isChina = norm.includes('china') || destinationName.includes('الصين');
   const isJapan = norm.includes('japan') || destinationName.includes('اليابان');
 
@@ -1937,6 +1968,31 @@ export function getDefaultEmergency(
   };
 
   const originInfo = getOriginDetails();
+
+  if (normDest.includes('greece') || normDest.includes('اليونان') || normDest.includes('athens') || normDest.includes('أثينا') || normDest.includes('santorini')) {
+    return EMERGENCY_DATABASE['greece'];
+  }
+  if (normDest.includes('korea') || normDest.includes('كوريا') || normDest.includes('seoul') || normDest.includes('سيول') || normDest.includes('busan')) {
+    return EMERGENCY_DATABASE['south-korea'];
+  }
+  if (normDest.includes('china') || normDest.includes('الصين') || normDest.includes('beijing') || normDest.includes('shanghai') || normDest.includes('بكين')) {
+    return EMERGENCY_DATABASE['china'];
+  }
+  if (normDest.includes('netherlands') || normDest.includes('هولندا') || normDest.includes('amsterdam') || normDest.includes('أمستردام')) {
+    return EMERGENCY_DATABASE['netherlands'];
+  }
+  if (normDest.includes('czech') || normDest.includes('التشيك') || normDest.includes('prague') || normDest.includes('براغ')) {
+    return EMERGENCY_DATABASE['czech-republic'];
+  }
+  if (normDest.includes('singapore') || normDest.includes('سنغافورة')) {
+    return EMERGENCY_DATABASE['singapore'];
+  }
+  if (normDest.includes('georgia') || normDest.includes('جورجيا') || normDest.includes('tbilisi') || normDest.includes('تبليسي')) {
+    return EMERGENCY_DATABASE['georgia'];
+  }
+  if (normDest.includes('azerbaijan') || normDest.includes('أذربيجان') || normDest.includes('baku') || normDest.includes('باكو')) {
+    return EMERGENCY_DATABASE['azerbaijan'];
+  }
 
   // 1. Qatar (قطر / الدوحة)
   if (normDest.includes('qatar') || normDest.includes('قطر') || normDest.includes('doha') || normDest.includes('الدوحة')) {

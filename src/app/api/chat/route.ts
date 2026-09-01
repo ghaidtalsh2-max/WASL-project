@@ -56,30 +56,28 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = `${AI_SYSTEM_PROMPTS.chatAssistant}\n\n${contextStr}`;
 
-    // 1. If user supplied an active AI key in settings, invoke LLM
-    if (apiKey) {
-      try {
-        const aiRes = await callAI({
-          systemPrompt,
-          prompt: userMessage,
-          apiKey,
-          provider,
-          temperature: 0.35,
-          maxTokens: 1024,
-        });
+    // 1. Always attempt live AI with server/user Gemini key
+    try {
+      const aiRes = await callAI({
+        systemPrompt,
+        prompt: userMessage,
+        apiKey: apiKey || process.env.LLM_API_KEY,
+        provider: provider || process.env.LLM_PROVIDER || 'gemini',
+        temperature: 0.35,
+        maxTokens: 1024,
+      });
 
-        if (!aiRes.error && aiRes.content && aiRes.content.trim().length > 20) {
-          return NextResponse.json({
-            success: true,
-            provider: aiRes.provider,
-            modelUsed: aiRes.modelUsed,
-            latencyMs: aiRes.latencyMs,
-            reply: aiRes.content,
-          });
-        }
-      } catch (e) {
-        console.warn('AI live call error:', e);
+      if (!aiRes.error && aiRes.content && aiRes.content.trim().length > 20) {
+        return NextResponse.json({
+          success: true,
+          provider: aiRes.provider,
+          modelUsed: aiRes.modelUsed,
+          latencyMs: aiRes.latencyMs,
+          reply: aiRes.content,
+        });
       }
+    } catch (e) {
+      console.warn('AI live call error:', e);
     }
 
     // 2. High-Precision Conversational & Semantic Travel Engine

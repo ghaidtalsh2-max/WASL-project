@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
         systemPrompt,
         prompt: userMessage,
         apiKey: apiKey || process.env.LLM_API_KEY,
-        provider: provider || process.env.LLM_PROVIDER || 'gemini',
+        provider: provider || process.env.LLM_PROVIDER || 'openrouter',
         temperature: 0.35,
         maxTokens: 1024,
       });

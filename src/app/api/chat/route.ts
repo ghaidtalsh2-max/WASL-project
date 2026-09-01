@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         maxTokens: 1024,
       });
 
-      if (!aiRes.error && aiRes.content && aiRes.content.trim().length > 0) {
+      if (aiRes && aiRes.content && aiRes.content.trim().length > 0) {
         return NextResponse.json({
           success: true,
           provider: aiRes.provider,
@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
           reply: aiRes.content,
         });
       }
-    } catch (e) {
-      console.warn('AI live call error:', e);
+    } catch (e: any) {
+      console.warn('AI live call error:', e?.message || e);
     }
 
     // 2. High-Precision Conversational & Semantic Travel Engine
@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
       success: true,
       provider: 'wasl-smart-assistant',
       reply,
-      debugAiError: (aiRes as any)?.error || null,
-      debugKeyPrefix: (apiKey || process.env.LLM_API_KEY || '').slice(0, 10),
+      aiError: aiRes?.error || null,
+      aiProviderUsed: aiRes?.provider || null,
     });
   } catch (error: any) {
     const isEn = isEnglishText(userMessage) || locale === 'en';

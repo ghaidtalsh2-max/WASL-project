@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         maxTokens: 1024,
       });
 
-      if (!aiRes.error && aiRes.content && aiRes.content.trim().length > 20) {
+      if (!aiRes.error && aiRes.content && aiRes.content.trim().length > 0) {
         return NextResponse.json({
           success: true,
           provider: aiRes.provider,

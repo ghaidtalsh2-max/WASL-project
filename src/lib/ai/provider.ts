@@ -312,30 +312,37 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
       }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://wasl-journey.vercel.app',
-          'X-Title': 'WASL Cultural Journey',
-        },
-        signal: controller.signal,
-        body: JSON.stringify(body),
-      });
-
-      clearTimeout(timeoutId);
+      let res: Response;
+      try {
+        res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://wasl-ghaidaa-taleen2030.vercel.app',
+            'X-Title': 'WASL Platform',
+          },
+          signal: controller.signal,
+          body: JSON.stringify(body),
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(`OpenRouter (${model}) error (${res.status}): ${errorText}`);
+        console.error(`[OpenRouter ${model}] Error (${res.status}):`, errorText);
+        lastError = new Error(`OpenRouter (${model}) error (${res.status}): ${errorText}`);
+        continue;
       }
 
       const data = await res.json();
       const text = data.choices?.[0]?.message?.content || '';
-      return { content: text, provider: `openrouter (${model})`, modelUsed: model };
+      if (text && text.trim().length > 0) {
+        return { content: text, provider: `openrouter (${model})`, modelUsed: model };
+      }
     } catch (err: any) {
       lastError = err;
       if (err.message.includes('401') || err.message.includes('User key not valid') || err.message.includes('Key disabled')) {

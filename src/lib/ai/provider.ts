@@ -43,7 +43,7 @@ export async function callAI(options: AICompletionOptions): Promise<AIResponse> 
   // Check cache
   const cacheKey = `${provider}:${options.jsonMode ? 'json' : 'text'}:${options.systemPrompt || ''}:${options.prompt}`;
   const cached = responseCache.get(cacheKey);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+  if (cached && cached.content && cached.content.trim().length > 10 && Date.now() - cached.timestamp < CACHE_TTL_MS) {
     return {
       content: cached.content,
       provider: `${provider} (cached)`,
@@ -291,8 +291,8 @@ async function callOpenRouter(apiKey: string, options: AICompletionOptions): Pro
   messages.push({ role: 'user', content: options.prompt });
 
   const candidateModels = [
-    'openai/gpt-4o-mini',
     'meta-llama/llama-3.3-70b-instruct',
+    'openai/gpt-4o-mini',
   ];
 
   let lastError: any = null;
